@@ -44,9 +44,15 @@ import { BarField } from "@/components/ui/bar-field/bar-field"
 
 ### 搜索
 
-`type="search"`、`icon` 与快捷键 `suffix` 组成搜索条；`clearable` 显示自绘清除键。
+`type="search"` 默认开启 `clearable`：有内容时右侧出现清除键，替代浏览器自带的叉号；`icon` 放在标签与输入之间。
 
 <ComponentPreview name="bar-field-search-demo" />
+
+### 不显示标签
+
+省略 `label`，用 `aria-label` 给读屏提供名称，条里只留图标和占位文字，适合放在页头、侧栏这类上下文已经说明用途的地方。快捷键提示放在 `suffix`。
+
+<ComponentPreview name="bar-field-no-label-demo" />
 
 ### 后缀
 

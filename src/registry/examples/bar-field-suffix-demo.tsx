@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react"
 export default function Demo() {
   const [visible, setVisible] = React.useState(false)
   return (
-    <div className="w-full max-w-3xl space-y-4 rounded-xl border border-edge bg-background p-4 shadow-xs">
+    <div data-slot="bar-field-suffix-demo" className="w-full max-w-sm space-y-4">
       <BarField
         label="宽度"
         defaultValue="320"
