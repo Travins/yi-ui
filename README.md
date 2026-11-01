@@ -56,22 +56,14 @@ Yi UI 面向**中文产品**：文档用简体中文写，组件的默认文案�
 # 新建项目（已有项目去掉 -t / -n 两个参数）
 pnpm dlx shadcn@latest init -t next -b base -p nova -n my-app
 
-# 用完整地址安装任意组件
-pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
+# 安装任意组件
+pnpm dlx shadcn@latest add @yiui/value-slider
 ```
 
-想用更短的命令，在 `components.json` 里登记命名空间：
-
-```json
-{
-  "registries": {
-    "@yiui": "https://yiui.dev/r/{name}.json"
-  }
-}
-```
+Yi UI 已收录进 [shadcn 官方 Registry 目录](https://ui.shadcn.com/docs/directory)，`@yiui` 命名空间不用配置，CLI 会在第一次安装时自动把它写进 `components.json`。也可以用完整地址安装：
 
 ```bash
-pnpm dlx shadcn@latest add @yiui/value-slider
+pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 ```
 
 完整说明（文件落点、依赖、样式写入与常见问题）见[安装文档](https://yiui.dev/docs/installation/)。

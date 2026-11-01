@@ -56,22 +56,14 @@ You need React 19, Tailwind CSS v4 and a shadcn project initialized with the **B
 # New project (for an existing one, drop -t and -n)
 pnpm dlx shadcn@latest init -t next -b base -p nova -n my-app
 
-# Install any component by URL
-pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
+# Install any component
+pnpm dlx shadcn@latest add @yiui/value-slider
 ```
 
-For shorter commands, register the namespace in `components.json`:
-
-```json
-{
-  "registries": {
-    "@yiui": "https://yiui.dev/r/{name}.json"
-  }
-}
-```
+Yi UI is listed in the [official shadcn registry directory](https://ui.shadcn.com/docs/directory), so the `@yiui` namespace works without any setup — the CLI adds it to `components.json` on first install. You can also install by full URL:
 
 ```bash
-pnpm dlx shadcn@latest add @yiui/value-slider
+pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 ```
 
 See the [installation guide](https://yiui.dev/docs/installation/) for where files land, how dependencies and styles are written, and common issues.

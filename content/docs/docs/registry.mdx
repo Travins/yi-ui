@@ -14,9 +14,15 @@ description: 通过 URL 或 @yiui 命名空间安装条目，了解目录地址�
 pnpm dlx shadcn@latest add https://yiui.dev/r/grid-layout.json
 ```
 
-## 配置命名空间
+## 命名空间安装
 
-在项目的 `components.json` 中合并以下配置。若已有其他 Registry，请保留原有条目。
+Yi UI 已收录进 shadcn 官方的 Registry 目录，`@yiui` 命名空间开箱可用，不需要改 `components.json`：
+
+```bash title="终端"
+pnpm dlx shadcn@latest add @yiui/grid-layout
+```
+
+CLI 会从官方目录查到 `@yiui` 对应的地址，把条目名代入 `{name}`，并在第一次安装时自动把下面这段写进 `components.json`。两种方式装出来的文件和样式完全一样。
 
 ```json title="components.json"
 {
@@ -26,19 +32,13 @@ pnpm dlx shadcn@latest add https://yiui.dev/r/grid-layout.json
 }
 ```
 
-CLI 会把条目名代入 `{name}`，于是命令可以缩短为：
-
-```bash title="终端"
-pnpm dlx shadcn@latest add @yiui/grid-layout
-```
-
-两种方式装出来的文件和样式完全一样。
+CLI 版本较旧、不认识 `@yiui` 时，手动合并上面这段即可。若已有其他 Registry，请保留原有条目。
 
 ## 条目目录
 
 完整的条目清单位于 [`/r/registry.json`](https://yiui.dev/r/registry.json)，包含每个条目的类型、依赖与文件列表。可以用它做检索，也可以交给脚本或 AI 工具读取。
 
-也可以用 CLI 直接查看（需要先配置命名空间）：
+也可以用 CLI 直接查看：
 
 ```bash title="终端"
 pnpm dlx shadcn@latest search @yiui

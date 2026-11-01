@@ -270,14 +270,15 @@ export function InstallCommandClient({
           {frame}
           {installSource === "namespace" && (
             <div className="text-[13px] leading-6 text-muted-foreground">
-              请先按{" "}
+              @yiui 已收录进 shadcn 官方目录，无需配置；CLI
+              会在首次安装时把它写进 components.json，详见{" "}
               <Link
                 href="/docs/registry/"
                 className="underline underline-offset-4"
               >
                 Registry 与命名空间
-              </Link>{" "}
-              配置 @yiui 命名空间。
+              </Link>
+              。
             </div>
           )}
           {hasPrereq && (

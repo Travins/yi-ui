@@ -39,7 +39,7 @@ function Snippet(props: ComponentProps<typeof CodeBlock>) {
 }
 
 /**
- * 首页「一行命令安装」：左边是 shadcn CLI 的两种装法（完整 URL / @yiui 命名空间）和对应的 components.json，
+ * 首页「一行命令安装」：左边是 shadcn CLI 的两种装法（@yiui 命名空间 / 完整 URL）和 CLI 自动写入的 components.json，
  * 右边用代码文件堆叠示意命令执行后落进项目的文件。内容与文档里的「安装」「Registry 与命名空间」一致。
  */
 function InstallShowcase() {
@@ -47,20 +47,20 @@ function InstallShowcase() {
     <GridColumns className="sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-5 p-4 sm:p-6 lg:p-8">
         <p className="max-w-[34rem] text-sm leading-7 text-pretty text-muted-foreground">
-          本站的组件库 Yi UI 以 shadcn registry
-          发布。一行命令把源码装进你的项目，装完就是你自己的代码，可以直接改。
+          本站的组件库 Yi UI 以 shadcn registry 发布，已收录进 shadcn
+          官方目录。一行命令把源码装进你的项目，装完就是你自己的代码，可以直接改。
         </p>
         <div className="flex min-w-0 flex-col gap-4">
+          <Snippet
+            code={NAMESPACE_COMMAND}
+            lang="bash"
+            title="终端 · @yiui 命名空间"
+          />
           <Snippet code={URL_COMMAND} lang="bash" title="终端 · 完整 URL" />
           <Snippet
             code={COMPONENTS_JSON}
             lang="json"
-            title="components.json · 命名空间"
-          />
-          <Snippet
-            code={NAMESPACE_COMMAND}
-            lang="bash"
-            title="终端 · 配置后的短写法"
+            title="components.json · 首次安装时自动写入"
           />
         </div>
         <Link

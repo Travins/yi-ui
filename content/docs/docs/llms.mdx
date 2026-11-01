@@ -29,7 +29,7 @@ description: 让 AI 编辑器与 Agent 读取本站文档，并通过 shadcn MCP
 
 ## shadcn MCP
 
-shadcn 官方提供 MCP 服务，可以让 AI 编辑器直接检索和安装 Registry 里的条目。先在 `components.json` 里配置好 `@yiui` 命名空间（见 [Registry 与命名空间](/docs/registry/)），然后初始化 MCP：
+shadcn 官方提供 MCP 服务，可以让 AI 编辑器直接检索和安装 Registry 里的条目。`@yiui` 已在 shadcn 官方目录里，不用额外配置命名空间（见 [Registry 与命名空间](/docs/registry/)），直接初始化 MCP：
 
 ```bash title="终端"
 pnpm dlx shadcn@latest mcp init --client claude

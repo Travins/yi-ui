@@ -57,13 +57,7 @@ export function ThemeCodePanel({ theme }: { theme: ColorTheme }) {
         </p>
         <CommandRow command={urlCommand} label="复制 URL 安装命令" />
         <p className="text-sm leading-7 text-muted-foreground">
-          或先在{" "}
-          <code className="font-mono text-xs">components.json</code> 中添加{" "}
-          <code className="font-mono text-xs">
-            &quot;registries&quot;: &#123; &quot;@yiui&quot;:
-            &quot;{siteConfig.url}/r/&#123;name&#125;.json&quot; &#125;
-          </code>
-          ，再用命名空间安装：
+          或用 @yiui 命名空间（已收录进 shadcn 官方目录，同样无需配置）：
         </p>
         <CommandRow command={namedCommand} label="复制命名空间安装命令" />
       </TabsContent>
