@@ -121,6 +121,7 @@ type NumberStepperLabels = {
 | -------- | -------------------------- |
 | 根元素   | `number-stepper`           |
 | 方条     | `number-stepper-control`   |
+| 上方标签 | `number-stepper-label-above` |
 | 条内标签 | `number-stepper-label`     |
 | 减号按钮 | `number-stepper-decrement` |
 | 输入框   | `number-stepper-input`     |
@@ -141,6 +142,7 @@ type NumberStepperLabels = {
 
 ## 注意事项
 
+- 带 `label` 时，容器窄于 20rem 会把标签移到条上方，与方条文本框、方条下拉同一规则，可以放在同一张表单里。
 - 主要用于整数数量；小数步长可搭配 `format` 使用，numeric 软键盘可能没有小数点键。
 - `step` 应大于 0，或传 `"any"` 关闭步长对齐；`max` 应不小于 `min`。外部受控值与初始值应在范围内。
 - 非受控表单 reset 回到 `defaultValue`；受控表单由外部重置。

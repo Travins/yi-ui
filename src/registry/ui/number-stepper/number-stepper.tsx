@@ -157,7 +157,8 @@ function NumberStepper({
       aria-busy={pending || undefined}
       className={cn(
         "inline-flex max-w-full flex-col gap-1.5 align-middle",
-        label && "w-full",
+        // 只在有标签时建容器：容器查询会让无标签的自适应宽度塌成 0
+        label && "@container/number-stepper w-full",
         className,
       )}
       value={value}
@@ -174,6 +175,17 @@ function NumberStepper({
       onValueChange={change}
       onValueCommitted={handleCommit}
     >
+      {label && (
+        // 容器窄于 20rem 时标签挪到条上方（与方条文本框同一规则），条内的标签只留给读屏
+        <label
+          htmlFor={id}
+          aria-hidden="true"
+          data-slot="number-stepper-label-above"
+          className="hidden text-xs text-muted-foreground @max-[20rem]/number-stepper:block"
+        >
+          {label}
+        </label>
+      )}
       <NumberField.Group
         data-slot="number-stepper-control"
         data-pointer-focus={pointerFocus ? "" : undefined}
@@ -196,7 +208,7 @@ function NumberStepper({
           <label
             data-slot="number-stepper-label"
             htmlFor={id}
-            className="mr-auto min-w-0 truncate px-3 text-muted-foreground"
+            className="mr-auto min-w-0 truncate px-3 text-muted-foreground @max-[20rem]/number-stepper:sr-only"
           >
             {label}
           </label>
@@ -221,7 +233,7 @@ function NumberStepper({
             <Minus aria-hidden="true" />
           )}
         </NumberField.Decrement>
-        <div className="relative flex min-w-0 shrink items-center justify-center gap-1 px-2">
+        <div className="relative flex min-w-0 shrink items-center justify-center gap-1 px-2 @max-[20rem]/number-stepper:flex-1">
           <NumberField.Input
             ref={inputRef}
             data-slot="number-stepper-input"

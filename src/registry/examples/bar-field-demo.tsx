@@ -2,6 +2,7 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { BarField } from "@/registry/ui/bar-field/bar-field"
+import { NumberStepper } from "@/registry/ui/number-stepper/number-stepper"
 export default function BarFieldDemo() {
   const [email, setEmail] = React.useState("lin@example.com")
   const [saved, setSaved] = React.useState(false)
@@ -32,14 +33,13 @@ export default function BarFieldDemo() {
         onValueChange={setEmail}
         error={error}
       />
-      <BarField
+      <NumberStepper
         label="每周工时"
         name="hours"
-        type="number"
+        unit="小时"
         min={1}
         max={80}
-        defaultValue="40"
-        suffix={<span className="text-xs text-muted-foreground">小时</span>}
+        defaultValue={40}
       />
       <div className="flex items-center justify-between gap-3 border-t border-dashed border-edge pt-4">
         <p role="status" className="text-xs text-muted-foreground">
