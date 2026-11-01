@@ -84,6 +84,8 @@ import { BarSelect } from "@/components/ui/bar-select/bar-select"
 
 窄于 20rem 的字段容器会把标签移到条上方。表单主操作与字段使用同一尺寸；校验由调用方提供，错误应随值更新。
 
+桌面弹层至少与触发条等宽，选项更长时随内容加宽，最宽不超出视口，所以窄列里的中文选项不会被截断；需要固定宽度时用 `contentClassName`。触屏设备上点触发条打开底部面板，单选选中或点「完成」后关闭并清空搜索词。
+
 ## 源码
 
 <ComponentSource name="bar-select" />

@@ -63,7 +63,7 @@ export function ApplicationAttachments() {
 
 ### 校验与清除错误
 
-`accept` 支持 MIME、通配 MIME 和扩展名（如 `image/*,.pdf`）。`maxSize` 的单位为字节，`maxFiles` 限制总数。`multiple={false}` 最多保留一个文件。非法文件不进入列表，通过 `onReject` 返回 `type`、`size`、`count` 原因。下一次成功选择或删除会清除旧错误；同一次选择仍有拒绝文件时保留本次原因。外部 `error` 由使用方更新。
+`accept` 支持 MIME、通配 MIME 和扩展名（如 `image/*,.pdf`）。`maxSize` 的单位为字节，`maxFiles` 限制总数。`multiple={false}` 或 `maxFiles={1}` 为单文件模式，默认替换旧文件。新文件通过格式和体积校验才替换并触发 `onValueChange`，失败时保留原文件并显示错误。`replace={false}` 恢复达到数量上限后拒绝的行为；多文件模式忽略 `replace`。非法文件不进入列表，通过 `onReject` 返回 `type`、`size`、`count` 原因。下一次成功选择或删除会清除旧错误；同一次选择仍有拒绝文件时保留本次原因。外部 `error` 由使用方更新。
 
 ### 为什么不同步到原生 input
 
@@ -113,7 +113,7 @@ type FileUploadRejection = { file: File; reason: "type" | "size" | "count" }
 appendFiles(formData: FormData, name: string, items: FileUploadItem[]): void
 ```
 
-`IdCardFrontIllustration`、`IdCardBackIllustration` 接受 SVG 属性，使用 `currentColor`，仅为示意图。`FileUploadLabels` 导出全部文案类型；两种组件均接受 `labels?: Partial<FileUploadLabels>`。相机文案还可覆盖 `cameraAlign`（含 `{label}`）、`cameraLight`、`cameraConfirm`、`cameraCancel`、`cameraShoot`、`cameraUse`、`cameraFallback` 和 `uploaded`。可覆盖 `drop`、`choose`、`camera`、`album`、四种状态、`remove`、`retry`、`replace`、`delete`、`upload`、`any`、`hint`、`unlimited` 和三个错误模板。模板占位符见安装源码的 `config.ts`。
+`IdCardFrontIllustration`、`IdCardBackIllustration` 接受 SVG 属性，使用 `currentColor`，仅为示意图。`FileUploadLabels` 导出全部文案类型；两种组件均接受 `labels?: Partial<FileUploadLabels>`。相机文案还可覆盖 `cameraAlign`（含 `{label}`）、`cameraLight`、`cameraConfirm`、`cameraCancel`、`cameraShoot`、`cameraUse`、`cameraFallback` 和 `uploaded`。拖放区域使用具名 fieldset，名称通过 `labels.dropzone` 覆盖。可覆盖 `drop`、`choose`、`camera`、`album`、四种状态、`remove`、`retry`、`replace`、`delete`、`upload`、`any`、`hint`、`unlimited` 和三个错误模板。模板占位符见安装源码的 `config.ts`。
 
 ### data-slot
 
@@ -139,6 +139,7 @@ appendFiles(formData: FormData, name: string, items: FileUploadItem[]): void
 
 ## 注意事项
 
+- 单文件替换失败时保留原文件；受控模式需在 `onValueChange` 中更新值。
 - 文件格式和大小也必须由服务器验证；`accept` 只是前端筛选。
 - HEIC 不做转码，是否接收由 `accept` 决定。图片预览失败时显示扩展名。
 - objectURL 在 effect 中创建，替换、删除和卸载时释放。

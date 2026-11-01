@@ -13,9 +13,11 @@ function useFileSelection({
   maxSize = Infinity,
   maxFiles = Infinity,
   multiple = true,
+  replace = !multiple || maxFiles === 1,
   labels: overrides,
   onReject,
 }: FileUploadProps) {
+  const replacing = replace && (!multiple || maxFiles === 1)
   const labels = { ...DEFAULT_LABELS, ...overrides }
   const [message, setMessage] = React.useState("")
   const input = React.useRef<HTMLInputElement>(null)
@@ -25,7 +27,7 @@ function useFileSelection({
       files,
       accept,
       maxSize,
-      Math.max(0, Math.min(maxFiles, multiple ? Infinity : 1) - count),
+      Math.max(0, Math.min(maxFiles, multiple ? Infinity : 1) - (replacing ? 0 : count)),
     )
     setMessage(
       result.rejected
@@ -50,7 +52,7 @@ function useFileSelection({
     if (result.rejected.length) onReject?.(result.rejected)
     return result.accepted
   }
-  return { labels, message, clear: () => setMessage(""), input, camera, select }
+  return { replacing, labels, message, clear: () => setMessage(""), input, camera, select }
 }
 function useFileUploadReset(
   input: React.RefObject<HTMLInputElement | null>,

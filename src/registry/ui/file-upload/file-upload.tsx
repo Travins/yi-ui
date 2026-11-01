@@ -27,6 +27,7 @@ function FileUpload({
   maxSize = Infinity,
   maxFiles = Infinity,
   multiple = true,
+  replace,
   capture = "environment",
   disabled,
   error,
@@ -47,6 +48,7 @@ function FileUpload({
     maxSize,
     maxFiles,
     multiple,
+    replace,
     labels: overrides,
     onReject,
   })
@@ -64,7 +66,7 @@ function FileUpload({
   function add(files: File[]) {
     if (disabled) return
     const next = selection.select(files, items.length)
-    if (next.length) setItems([...items, ...next])
+    if (next.length) setItems(selection.replacing ? next : [...items, ...next])
   }
   function change(event: React.ChangeEvent<HTMLInputElement>) {
     add(Array.from(event.target.files ?? []))
@@ -103,10 +105,12 @@ function FileUpload({
         disabled={disabled}
         onChange={change}
       />
-      <div
+      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: 拖放是指针增强操作，键盘用户通过区域内的原生按钮选择文件。 */}
+      <fieldset
         data-slot="file-upload-dropzone"
+        aria-label={labels.dropzone}
         data-dragging={dragging || undefined}
-        aria-invalid={invalid || undefined}
+        data-invalid={invalid || undefined}
         aria-describedby={[
           describedBy,
           hintId,
@@ -114,7 +118,7 @@ function FileUpload({
         ]
           .filter(Boolean)
           .join(" ")}
-        className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-edge bg-muted/40 p-5 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[dragging]:border-solid data-[dragging]:bg-background dark:aria-invalid:ring-destructive/40"
+        className="flex min-w-0 flex-col items-center gap-3 rounded-xl border border-dashed border-edge bg-muted/40 p-5 data-invalid:border-destructive data-invalid:ring-3 data-invalid:ring-destructive/20 data-[dragging]:border-solid data-[dragging]:bg-background dark:data-invalid:ring-destructive/40"
         onDragEnter={(event) => {
           event.preventDefault()
           if (!disabled) {
@@ -180,7 +184,7 @@ function FileUpload({
               : labels.unlimited,
           })}
         </p>
-      </div>
+      </fieldset>
       {items.length > 0 && (
         <AttachmentGroup className="flex-col overflow-visible">
           {items.map((item) => (

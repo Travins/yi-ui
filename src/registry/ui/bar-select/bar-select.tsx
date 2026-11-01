@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, Search, X } from "lucide-react"
+import { Check, ChevronDown, Search, X } from "lucide-react"
 import { cva } from "class-variance-authority"
 import { Button } from "@/components/ui/button"
 import {
@@ -90,12 +90,18 @@ function BarSelect(props: BarSelectProps) {
     },
   })
   const [open, setOpen] = React.useState(false)
+  const [sheetOpen, setSheetOpen] = React.useState(false)
+  function changeSheetOpen(next: boolean) {
+    setSheetOpen(next)
+    if (!next) setQuery("")
+  }
   const [query, setQuery] = React.useState("")
   const coarse = React.useSyncExternalStore(
     subscribePointer,
     () => window.matchMedia("(pointer: coarse)").matches,
     () => false,
   )
+  const Trigger = coarse ? Button : ComboboxTrigger
   const values = Array.isArray(value) ? value : value ? [value] : []
   const selected = values
     .map((v) => options.find((o) => o.value === v))
@@ -132,8 +138,9 @@ function BarSelect(props: BarSelectProps) {
           aria-label={labels.search}
           placeholder={`${labels.search}…`}
           showTrigger={false}
+          showClear={false}
           className={cn(
-            "m-0! h-9! rounded-none! border-0! border-b! border-border! bg-transparent! shadow-none! has-[[data-slot=input-group-control]:focus-visible]:ring-0! [&_input]:text-base md:[&_input]:text-sm",
+            "[&_[data-slot=input-group-addon]:empty]:hidden m-0! h-9! rounded-none! border-0! border-b! border-border! bg-transparent! shadow-none! has-[[data-slot=input-group-control]:focus-visible]:ring-0! [&_input]:text-base md:[&_input]:text-sm",
             coarse && "h-11! px-2",
           )}
         >
@@ -213,7 +220,7 @@ function BarSelect(props: BarSelectProps) {
           >
             {labels.clear}
           </Button>
-          <Button type="button" size="lg" onClick={() => setOpen(false)}>
+          <Button type="button" size="lg" onClick={() => changeSheetOpen(false)}>
             {labels.done}
           </Button>
         </div>
@@ -261,8 +268,9 @@ function BarSelect(props: BarSelectProps) {
         multiple={multiple}
         value={value}
         disabled={disabled}
-        open={open}
+        open={coarse ? false : open}
         onOpenChange={(next) => {
+          if (coarse) return
           setOpen(next)
           if (!next) setQuery("")
         }}
@@ -274,7 +282,10 @@ function BarSelect(props: BarSelectProps) {
         onValueChange={(next) => {
           setValue(next)
           setQuery("")
-          if (!multiple) setOpen(false)
+          if (!multiple) {
+            setOpen(false)
+            changeSheetOpen(false)
+          }
         }}
       >
         <div
@@ -324,14 +335,24 @@ function BarSelect(props: BarSelectProps) {
               ))}
             </div>
           )}
-          <ComboboxTrigger
-            render={<Button type="button" variant="ghost" size={size} />}
+          <Trigger
+            {...(coarse
+              ? {
+                  type: "button" as const,
+                  variant: "ghost" as const,
+                  size,
+                  disabled,
+                  "aria-haspopup": "dialog" as const,
+                }
+              : { render: <Button type="button" variant="ghost" size={size} /> })}
+            data-slot="combobox-trigger"
             aria-label={props["aria-label"]}
             aria-labelledby={label ? `${id}-label ${id}-value` : undefined}
+            aria-expanded={coarse ? sheetOpen : open}
             aria-invalid={!!error}
             // 触屏时列表内联在底部面板里，Combobox 不再自己弹出，由触发键打开面板
             onClick={() => {
-              if (coarse) setOpen(true)
+              if (coarse) changeSheetOpen(true)
             }}
             aria-describedby={
               [error && `${id}-error`, description && `${id}-description`]
@@ -370,7 +391,8 @@ function BarSelect(props: BarSelectProps) {
                 </>
               )}
             </span>
-          </ComboboxTrigger>
+            {coarse && <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />}
+          </Trigger>
           {/* 清除键叠在触发条上、下拉箭头左侧（兄弟元素，避免按钮嵌套） */}
           {clearable && values.length > 0 && (
             <Button
@@ -387,7 +409,7 @@ function BarSelect(props: BarSelectProps) {
           )}
         </div>
         {coarse ? (
-          <Sheet open={open} onOpenChange={setOpen}>
+          <Sheet open={sheetOpen} onOpenChange={changeSheetOpen}>
             <SheetContent
               side="bottom"
               className={cn("max-h-[85dvh] overflow-auto", contentClassName)}
@@ -408,7 +430,7 @@ function BarSelect(props: BarSelectProps) {
           <ComboboxContent
             anchor={anchor}
             className={cn(
-              "min-w-(--anchor-width) outline-none",
+              "w-auto min-w-(--anchor-width) data-[chips=true]:min-w-(--anchor-width) max-w-[min(var(--available-width),calc(100vw-2rem))] outline-none",
               contentClassName,
             )}
           >

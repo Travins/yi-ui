@@ -7,6 +7,7 @@ const DEFAULT_LABELS = {
   cameraUse: "使用这张",
   cameraFallback: "无法打开相机，已改用系统相机",
   uploaded: "已上传",
+  dropzone: "文件上传",
   drop: "把文件拖到这里，或",
   choose: "选择文件",
   camera: "拍照",

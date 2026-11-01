@@ -34,6 +34,11 @@ type FileUploadProps = FileUploadCommonProps & {
   maxFiles?: number
   /** @default true */
   multiple?: boolean
+  /**
+   * 单文件模式下，新文件通过校验后直接替换旧文件；多文件模式忽略
+   * @default 单文件模式（`multiple={false}` 或 `maxFiles={1}`）时为 true
+   */
+  replace?: boolean
   /** 传入后，上传失败的条目右侧出现「重试」按钮；重新上传由使用方完成 */
   onRetry?: (item: FileUploadItem) => void
 }
