@@ -44,25 +44,19 @@ import { BarField } from "@/components/ui/bar-field/bar-field"
 
 ### 搜索
 
-`type="search"` 默认开启 `clearable`：有内容时右侧出现清除键，替代浏览器自带的叉号；`icon` 放在标签与输入之间。
+`type="search"` 默认开启 `clearable`：有内容时右侧出现清除键，替代浏览器自带的叉号；`icon` 放在标签与输入之间。放在页头、侧栏这类上下文已经说明用途的地方时，可以省略 `label`，改用 `aria-label` 给读屏提供名称，条里只留图标、占位文字和 `suffix` 里的快捷键提示。
 
 <ComponentPreview name="bar-field-search-demo" />
 
-### 不显示标签
-
-省略 `label`，用 `aria-label` 给读屏提供名称，条里只留图标和占位文字，适合放在页头、侧栏这类上下文已经说明用途的地方。快捷键提示放在 `suffix`。
-
-<ComponentPreview name="bar-field-no-label-demo" />
-
 ### 后缀
+
+`suffix` 放置单位、域名等固定文本，或与字段同尺寸的按钮。
 
 <ComponentPreview name="bar-field-suffix-demo" />
 
-`suffix` 放置单位或密码显隐按钮，按钮使用与字段相同的尺寸。
-
 ### 校验与说明
 
-`error` 根据密码长度计算，达到 8 个字符立即消失；`description` 给出说明，`footerAction` 提供忘记密码操作。
+一个完整的设置密码字段：`suffix` 里是显隐按钮；`description` 可以放任意内容，这里是随输入更新的强度条；`error` 根据长度计算，不足 8 个字符时出现、补足后立即消失；`footerAction` 一键生成强密码。
 
 <ComponentPreview name="bar-field-validation-demo" />
 
