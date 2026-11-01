@@ -166,7 +166,7 @@ const [muted, setMuted] = useValueSliderMuted()
 </button>
 ```
 
-静音偏好与站内其他带音效的组件共用（`localStorage` 的 `travinsy:sound:muted`）：同一页面里一处静音，其他组件的静音按钮与音效立刻跟上；换到另一个标签页也会同步。
+静音偏好与站内其他带音效的组件共用（`localStorage` 的 `yiui:sound:muted`）：同一页面里一处静音，其他组件的静音按钮与音效立刻跟上；换到另一个标签页也会同步。
 
 ## 示例
 
@@ -243,7 +243,7 @@ function useValueSliderMuted(): readonly [
 ]
 ```
 
-读写音效的静音偏好，存在 `localStorage` 的 `travinsy:sound:muted` 里，与站内其他带音效的组件共用同一份偏好：同一页面的所有消费者共享（写入后广播 `travinsy:sound-muted-change` 事件，不依赖只有跨标签页才触发的 `storage`），也在标签页之间同步；服务端与水合阶段按未静音渲染。
+读写音效的静音偏好，存在 `localStorage` 的 `yiui:sound:muted` 里，与站内其他带音效的组件共用同一份偏好：同一页面的所有消费者共享（写入后广播 `yiui:sound-muted-change` 事件，不依赖只有跨标签页才触发的 `storage`），也在标签页之间同步；服务端与水合阶段按未静音渲染。
 
 ### valueSliderVariants
 
@@ -364,9 +364,12 @@ type ValueSliderReport = {
 - 系统开启「减少动态效果」时不播放过冲与弹簧回弹，轨道不会被拉伸。
 - `editable` 时读数是一个可点的文字入口：鼠标直接点，键盘在手柄上按 `Enter` 进入输入（回车被拦下，不会提交外层表单）。输入框自带名称（`输入` + 手柄名称），回车提交后焦点回到手柄，`Esc` 放弃并同样还回焦点；失焦提交时不抢焦点。
 - 缓冲填充是 `aria-hidden` 的装饰，读屏只报当前值。
-- 音效默认关闭。打开后请同时提供静音入口（`useValueSliderMuted`），音效只是点缀，不承载信息；静音偏好存在 `localStorage` 的 `travinsy:sound:muted`，与站内其他带音效的组件共用。
+- 音效默认关闭。打开后请同时提供静音入口（`useValueSliderMuted`），音效只是点缀，不承载信息；静音偏好存在 `localStorage` 的 `yiui:sound:muted`，与站内其他带音效的组件共用。
 
 ## 注意事项
+
+- 本地存储使用 `yiui:sound:muted`；新键不存在时，会迁移旧前缀的值并删除旧键。同页静音同步使用 `yiui:sound-muted-change` 事件。
+
 
 - 手机上的音效：浏览器只在松手时允许开始播放声音，第一次按下的声音会在松手时补放，之后按下即响。iPhone 打开静音开关时网页音效不出声，和系统键盘的按键音一样，这是系统的规定、不需要申请权限；关掉静音即可听到。
 - 出错时传 `aria-invalid`，方条变红（和金额输入、省市区选择的错误态一致）；错误文字放在控件下方，用 `aria-describedby` 关联，读屏聚焦时一并朗读。

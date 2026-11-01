@@ -3,7 +3,19 @@
 import { useLayoutEffect, useRef, useState, type ComponentProps } from "react"
 
 type Position = { x: number; y: number }
-const STORAGE_KEY = "travinsy:agent-chat:position"
+const STORAGE_KEY = "yiui:agent-chat:position"
+
+function readPosition() {
+  const current = localStorage.getItem(STORAGE_KEY)
+  if (current !== null) return current
+  const legacyKey = "travinsy:agent-chat:position"
+  const legacy = localStorage.getItem(legacyKey)
+  if (legacy !== null) {
+    localStorage.setItem(STORAGE_KEY, legacy)
+    localStorage.removeItem(legacyKey)
+  }
+  return legacy
+}
 const INTERACTIVE =
   "button:not([data-slot='agent-chat-move-handle']), a, input, textarea, select, [role='button']"
 
@@ -89,9 +101,7 @@ function useAgentChatPosition({
     if (!restored.current) {
       restored.current = true
       try {
-        const saved: unknown = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) ?? "null",
-        )
+        const saved: unknown = JSON.parse(readPosition() ?? "null")
         if (
           saved &&
           typeof saved === "object" &&

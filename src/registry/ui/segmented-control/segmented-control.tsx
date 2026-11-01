@@ -190,7 +190,12 @@ function SegmentedControl({
       */}
       <span
         data-slot="segmented-control-options"
-        className="relative flex min-w-0 flex-1 items-stretch"
+        // 内部容器不包含标签；纯图标与工具栏按内容收紧，不能启用尺寸包含。
+        className={cn(
+          "relative flex min-w-0 flex-1 items-stretch",
+          !iconOnly &&
+            "@container/segments in-data-[slot=grid-toolbar]:[container-type:normal]",
+        )}
       >
         {options.map((option) => {
           const selected = option.value === value
@@ -204,7 +209,7 @@ function SegmentedControl({
                 // 纯图标：正方形格子、不留文字间距，图标才能真正居中
                 iconOnly
                   ? "aspect-square flex-none"
-                  : "flex-auto gap-1.5 px-3 in-data-[slot=grid-toolbar]:flex-1",
+                  : "flex-auto gap-1.5 px-3 in-data-[slot=grid-toolbar]:flex-1 @max-[12rem]/segments:px-1.5 @max-[8rem]/segments:px-0.5",
                 // 放进网格工具栏：每个选项是一格，格子之间虚线分隔
                 "in-data-[slot=grid-toolbar]:border-s in-data-[slot=grid-toolbar]:border-dashed in-data-[slot=grid-toolbar]:border-edge in-data-[slot=grid-toolbar]:first:border-s-0",
               )}

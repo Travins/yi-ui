@@ -2,6 +2,8 @@
 
 import * as React from "react"
 
+import { DEFAULT_STORAGE_KEY } from "./config"
+
 // localStorage 不可用（隐私模式等）时退回内存，保证同一会话内状态仍然生效
 const memory = new Map<string, boolean>()
 const listeners = new Set<() => void>()
@@ -19,7 +21,15 @@ function read(key: string, fallback: boolean) {
   const cached = memory.get(key)
   if (cached !== undefined) return cached
   try {
-    const stored = window.localStorage.getItem(key)
+    let stored = window.localStorage.getItem(key)
+    if (stored === null && key === DEFAULT_STORAGE_KEY) {
+      const legacyKey = "travinsy:app-shell:collapsed"
+      stored = window.localStorage.getItem(legacyKey)
+      if (stored !== null) {
+        window.localStorage.setItem(key, stored)
+        window.localStorage.removeItem(legacyKey)
+      }
+    }
     return stored === null ? fallback : stored === "1"
   } catch {
     return fallback
@@ -34,7 +44,7 @@ function useStoredFlag(key: string, fallback = false) {
   const value = React.useSyncExternalStore(
     subscribe,
     () => read(key, fallback),
-    () => fallback
+    () => fallback,
   )
   const setValue = React.useCallback(
     (next: boolean) => {
@@ -46,7 +56,7 @@ function useStoredFlag(key: string, fallback = false) {
       }
       listeners.forEach((listener) => listener())
     },
-    [key]
+    [key],
   )
   return [value, setValue] as const
 }

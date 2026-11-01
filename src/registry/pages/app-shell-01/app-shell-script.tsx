@@ -14,10 +14,12 @@ type AppShellScriptProps = {
  * 必须作为 AppShell 根元素的子节点渲染（AppShell 已自动放好），
  * 脚本通过 `document.currentScript.parentElement` 找到根元素。
  */
-function AppShellScript({ storageKey = DEFAULT_STORAGE_KEY }: AppShellScriptProps) {
+function AppShellScript({
+  storageKey = DEFAULT_STORAGE_KEY,
+}: AppShellScriptProps) {
   // 键里的 "<" 转义，防止提前闭合 <script>
   const key = JSON.stringify(storageKey).replace(/</g, "\\u003c")
-  const html = `(function(){try{var v=localStorage.getItem(${key});if(v===null)return;var e=document.currentScript.parentElement;if(v==="1")e.setAttribute("data-collapsed","");else e.removeAttribute("data-collapsed")}catch(_){}})()`
+  const html = `(function(){try{var v=localStorage.getItem(${key});if(v===null&&${key}===${JSON.stringify(DEFAULT_STORAGE_KEY)}){var old="travinsy:app-shell:collapsed";v=localStorage.getItem(old);if(v!==null){localStorage.setItem(${key},v);localStorage.removeItem(old)}}if(v===null)return;var e=document.currentScript.parentElement;if(v==="1")e.setAttribute("data-collapsed","");else e.removeAttribute("data-collapsed")}catch(_){}})()`
 
   return (
     <script

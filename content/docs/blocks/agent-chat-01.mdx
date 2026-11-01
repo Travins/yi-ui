@@ -122,7 +122,7 @@ export function Workspace() {
 />
 
 <Callout title="初始化与持久化">
-  `default*` 与 `initialMessages` 只用于初始化。更换会话或 transport 配置时，可通过 Provider 的 React `key` 重新创建实例。会话状态仅在当前 Provider 生命周期内保存，刷新后重置；浮动窗口位置单独保存在 `localStorage`（`travinsy:agent-chat:position`），刷新或切换布局后仍会恢复。读取时以及窗口尺寸变化时，都会把位置约束在视口内。存储不可用时仍可在当前页面移动。
+  `default*` 与 `initialMessages` 只用于初始化。更换会话或 transport 配置时，可通过 Provider 的 React `key` 重新创建实例。会话状态仅在当前 Provider 生命周期内保存，刷新后重置；浮动窗口位置单独保存在 `localStorage`（`yiui:agent-chat:position`），刷新或切换布局后仍会恢复。读取时以及窗口尺寸变化时，都会把位置约束在视口内。存储不可用时仍可在当前页面移动。
 </Callout>
 
 ### labels
@@ -159,6 +159,9 @@ export function Workspace() {
 - 动效遵循 `prefers-reduced-motion`，来源链接标注新标签页。
 
 ## 注意事项
+
+- 本地存储使用 `yiui:agent-chat:position`；新键不存在时，会迁移旧前缀的值并删除旧键。
+
 
 ### 文件结构
 

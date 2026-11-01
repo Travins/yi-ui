@@ -106,6 +106,12 @@ const OPTIONS = [
 
 <ComponentPreview name="segmented-control-swatch-demo" />
 
+### 窄列
+
+参数面板这类窄列里，选项会随可用宽度自动收窄水平内边距，文字仍然居中，约 98px 能放下三个两字选项。再窄就该改用[方条下拉](/components/bar-select/)。
+
+<ComponentPreview name="segmented-control-narrow-demo" />
+
 ### 纯图标
 
 `iconOnly` 只显示图标：每格是正方形，图标在格子正中，整条按内容收紧；`label` 仍然要写：读屏读它，悬停或键盘聚焦时还会用官方 Tooltip 显示它。适合工具栏里含义靠图标就能看懂的切换，比如对齐方式、列表密度。
@@ -193,7 +199,7 @@ type SegmentedControlProps = Omit<
 - 触屏设备（`pointer: coarse`）上方条各加高一档（`sm` / `default` / `lg` 变成 36 / 40 / 44px），手指好点；`compact` 是密排用的，不加高，手机上请用默认的方条。
 - 同一页里可能有多个分段选择，选中块的共享布局 id 用 `React.useId()` 各自生成，动画不会串到另一个组上。
 - 系统开启「减少动态效果」时，选中块直接跳到位，不做滑动。
-- 选项文字不换行（`whitespace-nowrap` + `truncate`），选项太多太窄时优先缩短文字，不要靠缩小字号。
+- 选项文字不换行，窄列会自动收紧水平内边距；98px 可容纳三个两字选项。收紧后仍放不下时，请改用 [方条下拉](/components/bar-select/)，不要靠缩小字号。
 - 值是字符串。需要数字或其他类型时在 `onValueChange` 里自己转，或者用 `String(value)` 存选项的 `value`。
 - 受控 / 非受控共用一个 `useControllableState`；`options` 变化后如果当前值已不存在，组件不会自动改选，请在父级同步。
 - `tone` 的颜色变量由 `flow-tone`（色调变量）条目提供，安装时会一并拉取。

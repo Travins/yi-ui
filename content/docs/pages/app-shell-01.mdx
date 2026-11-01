@@ -199,7 +199,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 ### 受控的侧栏折叠
 
-`collapsed` / `defaultCollapsed` / `onCollapsedChange` 成对出现，同时支持受控与非受控。不传 `collapsed` 时组件自己维护，并把状态记在 `localStorage`（默认键 `travinsy:app-shell:collapsed`，可用 `storageKey` 修改）；传了就完全由你决定，不再读写本地存储，也不注入首帧脚本：
+`collapsed` / `defaultCollapsed` / `onCollapsedChange` 成对出现，同时支持受控与非受控。不传 `collapsed` 时组件自己维护，并把状态记在 `localStorage`（默认键 `yiui:app-shell:collapsed`，可用 `storageKey` 修改）；传了就完全由你决定，不再读写本地存储，也不注入首帧脚本：
 
 ```tsx
 const [collapsed, setCollapsed] = React.useState(false)
@@ -266,7 +266,7 @@ import { PageFrame } from "@/components/app-shell/page-header"
 
 <TypeTable
   type={{
-    storageKey: { type: "string", description: "读取折叠状态的 `localStorage` 键，需与 `AppShell` 的 `storageKey` 一致", default: '"travinsy:app-shell:collapsed"' },
+    storageKey: { type: "string", description: "读取折叠状态的 `localStorage` 键，需与 `AppShell` 的 `storageKey` 一致", default: '"yiui:app-shell:collapsed"' },
   }}
 />
 
@@ -368,6 +368,9 @@ import { PageFrame } from "@/components/app-shell/page-header"
 - 过渡动画在系统开启「减少动态效果」时关闭。
 
 ## 注意事项
+
+- 本地存储使用 `yiui:app-shell:collapsed`；新键不存在时，会迁移旧前缀的值并删除旧键。
+
 
 - **静态导出**：布局完全在客户端运行，不使用 Server Actions 或 `cookies()`，可用于 `output: "export"`。
 - **折叠状态与水合**：服务端输出使用 `defaultCollapsed`，首帧脚本在水合前按 `localStorage` 改写根元素的 `data-collapsed`，详见上面的「首帧脚本」。折叠样式只依赖 `data-collapsed`，自定义时请沿用 `group-data-[collapsed]/app-shell:` 变体，不要根据 React 状态切换结构，否则水合前外观会不一致。

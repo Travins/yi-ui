@@ -2,8 +2,8 @@
 
 import { createContext, createElement, useContext, type ReactNode } from "react"
 
-/** 记住侧栏折叠状态的 localStorage 键（统一使用 travinsy: 前缀） */
-const DEFAULT_STORAGE_KEY = "travinsy:app-shell:collapsed"
+/** 记住侧栏折叠状态的 localStorage 键（统一使用 yiui: 前缀） */
+const DEFAULT_STORAGE_KEY = "yiui:app-shell:collapsed"
 
 /**
  * 侧栏折叠状态在水合前由内联脚本写到 AppShell 根元素的 `data-collapsed`，
@@ -20,7 +20,8 @@ const NAV_WIDTH_CLASS = {
   /** 侧栏：展开 200px，折叠 60px */
   sidebar: "w-[200px] group-data-[collapsed]/app-shell:w-[60px]",
   /** 顶栏品牌区：同侧栏；窄屏下始终按图标栏宽度 */
-  brand: "w-[200px] group-data-[collapsed]/app-shell:w-[60px] max-[800px]:w-[60px]",
+  brand:
+    "w-[200px] group-data-[collapsed]/app-shell:w-[60px] max-[800px]:w-[60px]",
 } as const
 
 /**
@@ -170,9 +171,9 @@ function formatLabel(
 }
 
 /** AppShell 向下提供的文案，让主区域里的页面组件也能拿到同一套覆盖值。 */
-const AppShellLabelsContext = createContext<Partial<AppShellLabels> | undefined>(
-  undefined,
-)
+const AppShellLabelsContext = createContext<
+  Partial<AppShellLabels> | undefined
+>(undefined)
 
 function AppShellLabelsProvider({
   labels,
@@ -182,7 +183,11 @@ function AppShellLabelsProvider({
   children: ReactNode
 }) {
   // 本文件是 .ts（不含 JSX），用 createElement 渲染 Provider
-  return createElement(AppShellLabelsContext.Provider, { value: labels }, children)
+  return createElement(
+    AppShellLabelsContext.Provider,
+    { value: labels },
+    children,
+  )
 }
 
 /**

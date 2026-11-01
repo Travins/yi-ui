@@ -156,22 +156,29 @@ function playEdge() {
 
 /* ---------- 静音偏好：存在 localStorage，全站带音效的组件共用 ---------- */
 
-const STORAGE_KEY = "travinsy:sound:muted"
+const STORAGE_KEY = "yiui:sound:muted"
 /** 旧版本用过的键：读到新键没写过时按它迁移，保证升级后偏好不丢。 */
-const LEGACY_KEYS = ["isometric-mark:muted"]
+const LEGACY_KEYS = ["travinsy:sound:muted", "isometric-mark:muted"]
 const WATCHED_KEYS = [STORAGE_KEY, ...LEGACY_KEYS]
 /**
  * 同页广播：`storage` 事件只发给「其他」标签页，本页写 localStorage 不会触发它。
  * 带音效的组件各自有一份静音模块（互不 import），所以约定用同一个事件名互相通知。
  */
-const MUTED_EVENT = "travinsy:sound-muted-change"
+const MUTED_EVENT = "yiui:sound-muted-change"
 const listeners = new Set<() => void>()
 
 function readMuted() {
   try {
     const current = window.localStorage.getItem(STORAGE_KEY)
     if (current !== null) return current === "1"
-    return LEGACY_KEYS.some((key) => window.localStorage.getItem(key) === "1")
+    for (const key of LEGACY_KEYS) {
+      const legacy = window.localStorage.getItem(key)
+      if (legacy === null) continue
+      window.localStorage.setItem(STORAGE_KEY, legacy)
+      for (const oldKey of LEGACY_KEYS) window.localStorage.removeItem(oldKey)
+      return legacy === "1"
+    }
+    return false
   } catch {
     return false
   }
