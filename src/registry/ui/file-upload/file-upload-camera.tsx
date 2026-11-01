@@ -56,7 +56,7 @@ function FileUploadCamera({
       .getUserMedia({ video: { facingMode: "environment" }, audio: false })
       .then(async (next) => {
         if (disposed) {
-          next.getTracks().forEach((track) => track.stop())
+          for (const track of next.getTracks()) track.stop()
           return
         }
         stream = next
@@ -75,7 +75,7 @@ function FileUploadCamera({
     document.addEventListener("visibilitychange", hidden)
     return () => {
       disposed = true
-      stream?.getTracks().forEach((track) => track.stop())
+      for (const track of stream?.getTracks() ?? []) track.stop()
       document.removeEventListener("visibilitychange", hidden)
     }
   }, [photo])

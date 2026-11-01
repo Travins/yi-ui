@@ -61,6 +61,7 @@ function BarSelect(props: BarSelectProps) {
     labels: labelsProp,
     contentClassName,
     className,
+    id: idProp,
     multiple = false,
     value: valueProp,
     defaultValue,
@@ -73,7 +74,9 @@ function BarSelect(props: BarSelectProps) {
   }
   const display = props.multiple ? (displayProp ?? "first-plus") : "first-plus"
   const labels = { ...defaultLabels, ...labelsProp }
-  const id = React.useId()
+  // 调用方的 id 交给触发按钮，外部 <label htmlFor> 才能关联到可聚焦的控件
+  const autoId = React.useId()
+  const id = idProp ?? autoId
   const anchor = React.useRef<HTMLDivElement>(null)
   const [value, setValue] = useControllableState<string | string[] | null>({
     prop: valueProp,
@@ -346,6 +349,7 @@ function BarSelect(props: BarSelectProps) {
                 }
               : { render: <Button type="button" variant="ghost" size={size} /> })}
             data-slot="combobox-trigger"
+            id={id}
             aria-label={props["aria-label"]}
             aria-labelledby={label ? `${id}-label ${id}-value` : undefined}
             aria-expanded={coarse ? sheetOpen : open}

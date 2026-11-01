@@ -105,7 +105,7 @@ function FileUpload({
         disabled={disabled}
         onChange={change}
       />
-      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: 拖放是指针增强操作，键盘用户通过区域内的原生按钮选择文件。 */}
+      {/* 拖放是指针增强操作，键盘与读屏用户通过区域内的原生「选择文件」按钮选择文件 */}
       <fieldset
         data-slot="file-upload-dropzone"
         aria-label={labels.dropzone}
