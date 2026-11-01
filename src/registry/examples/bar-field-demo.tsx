@@ -3,7 +3,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { BarField } from "@/registry/ui/bar-field/bar-field"
 export default function BarFieldDemo() {
-  const [email, setEmail] = React.useState("lin@")
+  const [email, setEmail] = React.useState("lin@example.com")
   const [saved, setSaved] = React.useState(false)
   const error = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     ? undefined
