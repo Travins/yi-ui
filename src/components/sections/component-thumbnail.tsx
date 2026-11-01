@@ -24,6 +24,7 @@ const firstExamples: Record<string, string> = {
  * 少数示例原尺寸放不进画框，在这里单独缩小（transform 只影响视觉，不改变示例自身排版）。
  */
 const fitClasses: Record<string, string> = {
+  "color-picker": "scale-[0.85]",
   "bar-field": "scale-[0.8]",
   "bar-select": "scale-[0.85]",
   "grid-toolbar": "scale-[0.75]",

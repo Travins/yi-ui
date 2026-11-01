@@ -1,0 +1,94 @@
+---
+title: 颜色选择
+titleEn: Color Picker
+description: 可直接编辑 HEX 的方条颜色选择，支持二维取色、透明度与预设色板。
+group: input
+status: new
+---
+
+<ComponentPreview name="color-picker-demo" />
+
+## 安装
+
+<InstallCommand name="color-picker" />
+
+## 用法
+
+```tsx
+import { ColorPicker } from "@/components/ui/color-picker/color-picker"
+
+export function BrandColor() {
+  return <ColorPicker label="主色" defaultValue="#2563eb" />
+}
+```
+
+HEX 段可直接输入或粘贴带或不带 `#` 的 3、4、6、8 位颜色，失焦或回车时规范化。非法内容保留为草稿并提示错误，不覆盖有效值。用 `value` 与 `onValueChange` 控制颜色，用 `onValueCommit` 保存操作结束时的值。
+
+### 值与格式
+
+输出始终为小写 `#rrggbb`，`alpha` 开启时输出 `#rrggbbaa`。`format` 设置面板初始格式，面板切换 HEX、RGB、HSL 不改变输出格式。内部 HSV 浮点状态会保留灰度颜色此前的色相。
+
+## 示例
+
+### 透明度
+
+`alpha` 开启透明度轨道与八位 HEX 输出。
+
+<ComponentPreview name="color-picker-alpha-demo" />
+
+### 预设色板
+
+`presets` 在面板底部列出可点选的颜色，点一下即提交（触发 `onValueCommit`）。点开色块查看。
+
+<ComponentPreview name="color-picker-presets-demo" />
+
+### 不显示标签
+
+省略 `label` 时提供 `aria-label`。
+
+<ComponentPreview name="color-picker-label-demo" />
+
+### 网格工具栏
+
+放进[网格工具栏](/components/grid-toolbar/)的 `GridToolbarItem` 时，自动去掉外框、圆角和底色并铺满整格，可以和方条文本框等控件并排组成样式工具栏。
+
+<ComponentPreview name="color-picker-toolbar-demo" />
+
+### 校验
+
+`error` 随值计算：这里检查正文颜色在白底上的对比度，低于 4.5:1（WCAG AA）时报错，调深后错误立即消失；`description` 显示当前对比度。
+
+<ComponentPreview name="color-picker-validation-demo" />
+
+## API
+
+<PropsTable name="color-picker" component="ColorPicker" />
+
+### 独立部件
+
+组件文件还导出 `ColorArea`、`ColorHueSlider`、`ColorAlphaSlider`、`ColorSwatch`。`ColorArea` 接收 HSV 对象与 `onValueChange` / `onValueCommit`；两个滑条接收数字值，色相范围 0–360，透明度范围 0–1，透明度条额外接收 HSV `color`。色块接收 CSS 颜色 `color`。各部件支持 `className`。
+
+`ColorPickerProps`、`ColorPickerLabels` 为主组件类型。颜色工具独立安装 `color` 条目，导出 `RGB`、`HSV`、`HSL` 类型和 `parseHex`、`rgbToHex`、`rgbToHsv`、`hsvToRgb`、`hsvToHsl`、`hslToHsv`、`rgbToHsl`、`hslToRgb`、`clamp`。RGB 通道范围 0–255，色相为度，其余通道为 0–1。
+
+| data-slot | 用途 |
+| --- | --- |
+| color-picker | 字段容器 |
+| color-picker-control | 方条 |
+| color-picker-panel | 面板内容 |
+| color-area | 二维取色区 |
+| color-track | 色相与透明度滑条 |
+| color-swatch | 棋盘格色块 |
+
+## 可访问性
+
+二维区有两个视觉隐藏的原生 range，分别读出饱和度与明度。方向键每次调整 1%，Shift + 方向键调整 10%，Home / End 跳到两端。色相和透明度使用 Base UI Slider，提供中文值描述。Tab 聚焦有可见焦点环，Escape 关闭弹层。触屏使用带安全区的底部 Sheet。
+
+## 注意事项
+
+吸管仅在浏览器提供 EyeDropper 时显示，取消不改变颜色。`labels` 可覆盖中文文案。`name` / `form` 提交规范化颜色，非受控模式支持表单重置。`disabled` / `readOnly` 阻止修改。
+
+颜色工具单元测试：`pnpm exec tsx --test scripts/color.test.ts`。
+
+## 源码
+
+<ComponentSource name="color-picker" />

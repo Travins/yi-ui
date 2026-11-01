@@ -1,0 +1,39 @@
+---
+title: 颜色计算
+titleEn: Color Utilities
+description: 零依赖 HEX、RGB、HSV 与 HSL 颜色转换。
+group: utils
+status: new
+---
+
+## 安装
+
+<InstallCommand name="color" />
+
+## 用法
+
+```ts
+import { parseHex, rgbToHsv, hsvToRgb, rgbToHex } from "@/lib/color"
+
+const rgb = parseHex("#abc")
+if (rgb) {
+  const hsv = rgbToHsv(rgb, 210)
+  const output = rgbToHex(hsvToRgb(hsv))
+}
+```
+
+## API
+
+`parseHex` 接受带或不带 `#` 的 3、4、6、8 位 HEX，非法输入返回 `null`。`rgbToHex(rgb, alpha)` 格式化为小写 HEX，alpha 默认关闭。
+
+转换函数：`rgbToHsv`、`hsvToRgb`、`hsvToHsl`、`hslToHsv`、`rgbToHsl`、`hslToRgb`。`rgbToHsv` 和 `rgbToHsl` 的第二个参数是灰度时保留的色相，默认 0。
+
+类型：`RGB` 的 r/g/b 为 0–255，`HSV` 的 s/v 和 `HSL` 的 s/l 为 0–1，h 为角度，三种类型都有 0–1 的 a。`clamp(value, max)` 将数值限制在 0 到 max（默认 1）。内部计算保留浮点精度，格式化时才取整。
+
+## 注意事项
+
+单元测试：`pnpm exec tsx --test scripts/color.test.ts`。界面组件见[颜色选择](/components/color-picker/)。
+
+## 源码
+
+<ComponentSource name="color" />

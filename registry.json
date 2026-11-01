@@ -2121,6 +2121,58 @@
           "target": "hooks/use-controllable-state.ts"
         }
       ]
+    },
+    {
+      "name": "color",
+      "type": "registry:lib",
+      "title": "颜色计算",
+      "description": "零依赖 HEX、RGB、HSV 与 HSL 颜色转换。",
+      "files": [
+        {
+          "path": "src/registry/lib/color.ts",
+          "type": "registry:lib",
+          "target": "@lib/color.ts"
+        }
+      ]
+    },
+    {
+      "name": "color-picker",
+      "type": "registry:ui",
+      "title": "颜色选择",
+      "description": "可直接编辑 HEX 的方条颜色选择，支持二维取色、透明度与预设色板。",
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "popover",
+        "sheet",
+        "https://yiui.dev/r/bar-field.json",
+        "https://yiui.dev/r/color.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/color-picker/color-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/color-picker/color-picker.tsx"
+        },
+        {
+          "path": "src/registry/ui/color-picker/color-parts.tsx",
+          "type": "registry:ui",
+          "target": "@ui/color-picker/color-parts.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/ui/color-picker/color-panel.tsx",
+          "type": "registry:ui",
+          "target": "@ui/color-picker/color-panel.tsx"
+        }
+      ]
     }
   ]
 }
