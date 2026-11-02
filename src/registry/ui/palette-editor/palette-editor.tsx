@@ -8,12 +8,20 @@ import { useControllableState } from "@/registry/hooks/use-controllable-state"
 import { ColorPicker } from "@/registry/ui/color-picker/color-picker"
 import { SegmentedControl } from "@/registry/ui/segmented-control/segmented-control"
 import {
+  deltaE2000,
+  hexToLab,
   findColorConflicts,
   simulateColorVision,
   type ColorConflict,
   type ColorVision,
 } from "@/registry/lib/color-vision"
-import { hsvToRgb, parseHex, rgbToHex, rgbToHsv } from "@/registry/lib/color"
+import {
+  hslToRgb,
+  hsvToRgb,
+  parseHex,
+  rgbToHex,
+  rgbToHsv,
+} from "@/registry/lib/color"
 
 const defaultLabels = {
   normal: "正常",
@@ -72,7 +80,7 @@ type PaletteEditorProps = Omit<
   /** 所属表单 */ form?: string
 }
 const initial = ["#2563eb"]
-/** 新增颜色：在末项基础上旋转黄金角，避免和已有颜色撞色 */
+/** 在末项基础上旋转黄金角，保留鲜明的色相变化。 */
 function nextColor(last: string | undefined) {
   const rgb = parseHex(last ?? "") ?? parseHex(initial[0])!
   const hsv = rgbToHsv(rgb)
@@ -85,6 +93,48 @@ function nextColor(last: string | undefined) {
     }),
   )
 }
+// 固定候选只生成一次；HSL 数值是搜索空间，不是界面样式。
+const colorCandidates = Array.from({ length: 24 }, (_, h) =>
+  [0.55, 0.9].flatMap((s) =>
+    [0.25, 0.5, 0.75].map((l) => rgbToHex(hslToRgb({ h: h * 15, s, l, a: 1 }))),
+  ),
+).flat()
+
+function colorDistance(a: string, b: string) {
+  // 直接走模拟后的浮点色差，不能用取整后的模拟 HEX。
+  return Math.min(
+    ...findColorConflicts([a, b], { threshold: Infinity }).map((c) => c.deltaE),
+  )
+}
+
+function pickNextColor(colors: string[], threshold: number) {
+  const golden = nextColor(colors.at(-1))
+  if (colors.every((color) => colorDistance(golden, color) >= threshold))
+    return golden
+  let best = golden,
+    score = -Infinity,
+    tie = Infinity
+  const target = hexToLab(golden)
+  for (const candidate of [...colorCandidates, golden]) {
+    let minimum = Infinity
+    for (const color of colors) {
+      minimum = Math.min(minimum, colorDistance(candidate, color))
+      // 后续比较只能降低最小值，保留容差内的候选参与平分。
+      if (minimum < score - 1e-10) break
+    }
+    const proximity = deltaE2000(hexToLab(candidate), target)
+    if (
+      minimum > score + 1e-10 ||
+      (Math.abs(minimum - score) <= 1e-10 && proximity < tie)
+    ) {
+      best = candidate
+      score = minimum
+      tie = proximity
+    }
+  }
+  return best
+}
+
 function PaletteEditor({
   value: prop,
   defaultValue = initial,
@@ -357,7 +407,14 @@ function PaletteEditor({
         size="sm"
         variant="outline"
         disabled={locked || value.length >= maxItems}
-        onClick={() => change([...value, nextColor(value.at(-1))])}
+        onClick={() =>
+          change([
+            ...value,
+            findConflicts
+              ? nextColor(value.at(-1))
+              : pickNextColor(value, threshold),
+          ])
+        }
       >
         <Plus />
         {labels.add}

@@ -1,6 +1,12 @@
 import { chromium } from "playwright-core"
 import assert from "node:assert/strict"
 import { mkdirSync } from "node:fs"
+import {
+  hsvToRgb,
+  parseHex,
+  rgbToHex,
+  rgbToHsv,
+} from "../src/registry/lib/color"
 import { findColorConflicts } from "../src/registry/lib/color-vision"
 import { startNextServer } from "./lib/next-server"
 async function main() {
@@ -19,6 +25,30 @@ async function main() {
     const editor = page.locator('[data-slot="palette-editor"]').first()
     const rows = editor.locator('[data-slot="palette-editor-item"]')
     await rows.first().waitFor()
+    // 从公开三色示例扩展两次：数量、顺序和零冲突都必须稳定。
+    const sequences: string[][] = []
+    for (let run = 0; run < 2; run++) {
+      assert.equal(await rows.count(), 3)
+      while ((await rows.count()) < 12) {
+        await editor
+          .getByRole("button", { name: "添加颜色", exact: true })
+          .click()
+        assert.equal(
+          await editor.locator("[data-slot=palette-editor-conflicts]").count(),
+          0,
+        )
+      }
+      sequences.push(
+        await rows
+          .locator("input")
+          .evaluateAll((els) =>
+            els.map((el) => (el as HTMLInputElement).value),
+          ),
+      )
+      await page.reload()
+      await rows.first().waitFor()
+    }
+    assert.deepEqual(sequences[0], sequences[1])
     const input = () => rows.locator("input").first()
     const original = await input().inputValue()
     await rows
@@ -155,6 +185,19 @@ async function main() {
     assert.ok((await hints.count()) > 0)
     for (const text of await hints.allInnerTexts())
       assert.match(text, /绿色盲视角/)
+    const customInputs = custom.locator("[data-slot=palette-editor-item] input")
+    const last = await customInputs.last().inputValue()
+    const hsv = rgbToHsv(parseHex(last)!)
+    const golden = rgbToHex(
+      hsvToRgb({
+        ...hsv,
+        h: (hsv.h + 137.5) % 360,
+        s: Math.max(hsv.s, 0.45),
+        v: Math.max(hsv.v, 0.55),
+      }),
+    )
+    await custom.getByRole("button", { name: "添加颜色", exact: true }).click()
+    assert.equal(await customInputs.last().inputValue(), golden)
     console.log(
       "PASS: 自定义检查、增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、提示上限与汇总、ΔE 升序、全部冲突行标记、375px 无溢出且 HEX 完整",
     )
