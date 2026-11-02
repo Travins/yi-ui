@@ -64,6 +64,7 @@ type ColorPickerProps = Omit<
   /** 只读 @default false */ readOnly?: boolean
   /** 错误信息 */ error?: string
   /** 说明 */ description?: React.ReactNode
+  /** HEX 输入框的 id，方便外部 label 关联 */ id?: string
   /** 表单字段名 */ name?: string
   /** 所属表单 */ form?: string
 }
@@ -73,6 +74,7 @@ function subscribe(notify: () => void) {
   return () => m.removeEventListener("change", notify)
 }
 function ColorPicker({
+  id: idProp,
   label,
   value: prop,
   defaultValue = "#2563eb",
@@ -92,7 +94,8 @@ function ColorPicker({
   className,
   ...props
 }: ColorPickerProps) {
-  const id = React.useId()
+  const autoId = React.useId()
+  const id = idProp ?? autoId
   const labels = { ...defaultLabels, ...overrides }
   const [value, setValue] = useControllableState({
     prop,

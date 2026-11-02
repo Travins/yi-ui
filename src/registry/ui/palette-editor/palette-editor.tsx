@@ -89,6 +89,7 @@ function PaletteEditor({
   ...props
 }: PaletteEditorProps) {
   const labels = { ...defaultLabels, ...overrides }
+  const baseId = React.useId()
   const [value, setValue] = useControllableState({
     prop,
     defaultProp: defaultValue,
@@ -230,9 +231,14 @@ function PaletteEditor({
               }}
             >
               <div className="flex min-w-0 items-center gap-1">
-                <span className="w-5 shrink-0 text-center text-xs text-muted-foreground">
-                  {i + 1}
-                </span>
+                {/* 序号就是输入框的可见标签；读屏读完整名称「颜色 N」 */}
+                <label
+                  htmlFor={`${baseId}-${keys[i]}`}
+                  className="w-5 shrink-0 text-center text-xs text-muted-foreground"
+                >
+                  <span className="sr-only">{labels.color(i + 1)}</span>
+                  <span aria-hidden>{i + 1}</span>
+                </label>
                 {/* 固定宽度的冲突标记位，出现与消失不挤动整行 */}
                 <span className="flex w-4 shrink-0 justify-center text-muted-foreground">
                   {warning && (
@@ -244,7 +250,7 @@ function PaletteEditor({
                 </span>
                 <ColorPicker
                   size="sm"
-                  aria-label={labels.color(i + 1)}
+                  id={`${baseId}-${keys[i]}`}
                   value={hex}
                   disabled={disabled}
                   readOnly={readOnly}
