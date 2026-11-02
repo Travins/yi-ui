@@ -21,10 +21,10 @@ findColorConflicts(["#cc3311", "#228833"], { threshold: 10 })
 
 ## API
 
-- `simulateColorVision(hex, type)`：红、绿、蓝色盲模拟，输出六位 HEX。
+- `simulateColorVision(hex, type)`：红、绿、蓝色盲模拟，输出六位 HEX。结果已取整，适合显示色块，不要再拿它算色差。
 - `hexToLab(hex)`：输出 `{ l, a, b }`，使用 D65 白点。
 - `deltaE2000(lab1, lab2)`：完整 CIEDE2000 色差。
-- `findColorConflicts(colors, options?)`：返回 `{ a, b, vision, deltaE }[]`，索引从 0 开始。默认阈值 10，默认检查 normal、protanopia、deuteranopia、tritanopia，严格小于阈值才返回。
+- `findColorConflicts(colors, options?)`：返回 `{ a, b, vision, deltaE }[]`，索引从 0 开始。默认阈值 10，默认检查 normal、protanopia、deuteranopia、tritanopia，严格小于阈值才返回。模拟后全程用浮点计算，不经过 HEX 取整，判断颜色是否难以分清时用它。
 
 导出类型 `Lab`、`ColorVision`。无效 HEX 抛出 TypeError；透明度不参与计算。
 

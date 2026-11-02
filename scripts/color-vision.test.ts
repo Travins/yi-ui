@@ -48,3 +48,29 @@ test("冲突包含全部视角、索引无重复、严格阈值", () => {
     [{ a: 0, b: 1, vision: "normal", deltaE: 0 }],
   )
 })
+test("模拟后不取整：阈值附近的判定与浮点结果一致（#23）", () => {
+  // 期望值来自独立的浮点实现（同一矩阵与 CIEDE2000，已用 Sharma 数据校验）；
+  // 四组都是先取整成 HEX 再算色差时，会落到阈值 10 另一侧的颜色对
+  const cases = [
+    ["#6d3d4e", "#ea2566", "protanopia", 9.86904],
+    ["#4ad929", "#96d959", "tritanopia", 9.981975],
+    ["#603a8f", "#782ea2", "tritanopia", 10.092677],
+    ["#4b094d", "#513180", "deuteranopia", 10.004754],
+  ] as const
+  for (const [a, b, vision, expected] of cases) {
+    const [hit] = findColorConflicts([a, b], {
+      threshold: Infinity,
+      visions: [vision],
+    })
+    assert.ok(Math.abs(hit.deltaE - expected) < 1e-5, `${a} ${b} ${vision}`)
+    assert.equal(
+      findColorConflicts([a, b], { visions: [vision] }).length > 0,
+      expected < 10,
+    )
+    const rounded = deltaE2000(
+      hexToLab(simulateColorVision(a, vision)),
+      hexToLab(simulateColorVision(b, vision)),
+    )
+    assert.notEqual(rounded < 10, expected < 10)
+  }
+})

@@ -30,31 +30,38 @@ function channels(hex: string) {
   if (!rgb) throw new TypeError("无效的 HEX 颜色")
   return [rgb.r, rgb.g, rgb.b].map(linear)
 }
-function simulateColorVision(
-  hex: string,
-  type: Exclude<ColorVision, "normal">,
-) {
+/** 模拟结果保留线性 RGB 浮点值：色差直接用它计算，取整只发生在输出 HEX 时 */
+function simulateLinear(hex: string, type: Exclude<ColorVision, "normal">) {
   const rgb = channels(hex)
-  const [r, g, b] = matrices[type].map((row) => {
-    const v = Math.max(
+  return matrices[type].map((row) =>
+    Math.max(
       0,
       Math.min(
         1,
         row.reduce((s, c, i) => s + c * rgb[i], 0),
       ),
-    )
-    return 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)
-  })
+    ),
+  )
+}
+function simulateColorVision(
+  hex: string,
+  type: Exclude<ColorVision, "normal">,
+) {
+  const [r, g, b] = simulateLinear(hex, type).map(
+    (v) => 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055),
+  )
   return rgbToHex({ r, g, b, a: 1 })
 }
-function hexToLab(hex: string): Lab {
-  const [r, g, b] = channels(hex)
+function linearToLab([r, g, b]: number[]): Lab {
   const f = (v: number) =>
     v > (6 / 29) ** 3 ? Math.cbrt(v) : v / (3 * (6 / 29) ** 2) + 4 / 29
   const x = f((0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047)
   const y = f(0.2126729 * r + 0.7151522 * g + 0.072175 * b)
   const z = f((0.0193339 * r + 0.119192 * g + 0.9503041 * b) / 1.08883)
   return { l: 116 * y - 16, a: 500 * (x - y), b: 200 * (y - z) }
+}
+function hexToLab(hex: string): Lab {
+  return linearToLab(channels(hex))
 }
 function deltaE2000(p: Lab, q: Lab) {
   const rad = Math.PI / 180,
@@ -120,7 +127,7 @@ function findColorConflicts(
   }[] = []
   for (const vision of visions) {
     const labs = colors.map((c) =>
-      hexToLab(vision === "normal" ? c : simulateColorVision(c, vision)),
+      linearToLab(vision === "normal" ? channels(c) : simulateLinear(c, vision)),
     )
     for (let a = 0; a < labs.length; a++)
       for (let b = a + 1; b < labs.length; b++) {
