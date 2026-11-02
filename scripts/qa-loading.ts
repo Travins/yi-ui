@@ -178,6 +178,16 @@ async function main() {
         })
       await page.close()
     }
+    // 详情页预渲染 HTML 里示例必须在原位：<!--$?--> 表示先输出占位、再用脚本替换，首屏会闪一下
+    for (const url of [
+      "/components/palette-editor/",
+      "/components/mini-chart/",
+      "/view/app-shell-01/",
+    ]) {
+      const html = await (await fetch(base + url)).text()
+      const pending = html.split("<!--$?-->").length - 1
+      if (pending) issues.push(`${url}: HTML 里有 ${pending} 处待替换的占位`)
+    }
     const thumbnails = await browser.newPage({
       viewport: { width: 1280, height: 900 },
     })

@@ -1,7 +1,6 @@
 "use client"
 
-import { PreviewSkeleton } from "@/components/docs/preview-skeleton"
-import { Suspense, useMemo, useRef, useState, type ReactNode } from "react"
+import { Activity, useMemo, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { registryExamples } from "@/registry/__index__"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
@@ -135,9 +134,11 @@ export function ComponentPreviewClient({
       >
         <PreviewBackdrop name={item} />
         <TunerProvider config={tunerConfig} tuning={tuner.tuning}>
-          <Suspense fallback={<PreviewSkeleton className="absolute inset-0" />}>
+          {/* 用 Activity 不用 Suspense：Suspense 内容较大时，预渲染 HTML 会先输出占位、再用脚本替换，首屏闪一下。
+              代价是整页要等本页示例的代码加载完才可交互；列表页示例太多，缩略图仍用 Suspense */}
+          <Activity>
             {Preview ? <Preview /> : <p>找不到示例：{name}</p>}
-          </Suspense>
+          </Activity>
         </TunerProvider>
       </TabsContent>
       {/* 面板从预览下方展开：高度从 0 过渡到内容高度，同时淡入；收起时反向。减少动态效果时直接出现 / 消失 */}
