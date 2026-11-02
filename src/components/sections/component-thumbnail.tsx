@@ -25,6 +25,8 @@ const firstExamples: Record<string, string> = {
  */
 const fitClasses: Record<string, string> = {
   "color-picker": "scale-[0.85]",
+  // 色卡行放不下时 HEX 会被截断：固定排版宽度后整体缩小
+  "palette-editor": "w-[28rem] scale-[0.65] max-lg:scale-[0.6]",
   "bar-field": "scale-[0.8]",
   "bar-select": "scale-[0.85]",
   "grid-toolbar": "scale-[0.75]",

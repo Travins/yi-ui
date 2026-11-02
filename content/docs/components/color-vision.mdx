@@ -1,0 +1,43 @@
+---
+title: 色觉计算
+titleEn: Color Vision
+description: 零依赖色觉模拟、Lab 与 CIEDE2000 色差计算。
+group: utils
+status: new
+---
+
+## 安装
+
+<InstallCommand name="color-vision" />
+
+## 用法
+
+```ts
+import { simulateColorVision, findColorConflicts } from "@/lib/color-vision"
+
+simulateColorVision("#cc3311", "deuteranopia")
+findColorConflicts(["#cc3311", "#228833"], { threshold: 10 })
+```
+
+## API
+
+- `simulateColorVision(hex, type)`：红、绿、蓝色盲模拟，输出六位 HEX。
+- `hexToLab(hex)`：输出 `{ l, a, b }`，使用 D65 白点。
+- `deltaE2000(lab1, lab2)`：完整 CIEDE2000 色差。
+- `findColorConflicts(colors, options?)`：返回 `{ a, b, vision, deltaE }[]`，索引从 0 开始。默认阈值 10，默认检查 normal、protanopia、deuteranopia、tritanopia，严格小于阈值才返回。
+
+导出类型 `Lab`、`ColorVision`。无效 HEX 抛出 TypeError；透明度不参与计算。
+
+## 原理
+
+模拟采用 [Machado、Oliveira、Fernandes 2009 作者矩阵表](https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html) severity 1.0，先解码线性 RGB，乘矩阵后编码并裁切。
+
+Lab 使用 D65（0.95047、1、1.08883）。CIEDE2000 包含 G 校正、跨零色相、零彩度与旋转项，使用 [Sharma 官方 34 组测试数据](https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/) 验证，误差小于 0.0001。
+
+## 注意事项
+
+结果是模拟提示，不应替代真实使用者反馈或 WCAG 对比度检查。
+
+## 源码
+
+<ComponentSource name="color-vision" />

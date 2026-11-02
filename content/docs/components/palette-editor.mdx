@@ -1,0 +1,75 @@
+---
+title: 配色编辑器
+titleEn: Palette Editor
+description: 编辑有序配色，提供色觉模拟与可区分性提示。
+group: input
+status: new
+---
+
+<ComponentPreview name="palette-editor-demo" />
+
+## 安装
+
+<InstallCommand name="palette-editor" />
+
+## 用法
+
+```tsx
+import { PaletteEditor } from "@/components/ui/palette-editor/palette-editor"
+
+export function SeriesColors() {
+  return <PaletteEditor defaultValue={["#172554", "#38bdf8", "#fef3c7"]} />
+}
+```
+
+用 `value` / `onValueChange` 控制 HEX 数组，`onValueCommit` 在编辑结束、增删、排序或选择预设时触发。列表上方的色带按当前色觉视角显示整组颜色，切换视角就能直接对比；每行的 HEX 始终是原色。新增颜色时在末项基础上旋转色相，避免和已有颜色撞色。
+
+## 示例
+
+### 色觉模拟
+
+始终检查四种视角，切换视角查看模拟色。提示不会阻止编辑。
+
+<ComponentPreview name="palette-editor-vision-demo" />
+
+### 预设
+
+选择预设后复制颜色数组，后续编辑不会修改预设。
+
+<ComponentPreview name="palette-editor-presets-demo" />
+
+### 数量上下限
+
+`minItems` / `maxItems` 控制增删按钮，这里允许 2–4 项。
+
+<ComponentPreview name="palette-editor-limits-demo" />
+
+## API
+
+<PropsTable name="palette-editor" component="PaletteEditor" />
+
+导出 `PaletteEditorProps` 和 `PaletteEditorLabels`。`labels` 可覆盖文本及 `color(n)`、`moved(n,m,k)`、`conflict(a,b,vision,deltaE)` 格式函数。
+
+| data-slot | 用途 |
+| --- | --- |
+| palette-editor | 根容器 |
+| palette-editor-list | 有序列表 |
+| palette-editor-item | 色卡行 |
+| palette-editor-preview | 当前视角色带 |
+| palette-editor-swatch | 色带中的单个颜色 |
+| palette-editor-conflicts | 冲突提示 |
+| palette-editor-announcement | 排序播报 |
+
+## 可访问性
+
+每行包含序号、带可访问名称的颜色输入及常显排序、删除按钮。按钮聚焦时 Alt + ↑ / ↓ 排序；输入框及弹层内不拦截快捷键。排序保留行的稳定 key，并用 polite 实时区域播报位置。有冲突的行在序号旁显示警示图标（附屏幕阅读器文字），冲突明细以文字列在列表下方，不只靠颜色表达。
+
+## 注意事项
+
+`name` / `form` 用隐藏输入提交 JSON 字符串数组，非受控表单支持 reset。`disabled` 不提交字段，`readOnly` 保留提交但禁止编辑。外部传入的数组应为有效 HEX，且数量在上下限内。默认最少 1 项、最多 12 项，阈值 10。
+
+色觉模拟用于辅助检查，不代表所有人的实际感知；ΔE00 也不等同于文字对比度合规。
+
+## 源码
+
+<ComponentSource name="palette-editor" />

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
  */
 const BACKDROPS: Record<string, "dots" | "grid"> = {
   "color-picker": "dots",
+  "palette-editor": "dots",
   "bar-field": "dots",
   "bar-select": "dots",
   "grid-toolbar": "dots",

@@ -2173,6 +2173,50 @@
           "target": "@ui/color-picker/color-panel.tsx"
         }
       ]
+    },
+    {
+      "name": "color-vision",
+      "type": "registry:lib",
+      "title": "色觉计算",
+      "description": "零依赖色觉模拟、Lab 与 CIEDE2000 色差计算。",
+      "registryDependencies": [
+        "https://yiui.dev/r/color.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/lib/color-vision.ts",
+          "type": "registry:lib",
+          "target": "@lib/color-vision.ts"
+        }
+      ]
+    },
+    {
+      "name": "palette-editor",
+      "type": "registry:ui",
+      "title": "配色编辑器",
+      "description": "编辑有序配色，提供色觉模拟与可区分性提示。",
+      "registryDependencies": [
+        "button",
+        "https://yiui.dev/r/color-picker.json",
+        "https://yiui.dev/r/color.json",
+        "https://yiui.dev/r/color-vision.json",
+        "https://yiui.dev/r/segmented-control.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/palette-editor/palette-editor.tsx",
+          "type": "registry:ui",
+          "target": "@ui/palette-editor/palette-editor.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        }
+      ],
+      "dependencies": [
+        "lucide-react"
+      ]
     }
   ]
 }

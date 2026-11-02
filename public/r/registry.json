@@ -2221,6 +2221,52 @@
         }
       ],
       "type": "registry:ui"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "color-vision",
+      "title": "色觉计算",
+      "description": "零依赖色觉模拟、Lab 与 CIEDE2000 色差计算。",
+      "registryDependencies": [
+        "https://yiui.dev/r/color.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/lib/color-vision.ts",
+          "type": "registry:lib",
+          "target": "@lib/color-vision.ts"
+        }
+      ],
+      "type": "registry:lib"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "palette-editor",
+      "title": "配色编辑器",
+      "description": "编辑有序配色，提供色觉模拟与可区分性提示。",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "https://yiui.dev/r/color-picker.json",
+        "https://yiui.dev/r/color.json",
+        "https://yiui.dev/r/color-vision.json",
+        "https://yiui.dev/r/segmented-control.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/palette-editor/palette-editor.tsx",
+          "type": "registry:ui",
+          "target": "@ui/palette-editor/palette-editor.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        }
+      ],
+      "type": "registry:ui"
     }
   ]
 }
