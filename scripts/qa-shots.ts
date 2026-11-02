@@ -8,7 +8,7 @@
  *
  * 输出：.qa/<时间戳>/index.html（含所有截图与检查结果）。Chrome 路径可用 CHROME_PATH 覆盖。
  */
-import { mkdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { exec } from "node:child_process"
 import { join, resolve } from "node:path"
 import { chromium, type Browser, type Page } from "playwright-core"
@@ -141,6 +141,62 @@ async function main() {
   }
 
   for (const name of names) {
+    if (
+      existsSync(`content/docs/blocks/${name}.mdx`) ||
+      existsSync(`content/docs/pages/${name}.mdx`)
+    ) {
+      const section = existsSync(`content/docs/blocks/${name}.mdx`)
+        ? "blocks"
+        : "pages"
+      for (const width of [1440, 768, 375]) {
+        const page = await open(
+          browser,
+          `${base}/${section}/`,
+          { width },
+          issues,
+          name,
+        )
+        const title = JSON.parse(
+          readFileSync("registry.json", "utf8"),
+        ).items.find((item: { name: string }) => item.name === name).title
+        const frame = page.getByTitle(`${title} 预览`, { exact: true })
+        await frame.scrollIntoViewIfNeeded()
+        await page.waitForTimeout(1200)
+        await save(`${name} · 列表`, String(width), frame)
+        await page.close()
+      }
+      for (const options of [
+        { width: 1440 },
+        { width: 375 },
+        { width: 1440, dark: true },
+        ...THEMES.map((theme) => ({ width: 1440, theme })),
+      ]) {
+        const page = await open(
+          browser,
+          `${base}/view/${name}/`,
+          options,
+          issues,
+          name,
+        )
+        if (
+          "theme" in options &&
+          options.theme &&
+          (await page.locator('[data-slot="theme-customizer-preview"]').count())
+        ) {
+          await page
+            .locator('[data-slot="theme-customizer-preview"]')
+            .evaluate(
+              (element, theme) =>
+                element.setAttribute("data-theme", theme as string),
+              options.theme,
+            )
+        }
+        await page.waitForTimeout(400)
+        await save(`${name} · 示例`, JSON.stringify(options), page)
+        await page.close()
+      }
+      continue
+    }
     const detail = `${base}/components/${name}/`
     console.log(`· ${name}`)
 

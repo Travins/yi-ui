@@ -91,6 +91,7 @@ See the [installation guide](https://yiui.dev/docs/installation/) for where file
 | Name | Description |
 | --- | --- |
 | [Settings `settings-01`](https://yiui.dev/blocks/settings-01/) | A full settings page built from the bar controls: section nav, live preview, modified count, reset and async save. |
+| [Theme Customizer `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | Color, radius, content width and appearance preferences with early restoration. |
 | [Split sign-in `auth-01`](https://yiui.dev/blocks/auth-01/) | Brand panel plus forms: password / one-time-code sign-in (auto-formatted phone number, inline send-code button with countdown), sign-up with a strength meter, password recovery. |
 | [Checkout `checkout-01`](https://yiui.dev/blocks/checkout-01/) | Address, shipping, invoice, payment and order completion, with a mobile store ordering demo. |
 | [Data table `data-table-01`](https://yiui.dev/blocks/data-table-01/) | Grid toolbar (search, status and owner dropdowns, column settings, density), sorting, column resizing, selection, cell editing with optimistic save, grid pagination and virtual scrolling; narrow screens switch to a card list. |

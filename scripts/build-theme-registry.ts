@@ -12,7 +12,12 @@ import path from "node:path"
 
 import { registryItemSchema } from "shadcn/schema"
 
-import { COLOR_THEMES, formatCssBlock, formatThemeLabel } from "../src/lib/themes"
+import {
+  COLOR_THEMES,
+  DEFAULT_COLOR_THEME,
+  formatCssBlock,
+  formatThemeLabel,
+} from "../src/lib/themes"
 
 const CSS_PATH = "src/styles/themes.css"
 const OUT_DIR = "public/r"
@@ -44,7 +49,8 @@ function buildCss() {
     const scopeDark = { ...darkVars, edge: SCOPE_EDGE.dark }
 
     return [
-      `/* ${id} · ${formatThemeLabel(theme)} */\n` + formatCssBlock(`:root[data-theme="${id}"]`, lightVars),
+      `/* ${id} · ${formatThemeLabel(theme)} */\n` +
+        formatCssBlock(`:root[data-theme="${id}"]`, lightVars),
       formatCssBlock(`:root[data-theme="${id}"].dark`, darkVars),
       formatCssBlock(`[data-theme-scope="${id}"]`, scopeLight),
       formatCssBlock(
@@ -52,7 +58,7 @@ function buildCss() {
           `.dark [data-theme-scope="${id}"]:not(.light)`,
           `[data-theme-scope="${id}"].dark`,
         ].join(",\n"),
-        scopeDark
+        scopeDark,
       ),
     ].join("\n\n")
   })
@@ -71,6 +77,36 @@ async function main() {
   const homepage = await readHomepage()
 
   await writeFile(CSS_PATH, buildCss())
+  const blockDir = "src/registry/blocks/theme-customizer-01"
+  const presets = COLOR_THEMES.map((t) => ({
+    value: t.id,
+    label: t.name,
+    tone: t.cssVars.light.primary,
+  }))
+  await writeFile(
+    `${blockDir}/presets.ts`,
+    `// 自动生成：pnpm themes:build；来源 src/lib/themes.ts。安装后可自由增删。\nconst PRESETS = ${JSON.stringify(presets, null, 2)}\nconst DEFAULT_THEME = "${DEFAULT_COLOR_THEME}"\nexport { PRESETS, DEFAULT_THEME }\n`,
+  )
+  const interfaceVars = (vars: Record<string, string>) =>
+    Object.fromEntries(
+      Object.entries(vars).filter(([key]) => !key.startsWith("chart-")),
+    )
+  const customCss = COLOR_THEMES.map((t) =>
+    [
+      formatCssBlock(`[data-theme="${t.id}"]`, {
+        ...interfaceVars(t.cssVars.light),
+        edge: SCOPE_EDGE.light,
+      }),
+      formatCssBlock(
+        `.dark [data-theme="${t.id}"]:not(.light), [data-theme="${t.id}"].dark`,
+        { ...interfaceVars(t.cssVars.dark), edge: SCOPE_EDGE.dark },
+      ),
+    ].join("\n"),
+  ).join("\n")
+  await writeFile(
+    `${blockDir}/theme-customizer.css`,
+    `/* 自动生成：pnpm themes:build。仅界面 token，不包含图表颜色。 */\n${customCss}\n[data-radius="sm"] { --radius: 0.375rem; }\n[data-radius="md"] { --radius: 0.625rem; }\n[data-radius="lg"] { --radius: 0.875rem; }\n[data-content-width="compact"] { --theme-content-width: 64rem; }\n[data-content-width="wide"] { --theme-content-width: none; }\n.theme-content { width: 100%; max-width: var(--theme-content-width, none); margin-inline: auto; }\n`,
+  )
 
   await mkdir(OUT_DIR, { recursive: true })
   const keep = new Set<string>(["themes.json"])
@@ -90,7 +126,10 @@ async function main() {
     const json = { $schema: SCHEMA_URL, ...item }
     const file = `${itemName}.json`
     keep.add(file)
-    await writeFile(path.join(OUT_DIR, file), JSON.stringify(json, null, 2) + "\n")
+    await writeFile(
+      path.join(OUT_DIR, file),
+      JSON.stringify(json, null, 2) + "\n",
+    )
 
     catalog.push({
       id: theme.id,
@@ -108,17 +147,27 @@ async function main() {
 
   await writeFile(
     path.join(OUT_DIR, "themes.json"),
-    JSON.stringify({ name: "yiui-themes", homepage, themes: catalog }, null, 2) + "\n"
+    JSON.stringify(
+      { name: "yiui-themes", homepage, themes: catalog },
+      null,
+      2,
+    ) + "\n",
   )
 
   // 清理已经不存在的主题产物，只动 theme-*.json，不碰 shadcn build 生成的其他文件
   for (const file of await readdir(OUT_DIR)) {
-    if (/^theme-.+\.json$/.test(file) && !keep.has(file)) {
+    if (
+      /^theme-.+\.json$/.test(file) &&
+      !keep.has(file) &&
+      file !== "theme-customizer-01.json"
+    ) {
       await rm(path.join(OUT_DIR, file))
     }
   }
 
-  console.log(`themes: 已生成 ${CSS_PATH} 与 ${COLOR_THEMES.length} 个 registry:theme 条目`)
+  console.log(
+    `themes: 已生成 ${CSS_PATH} 与 ${COLOR_THEMES.length} 个 registry:theme 条目`,
+  )
 }
 
 main().catch((error) => {

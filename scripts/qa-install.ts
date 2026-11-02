@@ -382,6 +382,16 @@ async function main() {
                   .filter((s) => !s.startsWith("("))
                   .join("/"),
             )
+          if (!row.routes.length && item.name === "theme-customizer-01") {
+            // Header 区块没有页面入口，为安装验收单独挂载，使用真正安装的组件与 CSS。
+            const dest = join(app, appRoot, "app/qa/theme-customizer-01")
+            await mkdir(dest, { recursive: true })
+            await writeFile(
+              join(dest, "page.tsx"),
+              '"use client"\nimport { ThemeProvider } from "next-themes"\nimport { ThemeCustomizer } from "@/components/theme-customizer-01/theme-customizer-01"\nimport "@/components/theme-customizer-01/theme-customizer.css"\nexport default function Page() { return <ThemeProvider attribute="class" defaultTheme="system" enableSystem><ThemeCustomizer /><main className="theme-content">安装验收</main></ThemeProvider> }\n',
+            )
+            row.routes = ["/qa/theme-customizer-01"]
+          }
           if (!row.routes.length) throw Error("未找到可直接访问的页面 target")
           for (const f of item.files.filter((f) =>
             f.target?.startsWith("app/"),

@@ -138,6 +138,10 @@ type TonePickerProps = Omit<
    * @default false
    */
   modified?: boolean
+  /**
+   * 色点按固定列数排成网格（选项多、一行放不下时用），方条随行数加高
+   */
+  columns?: number
 }
 
 /**
@@ -153,6 +157,7 @@ function TonePicker({
   variant = "bar",
   size = "default",
   modified = false,
+  columns,
   className,
   ...props
 }: TonePickerProps) {
@@ -176,6 +181,7 @@ function TonePicker({
       className={cn(
         tonePickerVariants({ size, variant }),
         "data-[disabled]:opacity-50",
+        columns && "h-auto min-h-(--tone-picker-height) py-2.5",
         className,
       )}
     >
@@ -190,7 +196,17 @@ function TonePicker({
       ) : null}
       <span
         data-slot="tone-picker-swatches"
-        className="ms-auto flex shrink-0 items-center gap-1.5 pointer-coarse:group-data-[variant=bar]/tone-picker:gap-3 pointer-coarse:group-data-[variant=bar]/tone-picker:[--tone-picker-swatch:1.125rem]"
+        style={
+          columns
+            ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }
+            : undefined
+        }
+        className={cn(
+          "pointer-coarse:group-data-[variant=bar]/tone-picker:[--tone-picker-swatch:1.125rem]",
+          columns
+            ? "grid w-full justify-items-center gap-y-3 pointer-coarse:gap-y-4"
+            : "ms-auto flex shrink-0 items-center gap-1.5 pointer-coarse:group-data-[variant=bar]/tone-picker:gap-3",
+        )}
       >
         {options.map((option) => (
           <Radio.Root
@@ -200,7 +216,7 @@ function TonePicker({
             title={option.label}
             data-slot="tone-picker-swatch"
             className={cn(
-              "relative size-(--tone-picker-swatch) shrink-0 cursor-pointer rounded-full transition-transform outline-none before:absolute before:-inset-x-[3px] before:-inset-y-2 before:content-[''] hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring focus-visible:outline-solid motion-reduce:transition-none motion-reduce:hover:scale-100 pointer-coarse:before:-inset-x-1.5 pointer-coarse:before:-inset-y-4",
+              "relative size-(--tone-picker-swatch) shrink-0 cursor-pointer rounded-full transition-transform outline-none before:absolute before:-inset-x-[3px] before:-inset-y-2 before:content-[''] hover:scale-110 focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-ring focus-visible:outline-solid motion-reduce:transition-none motion-reduce:hover:scale-100 pointer-coarse:before:-inset-x-1.5 pointer-coarse:before:-inset-y-4",
               // 选中：外面再套一圈前景色细环，和色点之间隔一道背景色缝
               "data-[checked]:ring-2 data-[checked]:ring-foreground/70 data-[checked]:ring-offset-2 data-[checked]:ring-offset-background",
               option.tone === null

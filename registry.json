@@ -2217,6 +2217,58 @@
       "dependencies": [
         "lucide-react"
       ]
+    },
+    {
+      "name": "theme-customizer-01",
+      "type": "registry:block",
+      "title": "主题定制面板",
+      "description": "即时调整主题色、圆角、内容宽度与亮暗，支持局部预览和首帧恢复。",
+      "dependencies": [
+        "next-themes",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "popover",
+        "sheet",
+        "https://yiui.dev/r/tone-picker.json",
+        "https://yiui.dev/r/segmented-control.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/theme-customizer-01/theme-customizer-01.tsx",
+          "type": "registry:component",
+          "target": "@components/theme-customizer-01/theme-customizer-01.tsx"
+        },
+        {
+          "path": "src/registry/blocks/theme-customizer-01/theme-customizer-script.tsx",
+          "type": "registry:component",
+          "target": "@components/theme-customizer-01/theme-customizer-script.tsx"
+        },
+        {
+          "path": "src/registry/blocks/theme-customizer-01/preferences.ts",
+          "type": "registry:component",
+          "target": "@components/theme-customizer-01/preferences.ts"
+        },
+        {
+          "path": "src/registry/blocks/theme-customizer-01/presets.ts",
+          "type": "registry:component",
+          "target": "@components/theme-customizer-01/presets.ts"
+        },
+        {
+          "path": "src/registry/blocks/theme-customizer-01/config.ts",
+          "type": "registry:component",
+          "target": "@components/theme-customizer-01/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/theme-customizer-01/theme-customizer.css",
+          "type": "registry:file",
+          "target": "@components/theme-customizer-01/theme-customizer.css"
+        }
+      ],
+      "meta": {
+        "iframeHeight": "440px"
+      }
     }
   ]
 }

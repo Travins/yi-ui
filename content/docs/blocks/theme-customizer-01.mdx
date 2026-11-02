@@ -1,0 +1,120 @@
+---
+title: 主题定制面板
+titleEn: Theme Customizer
+description: 即时调整主题色、圆角、内容宽度与亮暗，支持首帧恢复。
+status: new
+---
+
+<BlockViewer name="theme-customizer-01" />
+
+## 安装
+
+<InstallCommand name="theme-customizer-01" />
+
+## 用法
+
+安装后手动引入 CSS，在根布局 head 内放入同步脚本，并配置 next-themes：
+
+```tsx title="app/layout.tsx"
+import "./globals.css"
+import "@/components/theme-customizer-01/theme-customizer.css"
+import { ThemeProvider } from "next-themes"
+import { ThemeCustomizerScript } from "@/components/theme-customizer-01/theme-customizer-script"
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head><ThemeCustomizerScript /></head>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+Header 是客户端组件时，放入内置触发器：
+
+```tsx
+"use client"
+import { ThemeCustomizer } from "@/components/theme-customizer-01/theme-customizer-01"
+
+export function HeaderActions() {
+  return <ThemeCustomizer />
+}
+```
+
+### 内容宽度与圆角
+
+为需要控制宽度的区域添加 `theme-content` 类。紧凑为 64rem，全宽不限；
+不会覆盖 main、container 或其他 max-width。
+圆角小 / 中 / 大分别为 0.375 / 0.625 / 0.875rem，通过 --radius 影响使用主题圆角的组件。
+
+```tsx
+<main className="theme-content">内容</main>
+```
+
+### 局部预览
+
+传入 target（React 元素引用或返回元素的函数）后，仅写目标元素，不读写 localStorage，初始值取自目标元素上已有的属性。
+默认示例使用此模式。局部亮暗通过在目标元素上切换 `dark` / `light` class 实现，选「跟随系统」时跟随所在页面；
+整站亮暗由 next-themes 的 useTheme 管理，面板不写 .dark。
+
+```tsx
+"use client"
+import { useRef } from "react"
+import { ThemeCustomizer } from "@/components/theme-customizer-01/theme-customizer-01"
+
+export function Preview() {
+  const target = useRef<HTMLDivElement>(null)
+  return (
+    <div ref={target} data-theme="neutral" data-radius="md" data-content-width="wide">
+      <ThemeCustomizer target={target} />
+      <div className="theme-content">预览内容</div>
+    </div>
+  )
+}
+```
+
+### 预设与持久化
+
+默认中性主题、中圆角、全宽、跟随系统。
+存储键为 `yiui:theme-customizer`，值为 `{theme, radius, contentWidth}`。
+覆盖 storageKey 时，面板与首帧脚本必须使用同一个键。
+损坏 JSON、未知值或存储不可用时静默回退默认值。
+页面可构建时预渲染，不需要 cookies 或 headers。
+
+安装后可以在 presets.ts 的 PRESETS 中增删、改名；新增主题需在 CSS 中配置对应
+`[data-theme="id"]` 的亮暗变量。仓库内以 src/lib/themes.ts 为唯一来源，
+执行 `pnpm themes:build` 生成预设与 CSS，不手工复制。
+labels 可覆盖面板文案，labels.presets 可按 ID 覆盖预设名称。
+
+## API
+
+| 属性 | 默认值 | 说明 |
+| --- | --- | --- |
+| target | html | 元素引用或获取元素函数，局部模式不持久化 |
+| storageKey | yiui:theme-customizer | 与脚本保持一致 |
+| labels | 中文 | 覆盖文案及 presets 名称 |
+| className | — | 触发器容器样式 |
+
+ThemeCustomizerScript 接收 storageKey。
+data-slot 包含 theme-customizer、theme-customizer-controls 和 theme-customizer-script。
+
+## 可访问性
+
+入口有可访问名称，各组使用具名 radio group，选项支持键盘和读屏。
+主题色是一个单选组，方向键可在全部预设间切换；色样有文字名称，当前名称显示在组名右侧。
+桌面使用 Popover，pointer: coarse 设备使用底部 Sheet。
+
+## 注意事项
+
+只改变界面 token，不包含 chart-*，不修改图表与业务配色。
+弹层通过 Portal 渲染，因此局部目标只影响预览内容，弹层沿用外层站点外观。
+变更立即生效；恢复默认也会恢复跟随系统。
+
+## 源码
+
+<ComponentSource name="theme-customizer-01" />

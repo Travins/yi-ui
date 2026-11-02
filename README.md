@@ -91,6 +91,7 @@ pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 | 名称 | 说明 |
 | --- | --- |
 | [设置页 `settings-01`](https://yiui.dev/blocks/settings-01/) | 用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。 |
+| [主题定制面板 `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | 主题色、圆角、宽度与亮暗偏好，首帧恢复。 |
 | [分屏登录页 `auth-01`](https://yiui.dev/blocks/auth-01/) | 品牌面板加表单：密码 / 验证码登录（手机号自动分隔、条内获取验证码与倒计时）、注册（带强度条）、找回密码。 |
 | [订单结算 `checkout-01`](https://yiui.dev/blocks/checkout-01/) | 地址、配送、发票、支付与订单完成页，附门店下单手机示例。 |
 | [数据表格 `data-table-01`](https://yiui.dev/blocks/data-table-01/) | 网格工具栏（搜索、状态与负责人下拉、列设置、密度）、排序、列宽、选择、单格编辑与乐观保存、网格分页、虚拟滚动，窄屏切成卡片列表。 |
