@@ -7,9 +7,9 @@ import { NumberStepper } from "@/registry/ui/number-stepper/number-stepper"
 /** 当前时段还能预约几位：超过就报错，调回范围内错误自动消失 */
 const AVAILABLE = 4
 
-/** 三档尺寸、禁用，以及随值变化的出错态（初始 5 位超出可约名额，减到 4 位错误就消失）。 */
+/** 三档尺寸、禁用，以及随值变化的出错态（加到 5 位超出可约名额时报错，减回 4 位错误就消失）。 */
 export default function NumberStepperSizesDemo() {
-  const [count, setCount] = React.useState<number | null>(5)
+  const [count, setCount] = React.useState<number | null>(3)
   const over = count !== null && count > AVAILABLE
 
   return (

@@ -123,7 +123,7 @@ export function PayForm() {
 
 ### 校验与错误态
 
-第一个输入框用 `min` / `max`，初始值 60000 已经越界，红框与提示直接显示；第二个用 `error` 接入自己的业务判断，余额不足时显示提示。
+第一个输入框用 `min` / `max`，输入超过 50000 的金额时显示红框与提示；第二个用 `error` 接入自己的业务判断，提现超过余额 8000 时显示提示。
 
 <ComponentPreview name="amount-input-validation-demo" />
 

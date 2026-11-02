@@ -8,11 +8,11 @@ import {
 } from "@/registry/ui/id-number-input/id-number-input"
 
 /**
- * 三种号码：身份证、银行卡失焦打码；信用代码故意把末位写错（正确是 Y43），
- * 18 位填满且校验位不对时提示，改对后提示立即消失。
+ * 三种号码：身份证、银行卡失焦打码；信用代码初始有效；
+ * 把末位改错后，18 位填满且校验位不对时提示，改对后提示立即消失。
  */
 export default function IdNumberInputKindsDemo() {
-  const [uscc, setUscc] = React.useState("91350100M000100Y44")
+  const [uscc, setUscc] = React.useState("91350100M000100Y43")
   const wrong = uscc.length === 18 && !isValidUscc(uscc)
 
   return (

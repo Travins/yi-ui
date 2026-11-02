@@ -63,7 +63,7 @@ const ROWS: Row[] = [
 // 迷你图嵌在一行文字里：名称、走势、当前值、涨跌各占一列
 export default function MiniChartDemo() {
   return (
-    <div className="w-full max-w-xl divide-y divide-edge rounded-xl border border-edge bg-background px-4 text-sm shadow-xs">
+    <div className="w-full max-w-xl divide-y divide-edge overflow-hidden rounded-xl border border-edge bg-background px-4 text-sm shadow-xs">
       {ROWS.map((row) => (
         <div
           key={row.name}

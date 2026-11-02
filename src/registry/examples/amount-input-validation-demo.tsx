@@ -11,7 +11,7 @@ const BALANCE = 8000
  * 业务规则（余额）自己判断，用 `error` 传入提示即可。
  */
 export default function AmountInputValidationDemo() {
-  const [withdraw, setWithdraw] = React.useState("12000")
+  const [withdraw, setWithdraw] = React.useState("5000")
 
   return (
     <div className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
@@ -31,7 +31,7 @@ export default function AmountInputValidationDemo() {
           label="单笔转账"
           min={100}
           max={50000}
-          defaultValue="60000"
+          defaultValue="20000"
           showApproximate={false}
         />
         <AmountInput
