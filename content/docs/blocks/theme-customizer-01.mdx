@@ -35,6 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
+如果项目已有自己的 ThemeProvider（shadcn 新模板自带 `components/theme-provider.tsx`），继续用它，不要换成上面的写法，否则模板里的切换时禁用过渡和按 `d` 切亮暗会失效。
+
 Header 是客户端组件时，放入内置触发器：
 
 ```tsx
@@ -85,6 +87,7 @@ export function Preview() {
 覆盖 storageKey 时，面板与首帧脚本必须使用同一个键。
 损坏 JSON、未知值或存储不可用时静默回退默认值。
 页面可构建时预渲染，不需要 cookies 或 headers。
+主题色、圆角和内容宽度不跨标签页同步，其他已打开的标签页刷新后生效。
 
 安装后可以在 presets.ts 的 PRESETS 中增删、改名；新增主题需在 CSS 中配置对应
 `[data-theme="id"]` 的亮暗变量。仓库内以 src/lib/themes.ts 为唯一来源，
