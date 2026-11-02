@@ -267,7 +267,11 @@ function PaletteEditor({
         ))}
       </div>
       {presets.length > 0 && (
-        <div aria-label={labels.presets} className="flex flex-wrap gap-2">
+        <div
+          role="group"
+          aria-label={labels.presets}
+          className="flex flex-wrap gap-2"
+        >
           {presets.map((p) => (
             <Button
               type="button"

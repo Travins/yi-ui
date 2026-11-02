@@ -22,7 +22,7 @@ export function BrandColor() {
 }
 ```
 
-HEX 段可直接输入或粘贴带或不带 `#` 的 3、6 位颜色，开启 `alpha` 时还接受 4、8 位，失焦或回车时规范化。非法内容保留为草稿并提示错误，不覆盖有效值。用 `value` 与 `onValueChange` 控制颜色，用 `onValueCommit` 保存操作结束时的值。
+HEX 段可直接输入或粘贴带或不带 `#` 的 3、6 位颜色，开启 `alpha` 时还接受 4、8 位，失焦或回车时规范化。非法内容保留为草稿并提示错误，不覆盖有效值；关闭面板时丢弃无效草稿，回到当前颜色。用 `value` 与 `onValueChange` 控制颜色，用 `onValueCommit` 保存操作结束时的值。
 
 ### 值与格式
 

@@ -49,6 +49,9 @@ async function main() {
       await rows.first().waitFor()
     }
     assert.deepEqual(sequences[0], sequences[1])
+    assert.ok(
+      await page.getByRole("group", { name: "配色预设", exact: true }).count(),
+    )
     const input = () => rows.locator("input").first()
     const original = await input().inputValue()
     await rows

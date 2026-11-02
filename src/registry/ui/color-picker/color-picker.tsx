@@ -141,6 +141,16 @@ function ColorPicker({
       setInvalid(false)
     }
   }
+  // 面板关闭时丢弃无效草稿，回到当前颜色；有效草稿仍由失焦提交
+  const panelOpen = coarse ? sheetOpen : open
+  const [wasPanelOpen, setWasPanelOpen] = React.useState(panelOpen)
+  if (wasPanelOpen !== panelOpen) {
+    setWasPanelOpen(panelOpen)
+    if (!panelOpen) {
+      if (draft !== null && !parseHex(draft, { alpha })) setDraft(null)
+      setInvalid(false)
+    }
+  }
   function commit(hex: string) {
     if (!lockedRef.current) onValueCommit?.(hex)
   }

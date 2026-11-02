@@ -48,6 +48,27 @@ async function main() {
     await page.waitForTimeout(300)
     await page.screenshot({ path: ".qa/color-picker-popover.png" })
     await page.keyboard.press("Escape")
+    // 面板里的无效草稿在关闭后不能留在方条上；Esc 和点外部都要验证
+    const color = await input.inputValue()
+    for (const close of ["Escape", "outside"]) {
+      await first.getByRole("button", { name: "选择颜色" }).click()
+      const hex = page.getByRole("textbox", { name: "HEX", exact: true })
+      await hex.fill("#aabbccdd")
+      await hex.press("Enter")
+      assert.equal(await hex.getAttribute("aria-invalid"), "true")
+      if (close === "Escape") await page.keyboard.press("Escape")
+      else await page.mouse.click(5, 500)
+      await hex.waitFor({ state: "hidden" })
+      assert.equal(await input.inputValue(), color)
+      assert.equal(await input.getAttribute("aria-invalid"), "false")
+    }
+    // 有效草稿点外部关闭时仍然提交
+    await first.getByRole("button", { name: "选择颜色" }).click()
+    const hex = page.getByRole("textbox", { name: "HEX", exact: true })
+    await hex.fill("#654321")
+    await page.mouse.click(5, 500)
+    await hex.waitFor({ state: "hidden" })
+    assert.equal(await input.inputValue(), "#654321")
     const mobile = await browser.newContext({
       viewport: { width: 375, height: 812 },
       isMobile: true,
@@ -75,6 +96,19 @@ async function main() {
     )
     await p.waitForTimeout(300)
     await p.screenshot({ path: ".qa/color-picker-sheet.png" })
+    // 触屏：点「完成」关闭后，无效草稿同样不能留在方条上
+    const barInput = p
+      .locator("[data-slot=color-picker]")
+      .first()
+      .locator("input")
+      .first()
+    const barColor = await barInput.inputValue()
+    const sheet = p.locator("[data-slot=color-picker-sheet]")
+    await sheet.getByRole("textbox", { name: "HEX", exact: true }).fill("wrong")
+    await sheet.getByRole("button", { name: "完成", exact: true }).tap()
+    await sheet.waitFor({ state: "hidden" })
+    assert.equal(await barInput.inputValue(), barColor)
+    assert.equal(await barInput.getAttribute("aria-invalid"), "false")
     await checkColorLock(p, "picker")
     await checkColorLock(p, "palette")
     await checkColorLock(p, "select")
