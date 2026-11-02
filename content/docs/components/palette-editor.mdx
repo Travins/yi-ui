@@ -38,6 +38,12 @@ export function SeriesColors() {
 
 <ComponentPreview name="palette-editor-presets-demo" />
 
+### 自定义检查规则
+
+项目已有自己的配色规则时，用 `findConflicts` 替代内置检查，让提示和项目其他地方的检查来自同一个函数。传入后 `threshold` 不再生效。函数在颜色每次变化时都会运行，不要放耗时操作；返回值里的 `a`、`b` 是从 0 开始的颜色索引。
+
+<ComponentPreview name="palette-editor-custom-check-demo" />
+
 ### 数量上下限
 
 `minItems` / `maxItems` 控制增删按钮，这里允许 2–4 项。

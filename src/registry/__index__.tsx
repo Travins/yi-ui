@@ -136,6 +136,7 @@ export const registryExamples: Record<string, LazyExoticComponent<ComponentType>
   "orbit-half-demo": lazy(() => import("./examples/orbit-half-demo")),
   "orbit-icons-demo": lazy(() => import("./examples/orbit-icons-demo")),
   "orbit-stack-demo": lazy(() => import("./examples/orbit-stack-demo")),
+  "palette-editor-custom-check-demo": lazy(() => import("./examples/palette-editor-custom-check-demo")),
   "palette-editor-demo": lazy(() => import("./examples/palette-editor-demo")),
   "palette-editor-limits-demo": lazy(() => import("./examples/palette-editor-limits-demo")),
   "palette-editor-presets-demo": lazy(() => import("./examples/palette-editor-presets-demo")),

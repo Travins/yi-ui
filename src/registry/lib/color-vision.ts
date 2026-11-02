@@ -2,6 +2,12 @@ import { parseHex, rgbToHex } from "@/registry/lib/color"
 
 type ColorVision = "normal" | "protanopia" | "deuteranopia" | "tritanopia"
 type Lab = { l: number; a: number; b: number }
+type ColorConflict = {
+  a: number
+  b: number
+  vision: ColorVision
+  deltaE: number
+}
 // Machado、Oliveira、Fernandes 2009，作者发布表的 severity 1.0：
 // https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
 const matrices = {
@@ -119,12 +125,7 @@ function findColorConflicts(
     visions = ["normal", "protanopia", "deuteranopia", "tritanopia"],
   }: { threshold?: number; visions?: ColorVision[] } = {},
 ) {
-  const result: {
-    a: number
-    b: number
-    vision: ColorVision
-    deltaE: number
-  }[] = []
+  const result: ColorConflict[] = []
   for (const vision of visions) {
     const labs = colors.map((c) =>
       linearToLab(vision === "normal" ? channels(c) : simulateLinear(c, vision)),
@@ -138,4 +139,4 @@ function findColorConflicts(
   return result
 }
 export { simulateColorVision, hexToLab, deltaE2000, findColorConflicts }
-export type { ColorVision, Lab }
+export type { ColorConflict, ColorVision, Lab }

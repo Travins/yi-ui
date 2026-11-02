@@ -92,8 +92,17 @@ async function main() {
       true,
     )
     await editor.screenshot({ path: ".qa/palette-editor-mobile.png" })
+    // findConflicts：提示只来自传入的函数（示例只查绿色盲视角）
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    const custom = page
+      .locator('[data-slot="palette-editor"]')
+      .filter({ has: page.locator('input[value="#0077bb"]') })
+    const hints = custom.locator("[data-slot=palette-editor-conflicts] li")
+    assert.ok((await hints.count()) > 0)
+    for (const text of await hints.allInnerTexts())
+      assert.match(text, /绿色盲视角/)
     console.log(
-      "PASS: 增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、375px 无溢出",
+      "PASS: 自定义检查、增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、375px 无溢出",
     )
   } finally {
     await browser.close()

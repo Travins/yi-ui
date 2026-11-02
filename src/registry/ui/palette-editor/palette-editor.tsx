@@ -10,6 +10,7 @@ import { SegmentedControl } from "@/registry/ui/segmented-control/segmented-cont
 import {
   findColorConflicts,
   simulateColorVision,
+  type ColorConflict,
   type ColorVision,
 } from "@/registry/lib/color-vision"
 import { hsvToRgb, parseHex, rgbToHex, rgbToHsv } from "@/registry/lib/color"
@@ -45,6 +46,9 @@ type PaletteEditorProps = Omit<
   /** 最少项数 @default 1 */ minItems?: number
   /** 最多项数 @default 12 */ maxItems?: number
   /** ΔE00 提示阈值 @default 10 */ threshold?: number
+  /** 自定义冲突检查；传入后替代内置检查，threshold 不再生效 */ findConflicts?: (
+    colors: string[],
+  ) => ColorConflict[]
   /** 选择时复制颜色 */ presets?: { label: string; colors: string[] }[]
   /** 中文文案覆盖 */ labels?: Partial<PaletteEditorLabels>
   /** 禁用 @default false */ disabled?: boolean
@@ -74,6 +78,7 @@ function PaletteEditor({
   minItems = 1,
   maxItems = 12,
   threshold = 10,
+  findConflicts,
   presets = [],
   labels: overrides,
   disabled,
@@ -105,8 +110,11 @@ function PaletteEditor({
   }
   const locked = disabled || readOnly
   const conflicts = React.useMemo(
-    () => findColorConflicts(value, { threshold }),
-    [value, threshold],
+    () =>
+      findConflicts
+        ? findConflicts(value)
+        : findColorConflicts(value, { threshold }),
+    [value, threshold, findConflicts],
   )
   function change(next: string[], commit = true) {
     if (locked) return
