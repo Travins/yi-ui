@@ -33,7 +33,7 @@ const CELL = "flex flex-col gap-3 rounded-none border-0 bg-transparent p-4"
 
 export default function StatCardOverviewDemo() {
   return (
-    <div className="w-full max-w-3xl overflow-hidden rounded-lg border border-edge bg-card">
+    <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-edge bg-background shadow-xs">
       <div className="flex items-center justify-between gap-3 border-b border-edge px-4 py-3">
         <span className="text-sm font-medium">站点概览</span>
         <span className="font-mono text-xs text-muted-foreground">

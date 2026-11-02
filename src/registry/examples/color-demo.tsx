@@ -19,7 +19,7 @@ export default function ColorDemo() {
   return (
     <div
       data-slot="color-demo"
-      className="w-full max-w-xs space-y-3 rounded-lg border border-edge bg-card p-4"
+      className="w-full max-w-sm space-y-3 rounded-xl border border-edge bg-background p-4 shadow-xs"
     >
       <ColorPicker label="颜色" value={hex} onValueChange={setHex} />
       <dl className="space-y-1.5 text-sm">

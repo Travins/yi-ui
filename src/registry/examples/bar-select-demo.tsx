@@ -39,7 +39,7 @@ export default function BarSelectDemo() {
   return (
     <section
       data-slot="bar-select-demo"
-      className="w-full max-w-sm border border-edge bg-background p-5"
+      className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs"
     >
       <h3 className="text-sm font-medium">导出数据集</h3>
       <p className="mt-1 text-xs text-muted-foreground">

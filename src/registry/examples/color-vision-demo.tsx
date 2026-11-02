@@ -26,7 +26,7 @@ export default function ColorVisionDemo() {
   return (
     <div
       data-slot="color-vision-demo"
-      className="w-full max-w-sm space-y-3 rounded-lg border border-edge bg-card p-4"
+      className="w-full max-w-sm space-y-3 rounded-xl border border-edge bg-background p-4 shadow-xs"
     >
       <ColorPicker label="颜色 A" value={first} onValueChange={setFirst} />
       <ColorPicker label="颜色 B" value={second} onValueChange={setSecond} />

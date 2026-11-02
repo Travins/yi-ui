@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 export default function BarSelectDemo() {
   const [result, setResult] = React.useState("")
   return (
-    <div data-slot="bar-select-demo" className="w-full max-w-sm">
+    <div data-slot="bar-select-demo" className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
       <form
         data-slot="bar-select-form"
         className="flex w-full flex-col gap-3"

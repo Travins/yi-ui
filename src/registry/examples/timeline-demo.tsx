@@ -33,7 +33,7 @@ function Avatar({ children, tone }: { children: string; tone: string }) {
 
 export default function TimelineDemo() {
   return (
-    <div className="w-full max-w-lg overflow-hidden rounded-lg border border-edge bg-card">
+    <div className="w-full max-w-lg overflow-hidden rounded-xl border border-edge bg-background shadow-xs">
       <div className="flex items-center justify-between gap-3 border-b border-edge px-4 py-3 sm:px-6">
         <span className="text-sm font-medium">发布流水线</span>
         <span className="font-mono text-xs text-muted-foreground">

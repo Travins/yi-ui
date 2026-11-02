@@ -15,7 +15,7 @@ const ZONES = [
 // 强调色（LIVE 圆点、表盘秒针）统一指向 --flow-blue，亮暗与颜色主题下都保持一致
 export default function LocalTimeWorldClockDemo() {
   return (
-    <div className="grid w-full max-w-2xl overflow-hidden rounded-lg border border-edge bg-card [--primary:var(--flow-blue)] sm:grid-cols-[14rem_1fr]">
+    <div className="grid w-full max-w-2xl overflow-hidden rounded-xl border border-edge bg-background [--primary:var(--flow-blue)] sm:grid-cols-[14rem_1fr] shadow-xs">
       <div className="relative flex flex-col items-center justify-center gap-3 border-b border-edge bg-[radial-gradient(circle_at_50%_40%,color-mix(in_oklab,var(--flow-blue)_14%,transparent),transparent_70%)] px-4 py-5 sm:border-r sm:border-b-0">
         <p className="self-start font-mono text-[10px] tracking-[0.08em] text-muted-foreground">
           BASE / 所在地

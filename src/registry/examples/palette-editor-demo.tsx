@@ -6,7 +6,7 @@ export default function Demo() {
   return (
     <div
       data-slot="palette-editor-demo"
-      className="w-full max-w-md space-y-3 rounded-lg border border-edge bg-card p-4"
+      className="w-full max-w-md space-y-3 rounded-xl border border-edge bg-background p-4 shadow-xs"
     >
       <div className="flex items-baseline justify-between gap-2">
         <p className="text-sm font-medium">图表系列配色</p>

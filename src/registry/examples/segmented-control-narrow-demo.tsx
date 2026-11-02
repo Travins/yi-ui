@@ -34,7 +34,7 @@ export default function SegmentedControlNarrowDemo() {
   return (
     <div
       data-slot="segmented-control-narrow-demo"
-      className="w-full max-w-[23rem] border border-edge bg-background p-3"
+      className="w-full max-w-[23rem] rounded-xl border border-edge bg-background p-4 shadow-xs"
     >
       <p className="mb-3 text-sm font-medium">图表参数</p>
       {/* 参数面板：每列至少 6.5rem（约 104px），宽时三列、窄时自动换成两列 */}

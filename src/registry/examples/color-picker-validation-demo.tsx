@@ -20,17 +20,18 @@ export default function ColorPickerValidationDemo() {
   const [value, setValue] = React.useState("#334155")
   const ratio = contrastOnWhite(value)
   return (
-    <ColorPicker
-      className="max-w-sm"
-      label="正文颜色"
-      value={value}
-      onValueChange={setValue}
-      error={
-        ratio < 4.5
-          ? `在白底上对比度只有 ${ratio.toFixed(1)}:1，正文至少需要 4.5:1`
-          : undefined
-      }
-      description={`白底对比度 ${ratio.toFixed(1)}:1`}
-    />
+    <div className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
+      <ColorPicker
+        label="正文颜色"
+        value={value}
+        onValueChange={setValue}
+        error={
+          ratio < 4.5
+            ? `在白底上对比度只有 ${ratio.toFixed(1)}:1，正文至少需要 4.5:1`
+            : undefined
+        }
+        description={`白底对比度 ${ratio.toFixed(1)}:1`}
+      />
+    </div>
   )
 }

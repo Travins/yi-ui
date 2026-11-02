@@ -12,7 +12,7 @@ export default function BarFieldDemo() {
   return (
     <form
       data-slot="bar-field-demo"
-      className="w-full max-w-sm space-y-4 border border-edge bg-background p-5"
+      className="w-full max-w-sm space-y-4 rounded-xl border border-edge bg-background p-4 shadow-xs"
       onChange={() => setSaved(false)}
       onSubmit={(event) => {
         event.preventDefault()

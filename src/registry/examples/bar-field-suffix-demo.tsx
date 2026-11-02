@@ -4,7 +4,7 @@ import { BarField } from "@/registry/ui/bar-field/bar-field"
 
 export default function BarFieldSuffixDemo() {
   return (
-    <div data-slot="bar-field-suffix-demo" className="w-full max-w-sm space-y-4">
+    <div data-slot="bar-field-suffix-demo" className="w-full max-w-sm space-y-4 rounded-xl border border-edge bg-background p-4 shadow-xs">
       <BarField
         label="宽度"
         inputMode="numeric"

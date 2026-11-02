@@ -11,7 +11,7 @@ const kbd = (
 
 export default function BarFieldSearchDemo() {
   return (
-    <div data-slot="bar-field-search-demo" className="w-full max-w-sm space-y-4">
+    <div data-slot="bar-field-search-demo" className="w-full max-w-sm space-y-4 rounded-xl border border-edge bg-background p-4 shadow-xs">
       <BarField
         type="search"
         label="搜索"

@@ -34,6 +34,7 @@ description: yiui.dev 组件从开发到验收的整体流程与验收标准（�
 - 背景用站点语言：点阵（`bg-dots`）、方格（`bg-grid`）、线条网格、主题色光晕（`var(--primary)` 混色），**不用固定彩色光晕**。
 - 色彩：优先用主题色的深浅（`color-mix(in oklab, var(--primary) N%, var(--background))`），需要多色时用 `--flow-*`；不硬编码颜色。
 - 不放与组件无关的装饰：编号标签（`01 / XXX`）、无意义英文角标、框中框。
+- **表单与输入类示例统一放进默认卡片**：外层 `w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs`（宽度可按内容换 `max-w-xs` / `max-w-md`）。不要写方角、`rounded-lg`、`bg-card` 或别的内边距，也不要让控件裸放在预览里。自带外框的组件（网格工具栏、网格分页、控制面板、图表卡片等）和文字效果、满幅背景类示例不再套卡片；内容要贴边的示例去掉内边距、加 `overflow-hidden`，外框不变。
 - 自带满幅背景的示例登记到 `component-preview-client.tsx` 的 `FULL_BLEED`，在列表登记到 `component-thumbnail.tsx` 的 `fillClasses`，铺满不留内边距；卡片类示例在 `preview-backdrop.tsx` 登记点阵 / 方格底纹。
 - 放不下时只给列表画框单独缩放（`fitClasses`），不改示例本身。
 

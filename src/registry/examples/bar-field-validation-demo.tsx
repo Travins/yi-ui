@@ -32,7 +32,7 @@ export default function BarFieldValidationDemo() {
   const level = LEVELS[Math.max(0, points - 1)]
 
   return (
-    <div data-slot="bar-field-validation-demo" className="w-full max-w-sm">
+    <div data-slot="bar-field-validation-demo" className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
       <BarField
         label="新密码"
         type={visible ? "text" : "password"}

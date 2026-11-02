@@ -53,7 +53,7 @@ function Reading({
 
 export default function MiniChartDashboardDemo() {
   return (
-    <div className="grid w-full max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-lg border border-edge bg-edge sm:grid-cols-3">
+    <div className="grid w-full max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-xl border border-edge bg-edge sm:grid-cols-3 shadow-xs">
       <StatCard className={CELL}>
         <StatLabel>API 调用量</StatLabel>
         <MiniChart

@@ -18,7 +18,7 @@ export default function GridPaginationDemo() {
   return (
     <section
       data-slot="grid-pagination-demo"
-      className="w-full max-w-3xl border border-edge bg-background"
+      className="w-full max-w-3xl overflow-hidden rounded-xl border border-edge bg-background shadow-xs"
     >
       <header className="flex justify-between border-b border-edge px-4 py-3">
         <h3 className="text-sm font-medium">成员列表</h3>

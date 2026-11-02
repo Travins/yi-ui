@@ -6,7 +6,7 @@ export default function ColorPickerDemo() {
   const [primary, setPrimary] = React.useState("#2563eb"),
     [accent, setAccent] = React.useState("#a855f7")
   return (
-    <div className="w-full max-w-sm rounded-xl border border-edge bg-card p-4 shadow-xs">
+    <div className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
       <h3 className="mb-1 font-medium">品牌设置</h3>
       <p className="mb-5 text-xs text-muted-foreground">
         为你的下一个作品挑选颜色

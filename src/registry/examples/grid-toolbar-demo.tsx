@@ -75,7 +75,7 @@ export default function GridToolbarDemo() {
   return (
     <section
       data-slot="grid-toolbar-demo"
-      className="w-full max-w-3xl border border-edge bg-background"
+      className="w-full max-w-3xl overflow-hidden rounded-xl border border-edge bg-background shadow-xs"
     >
       <header className="flex items-center justify-between border-b border-edge px-4 py-3">
         <h3 className="text-sm font-medium">构建日志</h3>

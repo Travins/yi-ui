@@ -14,7 +14,7 @@ const options = [
 ]
 export default function BarSelectDemo() {
   return (
-    <div data-slot="bar-select-demo" className="w-full max-w-sm">
+    <div data-slot="bar-select-demo" className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
       <BarSelect
         multiple
         label="负责人"
