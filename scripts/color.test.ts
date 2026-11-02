@@ -42,3 +42,10 @@ test("alpha 边界", () => {
   assert.equal(rgbToHex({ r: 255, g: 0, b: 0, a: -1 }, true), "#ff000000")
   assert.equal(rgbToHex({ r: 255, g: 0, b: 0, a: 2 }, true), "#ff0000ff")
 })
+
+test("关闭 alpha 时只接受 3/6 位 HEX", () => {
+  assert.equal(parseHex("#aabbccdd", { alpha: false }), null)
+  assert.equal(parseHex("#abcd", { alpha: false }), null)
+  assert.equal(rgbToHex(parseHex("#abc", { alpha: false })!), "#aabbcc")
+  assert.ok(parseHex("#aabbcc", { alpha: false }))
+})

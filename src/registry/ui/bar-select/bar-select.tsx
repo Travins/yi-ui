@@ -95,10 +95,19 @@ function BarSelect(props: BarSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [sheetOpen, setSheetOpen] = React.useState(false)
   function changeSheetOpen(next: boolean) {
-    setSheetOpen(next)
+    setSheetOpen(next && !disabled)
     if (!next) setQuery("")
   }
   const [query, setQuery] = React.useState("")
+  const [wasDisabled, setWasDisabled] = React.useState(disabled)
+  if (wasDisabled !== disabled) {
+    setWasDisabled(disabled)
+    if (disabled) {
+      setOpen(false)
+      setSheetOpen(false)
+      setQuery("")
+    }
+  }
   const coarse = React.useSyncExternalStore(
     subscribePointer,
     () => window.matchMedia("(pointer: coarse)").matches,
@@ -143,7 +152,7 @@ function BarSelect(props: BarSelectProps) {
           showTrigger={false}
           showClear={false}
           className={cn(
-            "[&_[data-slot=input-group-addon]:empty]:hidden m-0! h-9! rounded-none! border-0! border-b! border-border! bg-transparent! shadow-none! has-[[data-slot=input-group-control]:focus-visible]:ring-0! [&_input]:text-base md:[&_input]:text-sm",
+            "m-0! h-9! rounded-none! border-0! border-b! border-border! bg-transparent! shadow-none! has-[[data-slot=input-group-control]:focus-visible]:ring-0! [&_[data-slot=input-group-addon]:empty]:hidden [&_input]:text-base md:[&_input]:text-sm",
             coarse && "h-11! px-2",
           )}
         >
@@ -223,7 +232,11 @@ function BarSelect(props: BarSelectProps) {
           >
             {labels.clear}
           </Button>
-          <Button type="button" size="lg" onClick={() => changeSheetOpen(false)}>
+          <Button
+            type="button"
+            size="lg"
+            onClick={() => changeSheetOpen(false)}
+          >
             {labels.done}
           </Button>
         </div>
@@ -271,9 +284,9 @@ function BarSelect(props: BarSelectProps) {
         multiple={multiple}
         value={value}
         disabled={disabled}
-        open={coarse ? false : open}
+        open={!disabled && !coarse && open}
         onOpenChange={(next) => {
-          if (coarse) return
+          if (coarse || (disabled && next)) return
           setOpen(next)
           if (!next) setQuery("")
         }}
@@ -347,7 +360,9 @@ function BarSelect(props: BarSelectProps) {
                   disabled,
                   "aria-haspopup": "dialog" as const,
                 }
-              : { render: <Button type="button" variant="ghost" size={size} /> })}
+              : {
+                  render: <Button type="button" variant="ghost" size={size} />,
+                })}
             data-slot="combobox-trigger"
             id={id}
             aria-label={props["aria-label"]}
@@ -395,7 +410,12 @@ function BarSelect(props: BarSelectProps) {
                 </>
               )}
             </span>
-            {coarse && <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />}
+            {coarse && (
+              <ChevronDown
+                aria-hidden="true"
+                className="size-4 text-muted-foreground"
+              />
+            )}
           </Trigger>
           {/* 清除键叠在触发条上、下拉箭头左侧（兄弟元素，避免按钮嵌套） */}
           {clearable && values.length > 0 && (
@@ -413,7 +433,7 @@ function BarSelect(props: BarSelectProps) {
           )}
         </div>
         {coarse ? (
-          <Sheet open={sheetOpen} onOpenChange={changeSheetOpen}>
+          <Sheet open={!disabled && sheetOpen} onOpenChange={changeSheetOpen}>
             <SheetContent
               side="bottom"
               className={cn("max-h-[85dvh] overflow-auto", contentClassName)}
@@ -434,7 +454,7 @@ function BarSelect(props: BarSelectProps) {
           <ComboboxContent
             anchor={anchor}
             className={cn(
-              "w-auto min-w-(--anchor-width) data-[chips=true]:min-w-(--anchor-width) max-w-[min(var(--available-width),calc(100vw-2rem))] outline-none",
+              "w-auto max-w-[min(var(--available-width),calc(100vw-2rem))] min-w-(--anchor-width) outline-none data-[chips=true]:min-w-(--anchor-width)",
               contentClassName,
             )}
           >

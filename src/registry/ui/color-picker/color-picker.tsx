@@ -126,17 +126,37 @@ function ColorPicker({
     () => "EyeDropper" in window,
     () => false,
   )
+  const locked = !!(disabled || readOnly)
+  const lockedRef = React.useRef(locked)
+  React.useLayoutEffect(() => {
+    lockedRef.current = locked
+  }, [locked])
+  const [wasLocked, setWasLocked] = React.useState(locked)
+  if (wasLocked !== locked) {
+    setWasLocked(locked)
+    if (locked) {
+      setOpen(false)
+      setSheetOpen(false)
+      setDraft(null)
+      setInvalid(false)
+    }
+  }
+  function commit(hex: string) {
+    if (!lockedRef.current) onValueCommit?.(hex)
+  }
   const root = React.useRef<HTMLDivElement>(null)
-  function change(next: HSV, commit = false) {
+  function change(next: HSV, shouldCommit = false) {
+    if (lockedRef.current) return
     setLocal(next)
     const hex = rgbToHex(hsvToRgb(next), alpha)
     setValue(hex)
     setDraft(null)
     setInvalid(false)
-    if (commit) onValueCommit?.(hex)
+    if (shouldCommit) onValueCommit?.(hex)
   }
   function submit(text: string) {
-    const rgb = parseHex(text)
+    if (lockedRef.current) return
+    const rgb = parseHex(text, { alpha })
     if (!rgb) {
       setInvalid(true)
       return
@@ -175,7 +195,8 @@ function ColorPicker({
         invalid,
         submit,
         change,
-        onValueCommit,
+        onValueCommit: commit,
+        locked,
         eye,
         coarse,
         setSheetOpen,
@@ -209,7 +230,10 @@ function ColorPicker({
         className,
       )}
     >
-      <Popover open={coarse ? false : open} onOpenChange={setOpen}>
+      <Popover
+        open={!locked && !coarse && open}
+        onOpenChange={(next) => setOpen(next && !lockedRef.current)}
+      >
         <div className="@container/color-picker flex h-full flex-col gap-1.5">
           {label && (
             <label
@@ -301,8 +325,12 @@ function ColorPicker({
         )}
       </Popover>
       {coarse && (
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <Sheet
+          open={!locked && sheetOpen}
+          onOpenChange={(next) => setSheetOpen(next && !lockedRef.current)}
+        >
           <SheetContent
+            data-slot="color-picker-sheet"
             side="bottom"
             showCloseButton={false}
             className="max-h-[90dvh] overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"

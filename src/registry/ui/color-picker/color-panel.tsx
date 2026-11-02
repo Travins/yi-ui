@@ -18,6 +18,7 @@ import {
 } from "./color-parts"
 import type { ColorPickerLabels } from "./color-picker"
 type PanelProps = {
+  locked: boolean
   presets: string[]
   hsv: HSV
   hex: string
@@ -36,6 +37,7 @@ type PanelProps = {
   setSheetOpen: (value: boolean) => void
 }
 function ColorPickerPanel({
+  locked,
   presets,
   hsv,
   hex,
@@ -62,7 +64,11 @@ function ColorPickerPanel({
   const values =
     format === "RGB" ? [rgb.r, rgb.g, rgb.b] : [hsl.h, hsl.s * 100, hsl.l * 100]
   return (
-    <div data-slot="color-picker-panel" className="flex flex-col gap-2 p-2">
+    <div
+      inert={locked}
+      data-slot="color-picker-panel"
+      className="flex flex-col gap-2 p-2"
+    >
       <ColorArea
         value={hsv}
         onValueChange={change}
@@ -162,7 +168,7 @@ function ColorPickerPanel({
           className="flex flex-wrap gap-1"
         >
           {presets
-            .filter((c) => parseHex(c))
+            .filter((c) => parseHex(c, { alpha }))
             .map((c) => (
               <Button
                 key={c}

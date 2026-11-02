@@ -22,9 +22,10 @@ const defaultLabels = {
   tritanopia: "蓝色盲",
   vision: "色觉视角",
   add: "添加颜色",
-  up: "上移",
-  down: "下移",
-  remove: "删除",
+  up: (n: number) => `上移第 ${n} 个颜色`,
+  down: (n: number) => `下移第 ${n} 个颜色`,
+  remove: (n: number) => `删除第 ${n} 个颜色`,
+  openColor: (n: number) => `选择第 ${n} 个颜色`,
   warning: "难以分清",
   presets: "配色预设",
   color: (n: number) => `颜色 ${n}`,
@@ -34,7 +35,19 @@ const defaultLabels = {
   conflict: (a: number, b: number, vision: string, d: number) =>
     `第 ${a}、${b} 项在${vision}视角下难以分清（ΔE ${d.toFixed(1)}）`,
 }
-type PaletteEditorLabels = typeof defaultLabels
+type RowLabel = string | ((n: number) => string)
+type PaletteEditorLabels = Omit<
+  typeof defaultLabels,
+  "up" | "down" | "remove" | "openColor"
+> & {
+  up: RowLabel
+  down: RowLabel
+  remove: RowLabel
+  openColor?: RowLabel
+}
+function rowLabel(label: RowLabel, n: number) {
+  return typeof label === "function" ? label(n) : label
+}
 type PaletteEditorProps = Omit<
   React.ComponentProps<"div">,
   "defaultValue" | "onChange"
@@ -110,6 +123,10 @@ function PaletteEditor({
     setIdentity({ keys, next })
   }
   const locked = disabled || readOnly
+  const lockedRef = React.useRef(locked)
+  React.useLayoutEffect(() => {
+    lockedRef.current = locked
+  }, [locked])
   const conflicts = React.useMemo(
     () =>
       findConflicts
@@ -118,7 +135,7 @@ function PaletteEditor({
     [value, threshold, findConflicts],
   )
   function change(next: string[], commit = true) {
-    if (locked) return
+    if (lockedRef.current) return
     setValue(next)
     if (commit) onValueCommit?.([...next])
   }
@@ -249,6 +266,12 @@ function PaletteEditor({
                   )}
                 </span>
                 <ColorPicker
+                  labels={{
+                    open: rowLabel(
+                      labels.openColor ?? defaultLabels.openColor,
+                      i + 1,
+                    ),
+                  }}
                   size="sm"
                   id={`${baseId}-${keys[i]}`}
                   value={hex}
@@ -262,6 +285,7 @@ function PaletteEditor({
                     )
                   }
                   onValueCommit={(color) =>
+                    !lockedRef.current &&
                     onValueCommit?.(value.map((v, n) => (n === i ? color : v)))
                   }
                 />
@@ -269,7 +293,7 @@ function PaletteEditor({
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label={labels.up}
+                  aria-label={rowLabel(labels.up, i + 1)}
                   disabled={locked || i === 0}
                   onClick={() => move(i, i - 1)}
                 >
@@ -279,7 +303,7 @@ function PaletteEditor({
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label={labels.down}
+                  aria-label={rowLabel(labels.down, i + 1)}
                   disabled={locked || i === value.length - 1}
                   onClick={() => move(i, i + 1)}
                 >
@@ -289,7 +313,7 @@ function PaletteEditor({
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label={labels.remove}
+                  aria-label={rowLabel(labels.remove, i + 1)}
                   disabled={locked || value.length <= minItems}
                   onClick={() => {
                     setIdentity({

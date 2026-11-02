@@ -22,12 +22,12 @@ async function main() {
     const original = await input().inputValue()
     await rows
       .first()
-      .getByRole("button", { name: "下移", exact: true })
+      .getByRole("button", { name: /^下移第 \d+ 个颜色$/ })
       .click()
     assert.notEqual(await input().inputValue(), original)
     await rows
       .nth(1)
-      .getByRole("button", { name: "上移", exact: true })
+      .getByRole("button", { name: /^上移第 \d+ 个颜色$/ })
       .press("Alt+ArrowUp")
     assert.equal(await input().inputValue(), original)
     assert.match(
@@ -36,7 +36,7 @@ async function main() {
     )
     await rows
       .first()
-      .getByRole("button", { name: "下移", exact: true })
+      .getByRole("button", { name: /^下移第 \d+ 个颜色$/ })
       .press("Alt+ArrowDown")
     assert.match(
       await editor.locator("[aria-live=polite]").innerText(),
@@ -49,12 +49,12 @@ async function main() {
     while ((await rows.count()) > 1)
       await rows
         .last()
-        .getByRole("button", { name: "删除", exact: true })
+        .getByRole("button", { name: /^删除第 \d+ 个颜色$/ })
         .click()
     assert.equal(
       await rows
         .first()
-        .getByRole("button", { name: "删除", exact: true })
+        .getByRole("button", { name: /^删除第 \d+ 个颜色$/ })
         .isDisabled(),
       true,
     )

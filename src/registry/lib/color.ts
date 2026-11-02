@@ -5,10 +5,14 @@ type HSL = { h: number; s: number; l: number; a: number }
 function clamp(value: number, max = 1) {
   return Math.min(max, Math.max(0, value))
 }
-function parseHex(input: string): RGB | null {
+function parseHex(
+  input: string,
+  { alpha }: { alpha?: boolean } = {},
+): RGB | null {
   let hex = input.trim().replace(/^#/, "")
   if (!/^(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(hex))
     return null
+  if (alpha === false && (hex.length === 4 || hex.length === 8)) return null
   if (hex.length < 5) hex = [...hex].map((c) => c + c).join("")
   return {
     r: parseInt(hex.slice(0, 2), 16),

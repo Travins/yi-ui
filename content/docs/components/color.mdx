@@ -26,7 +26,7 @@ if (rgb) {
 
 ## API
 
-`parseHex` 接受带或不带 `#` 的 3、4、6、8 位 HEX，非法输入返回 `null`。`rgbToHex(rgb, alpha)` 格式化为小写 HEX，alpha 默认关闭。
+`parseHex` 接受带或不带 `#` 的 3、4、6、8 位 HEX，非法输入返回 `null`；传 `{ alpha: false }` 时 4、8 位也返回 `null`。`rgbToHex(rgb, alpha)` 格式化为小写 HEX，alpha 默认关闭。
 
 转换函数：`rgbToHsv`、`hsvToRgb`、`hsvToHsl`、`hslToHsv`、`rgbToHsl`、`hslToRgb`。`rgbToHsv` 和 `rgbToHsl` 的第二个参数是灰度时保留的色相，默认 0。
 

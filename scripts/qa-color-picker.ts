@@ -1,3 +1,4 @@
+import { checkColorLock } from "./lib/qa-color-lock"
 import { chromium } from "playwright-core"
 import assert from "node:assert/strict"
 import { startNextServer } from "./lib/next-server"
@@ -19,6 +20,10 @@ async function main() {
     await input.fill("AbC")
     await input.press("Enter")
     await assert.equal(await input.inputValue(), "#aabbcc")
+    await input.fill("#aabbccdd")
+    await input.press("Enter")
+    assert.equal(await input.getAttribute("aria-invalid"), "true")
+    assert.equal(await input.inputValue(), "#aabbccdd")
     await input.fill("wrong")
     await input.press("Enter")
     assert.equal(await input.getAttribute("aria-invalid"), "true")
@@ -56,9 +61,13 @@ async function main() {
       .getByRole("button", { name: "选择颜色" })
       .tap()
     await p.waitForTimeout(1000)
-    await p.locator("[data-slot=sheet-content]").waitFor({ state: "visible" })
+    await p
+      .locator("[data-slot=color-picker-sheet]")
+      .waitFor({ state: "visible" })
     assert.equal(
-      await p.locator("[data-slot=sheet-content]").getAttribute("data-side"),
+      await p
+        .locator("[data-slot=color-picker-sheet]")
+        .getAttribute("data-side"),
       "bottom",
     )
     console.log(
@@ -66,6 +75,13 @@ async function main() {
     )
     await p.waitForTimeout(300)
     await p.screenshot({ path: ".qa/color-picker-sheet.png" })
+    await checkColorLock(p, "picker")
+    await checkColorLock(p, "palette")
+    await checkColorLock(p, "select")
+    await checkColorLock(page, "picker")
+    await checkColorLock(page, "palette")
+    await checkColorLock(page, "select")
+    console.log("PASS: 桌面和触屏禁用关闭、松手不提交、启用不重开")
     await mobile.close()
   } finally {
     await browser.close()

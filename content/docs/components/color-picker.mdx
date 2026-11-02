@@ -22,7 +22,7 @@ export function BrandColor() {
 }
 ```
 
-HEX 段可直接输入或粘贴带或不带 `#` 的 3、4、6、8 位颜色，失焦或回车时规范化。非法内容保留为草稿并提示错误，不覆盖有效值。用 `value` 与 `onValueChange` 控制颜色，用 `onValueCommit` 保存操作结束时的值。
+HEX 段可直接输入或粘贴带或不带 `#` 的 3、6 位颜色，开启 `alpha` 时还接受 4、8 位，失焦或回车时规范化。非法内容保留为草稿并提示错误，不覆盖有效值。用 `value` 与 `onValueChange` 控制颜色，用 `onValueCommit` 保存操作结束时的值。
 
 ### 值与格式
 
@@ -75,6 +75,7 @@ HEX 段可直接输入或粘贴带或不带 `#` 的 3、4、6、8 位颜色，�
 | color-picker | 字段容器 |
 | color-picker-control | 方条 |
 | color-picker-panel | 面板内容 |
+| color-picker-sheet | 触屏底部面板 |
 | color-area | 二维取色区 |
 | color-track | 色相与透明度滑条 |
 | color-swatch | 棋盘格色块 |
@@ -88,6 +89,10 @@ HEX 段可直接输入或粘贴带或不带 `#` 的 3、4、6、8 位颜色，�
 吸管仅在浏览器提供 EyeDropper 时显示，取消不改变颜色。`labels` 可覆盖中文文案。`name` / `form` 提交规范化颜色，非受控模式支持表单重置。`disabled` / `readOnly` 阻止修改。
 
 颜色工具单元测试：`pnpm exec tsx --test scripts/color.test.ts`。
+
+禁用或只读时会关闭已打开的弹层和触屏面板，重新启用不会自动打开；之后不再触发颜色变化或提交回调。
+
+触屏底部面板的根节点是 `data-slot="color-picker-sheet"`，点外部收起之类的逻辑可以用 `closest` 识别它。
 
 ## 源码
 

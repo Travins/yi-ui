@@ -56,6 +56,8 @@ export function SeriesColors() {
 
 导出 `PaletteEditorProps` 和 `PaletteEditorLabels`。`labels` 可覆盖文本及 `color(n)`、`moved(n,m,k)`、`conflict(a,b,vision,deltaE)` 格式函数。
 
+`labels.up`、`down`、`remove` 和 `openColor` 接受字符串或 `(n: number) => string`，序号从 1 开始。默认是「上移第 N 个颜色」「下移第 N 个颜色」「删除第 N 个颜色」「选择第 N 个颜色」，读屏能分清是哪一行。
+
 | data-slot | 用途 |
 | --- | --- |
 | palette-editor | 根容器 |
@@ -75,6 +77,8 @@ export function SeriesColors() {
 `name` / `form` 用隐藏输入提交 JSON 字符串数组，非受控表单支持 reset。`disabled` 不提交字段，`readOnly` 保留提交但禁止编辑。外部传入的数组应为有效 HEX，且数量在上下限内。默认最少 1 项、最多 12 项，阈值 10。
 
 色觉模拟用于辅助检查，不代表所有人的实际感知；ΔE00 也不等同于文字对比度合规。
+
+禁用或只读时会关闭行内取色面板，之后不再触发颜色提交。
 
 ## 源码
 
