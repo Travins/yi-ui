@@ -85,6 +85,16 @@ async function main() {
       true,
     )
     await page.setViewportSize({ width: 375, height: 812 })
+    // 窄屏下 HEX 必须完整显示，放不下时操作按钮换行
+    for (const box of await rows
+      .locator("input")
+      .evaluateAll((els) =>
+        els.map((e) => [
+          (e as HTMLInputElement).scrollWidth,
+          (e as HTMLInputElement).clientWidth,
+        ]),
+      ))
+      assert.ok(box[0] <= box[1], `HEX 被截断：${box}`)
     assert.equal(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -102,7 +112,7 @@ async function main() {
     for (const text of await hints.allInnerTexts())
       assert.match(text, /绿色盲视角/)
     console.log(
-      "PASS: 自定义检查、增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、375px 无溢出",
+      "PASS: 自定义检查、增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、375px 无溢出且 HEX 完整",
     )
   } finally {
     await browser.close()

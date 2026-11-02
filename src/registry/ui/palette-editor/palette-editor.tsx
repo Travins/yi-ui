@@ -247,7 +247,8 @@ function PaletteEditor({
                 move(i, i + (e.key === "ArrowUp" ? -1 : 1))
               }}
             >
-              <div className="flex min-w-0 items-center gap-1">
+              {/* 放不下时操作按钮换到第二行，保证 HEX 完整显示 */}
+              <div className="flex min-w-0 flex-wrap items-center gap-1">
                 {/* 序号就是输入框的可见标签；读屏读完整名称「颜色 N」 */}
                 <label
                   htmlFor={`${baseId}-${keys[i]}`}
@@ -277,7 +278,7 @@ function PaletteEditor({
                   value={hex}
                   disabled={disabled}
                   readOnly={readOnly}
-                  className="flex-1"
+                  className="min-w-36 flex-1 basis-0"
                   onValueChange={(color) =>
                     change(
                       value.map((v, n) => (n === i ? color : v)),
@@ -289,49 +290,51 @@ function PaletteEditor({
                     onValueCommit?.(value.map((v, n) => (n === i ? color : v)))
                   }
                 />
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={rowLabel(labels.up, i + 1)}
-                  disabled={locked || i === 0}
-                  onClick={() => move(i, i - 1)}
-                >
-                  <ArrowUp />
-                </Button>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={rowLabel(labels.down, i + 1)}
-                  disabled={locked || i === value.length - 1}
-                  onClick={() => move(i, i + 1)}
-                >
-                  <ArrowDown />
-                </Button>
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={rowLabel(labels.remove, i + 1)}
-                  disabled={locked || value.length <= minItems}
-                  onClick={() => {
-                    setIdentity({
-                      ...identity,
-                      keys: keys.filter((_, n) => n !== i),
-                    })
-                    change(value.filter((_, n) => n !== i))
-                    requestAnimationFrame(() =>
-                      root.current
-                        ?.querySelectorAll<HTMLElement>(
-                          "[data-slot=palette-editor-item]",
-                        )
-                        [Math.min(i, value.length - 2)]?.focus(),
-                    )
-                  }}
-                >
-                  <Trash2 />
-                </Button>
+                <div className="ml-auto flex items-center gap-1">
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={rowLabel(labels.up, i + 1)}
+                    disabled={locked || i === 0}
+                    onClick={() => move(i, i - 1)}
+                  >
+                    <ArrowUp />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={rowLabel(labels.down, i + 1)}
+                    disabled={locked || i === value.length - 1}
+                    onClick={() => move(i, i + 1)}
+                  >
+                    <ArrowDown />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label={rowLabel(labels.remove, i + 1)}
+                    disabled={locked || value.length <= minItems}
+                    onClick={() => {
+                      setIdentity({
+                        ...identity,
+                        keys: keys.filter((_, n) => n !== i),
+                      })
+                      change(value.filter((_, n) => n !== i))
+                      requestAnimationFrame(() =>
+                        root.current
+                          ?.querySelectorAll<HTMLElement>(
+                            "[data-slot=palette-editor-item]",
+                          )
+                          [Math.min(i, value.length - 2)]?.focus(),
+                      )
+                    }}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
               </div>
             </li>
           )
