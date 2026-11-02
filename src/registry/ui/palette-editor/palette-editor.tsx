@@ -27,6 +27,7 @@ const defaultLabels = {
   remove: (n: number) => `删除第 ${n} 个颜色`,
   openColor: (n: number) => `选择第 ${n} 个颜色`,
   warning: "难以分清",
+  moreConflicts: (n: number) => `另有 ${n} 条同样难以分清`,
   presets: "配色预设",
   color: (n: number) => `颜色 ${n}`,
   moved: (n: number, m: number, k: number) =>
@@ -58,6 +59,7 @@ type PaletteEditorProps = Omit<
   /** 编辑结束时触发 */ onValueCommit?: (value: string[]) => void
   /** 最少项数 @default 1 */ minItems?: number
   /** 最多项数 @default 12 */ maxItems?: number
+  /** 冲突提示数量上限，Infinity 显示全部 @default 4 */ maxConflicts?: number
   /** ΔE00 提示阈值 @default 10 */ threshold?: number
   /** 自定义冲突检查；传入后替代内置检查，threshold 不再生效 */ findConflicts?: (
     colors: string[],
@@ -91,6 +93,7 @@ function PaletteEditor({
   minItems = 1,
   maxItems = 12,
   threshold = 10,
+  maxConflicts = 4,
   findConflicts,
   presets = [],
   labels: overrides,
@@ -134,6 +137,15 @@ function PaletteEditor({
         : findColorConflicts(value, { threshold }),
     [value, threshold, findConflicts],
   )
+  // 只排序副本，保留调用方数组以及全部冲突供行标记使用；同色差保持原顺序。
+  const visibleConflicts = React.useMemo(
+    () =>
+      [...conflicts]
+        .sort((a, b) => a.deltaE - b.deltaE)
+        .slice(0, Math.max(0, Math.floor(maxConflicts))),
+    [conflicts, maxConflicts],
+  )
+  const remainingConflicts = conflicts.length - visibleConflicts.length
   function change(next: string[], commit = true) {
     if (lockedRef.current) return
     setValue(next)
@@ -355,7 +367,7 @@ function PaletteEditor({
           data-slot="palette-editor-conflicts"
           className="space-y-1 border-t border-edge pt-3 text-xs text-muted-foreground"
         >
-          {conflicts.map((c) => (
+          {visibleConflicts.map((c) => (
             <li
               key={`${c.a}-${c.b}-${c.vision}`}
               className="flex items-start gap-1.5"
@@ -364,6 +376,12 @@ function PaletteEditor({
               {labels.conflict(c.a + 1, c.b + 1, labels[c.vision], c.deltaE)}
             </li>
           ))}
+          {remainingConflicts > 0 && (
+            <li className="flex items-start gap-1.5">
+              <span className="size-3.5 shrink-0" aria-hidden />
+              {labels.moreConflicts(remainingConflicts)}
+            </li>
+          )}
         </ul>
       )}
       <p

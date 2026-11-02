@@ -1,6 +1,7 @@
 import { chromium } from "playwright-core"
 import assert from "node:assert/strict"
 import { mkdirSync } from "node:fs"
+import { findColorConflicts } from "../src/registry/lib/color-vision"
 import { startNextServer } from "./lib/next-server"
 async function main() {
   const server = await startNextServer()
@@ -84,6 +85,49 @@ async function main() {
         .isDisabled(),
       true,
     )
+    // 构造大量冲突，隐藏的提示仍须保留所有行的警示标记。
+    const colors = Array.from(
+      { length: 12 },
+      (_, i) => `#${(i * 2).toString(16).padStart(2, "0").repeat(3)}`,
+    )
+    for (const [i, color] of colors.entries()) {
+      await rows.nth(i).locator("input").fill(color)
+      await rows.nth(i).locator("input").press("Enter")
+    }
+    const conflictList = editor.locator(
+      "[data-slot=palette-editor-conflicts] li",
+    )
+    assert.equal(await conflictList.count(), 5)
+    const texts = await conflictList.allInnerTexts()
+    const expected = [...findColorConflicts(colors)].sort(
+      (a, b) => a.deltaE - b.deltaE,
+    )
+    assert.equal(texts[4], `另有 ${expected.length - 4} 条同样难以分清`)
+    const shownRows = new Set<number>()
+    const deltas = texts.slice(0, 4).map((text, i) => {
+      const match = text.match(/第 (\d+)、(\d+) 项.*ΔE ([\d.]+)/)
+      assert.ok(match, text)
+      shownRows.add(Number(match[1]) - 1)
+      shownRows.add(Number(match[2]) - 1)
+      assert.equal(Number(match[1]) - 1, expected[i].a)
+      assert.equal(Number(match[2]) - 1, expected[i].b)
+      assert.equal(Number(match[3]), Number(expected[i].deltaE.toFixed(1)))
+      return Number(match[3])
+    })
+    assert.deepEqual(
+      deltas,
+      [...deltas].sort((a, b) => a - b),
+    )
+    const marked = rows.filter({ has: page.locator("text=难以分清") })
+    const allConflictRows = new Set(expected.flatMap((c) => [c.a, c.b]))
+    assert.equal(
+      await editor
+        .locator("[data-slot=palette-editor-item][data-conflict]")
+        .count(),
+      allConflictRows.size,
+    )
+    assert.equal(await marked.count(), allConflictRows.size)
+    assert.ok(allConflictRows.size > shownRows.size)
     await page.setViewportSize({ width: 375, height: 812 })
     // 窄屏下 HEX 必须完整显示，放不下时操作按钮换行
     for (const box of await rows
@@ -112,7 +156,7 @@ async function main() {
     for (const text of await hints.allInnerTexts())
       assert.match(text, /绿色盲视角/)
     console.log(
-      "PASS: 自定义检查、增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、375px 无溢出且 HEX 完整",
+      "PASS: 自定义检查、增删上下限、按钮与 Alt 排序、播报、色觉切换、冲突出现与消失、提示上限与汇总、ΔE 升序、全部冲突行标记、375px 无溢出且 HEX 完整",
     )
   } finally {
     await browser.close()
