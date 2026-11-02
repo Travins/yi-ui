@@ -4,7 +4,7 @@ import * as React from "react"
 import { BarSelect } from "@/registry/ui/bar-select/bar-select"
 
 export default function BarSelectValidationDemo() {
-  const [value, setValue] = React.useState<string | null>(null)
+  const [value, setValue] = React.useState<string | null>("lin")
   return (
     <div data-slot="bar-select-validation-demo" className="w-full max-w-sm rounded-xl border border-edge bg-background p-4 shadow-xs">
       <BarSelect
