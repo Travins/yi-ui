@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# 推送前：registry 规范、脚本单测、产物同步，合计约几秒。
+# 确实要跳过时用 git push --no-verify。
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 1
+. .githooks/lib.sh
+use_project_node || exit 1
+
+pnpm --silent exec tsx scripts/check-registry-sync.ts --ref HEAD || exit 1
+# registry:lint 读的是工作区：有未提交的改动时，报错可能来自它们
+pnpm --silent registry:lint --max-warnings 0 >/dev/null || {
+  echo "✗ registry:lint 未通过，运行 pnpm registry:lint 查看详情" >&2
+  exit 1
+}
+pnpm --silent test >/dev/null || {
+  echo "✗ 测试未通过，运行 pnpm test 查看详情" >&2
+  exit 1
+}

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 本地验收的临时脚本和报告，不入库
+    ".qa/**",
   ]),
 ]);
 

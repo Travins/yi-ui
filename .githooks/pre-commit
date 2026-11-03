@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# 提交前：查的都是暂存区（即将提交的内容），工作区里别人没提交的改动不影响结果。
+# 确实要跳过时用 git commit --no-verify。
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 1
+. .githooks/lib.sh
+
+# 禁提词清单只存在于维护者本机，没有就跳过
+if [ -f .forbidden-terms ]; then
+  hits="$(git grep --cached -Iil -f .forbidden-terms || true)"
+  if [ -n "$hits" ]; then
+    echo "✗ 暂存区有文件包含禁提词（见 AGENTS.md 第 4 节）：" >&2
+    echo "$hits" | sed 's/^/  /' >&2
+    exit 1
+  fi
+fi
+
+# 动了发布源码，public/r 必须一起提交
+if git diff --cached --name-only | grep -qE '^(src/registry/|registry\.json$|public/r/)'; then
+  use_project_node || exit 1
+  pnpm --silent exec tsx scripts/check-registry-sync.ts --ref :
+fi

@@ -77,6 +77,8 @@ const CHECKS = {
   cardSpec: "⑨ 示例卡片规范",
   buttonHeight: "⑪ 提交按钮高度",
   runtime: "⑩ 运行时报错",
+  popupHighlight: "⑫ 弹层打开时方条保持高亮",
+  toolbarFit: "⑬ 工具栏里铺满整格",
 } as const
 
 const CHECK_IDS: Record<string, string> = {
@@ -91,6 +93,8 @@ const CHECK_IDS: Record<string, string> = {
   [CHECKS.cardSpec]: "card-spec",
   [CHECKS.buttonHeight]: "button-height",
   [CHECKS.runtime]: "runtime",
+  [CHECKS.popupHighlight]: "popup-highlight",
+  [CHECKS.toolbarFit]: "toolbar-fit",
 }
 
 type Level = "error" | "warn"
@@ -121,6 +125,8 @@ type Ctx = {
     widths: number
     fields: number
     bars: number
+    popups: number
+    cells: number
   }
 }
 
@@ -908,6 +914,89 @@ async function checkCaretAfterPress(ctx: Ctx, page: Page, scope: Scope) {
 }
 
 /* ------------------------------------------------------------------ */
+/* ⑫ 弹层打开时方条保持高亮                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 点开方条里的触发键，把鼠标移开后量方条底色：和未悬停时一样，
+ * 用户把鼠标移进弹层时就看不出弹层属于哪一条。
+ */
+async function checkPopupHighlight(ctx: Ctx, page: Page, scope: Scope) {
+  const controls = scope.locator.locator(
+    '[data-slot$="-control"]:has(button[aria-expanded])',
+  )
+  for (const index of await usableIndexes(controls, 4)) {
+    const control = controls.nth(index)
+    const trigger = await handleAt(control.locator("button[aria-expanded]").first())
+    if (!trigger) continue
+    const background = () =>
+      control.evaluate((node) => getComputedStyle(node).backgroundColor)
+    const where = `${scope.label} · ${await control.getAttribute("data-slot")}`
+    await resetFocus(page, scope)
+    await page.mouse.move(1, 1)
+    await page.waitForTimeout(RING_SETTLE_MS)
+    const idle = await background()
+    if (!(await pressPointer(page, trigger))) continue
+    await page.mouse.move(1, 1)
+    await page.waitForTimeout(RING_SETTLE_MS)
+    if ((await trigger.getAttribute("aria-expanded")) === "true") {
+      ctx.stats.popups += 1
+      const open = await background()
+      if (open === idle) {
+        add(
+          ctx,
+          CHECKS.popupHighlight,
+          where,
+          `弹层打开、鼠标移开后方条底色仍是 ${idle}，看不出弹层属于这一条`,
+          "error",
+          await screenshot(ctx, page, CHECKS.popupHighlight, trigger, where),
+        )
+      }
+    }
+    await resetFocus(page, scope)
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* ⑬ 工具栏里铺满整格                                                    */
+/* ------------------------------------------------------------------ */
+
+async function checkToolbarFit(ctx: Ctx, _page: Page, scope: Scope) {
+  const reports = await scope.locator.evaluate((root, selector) => {
+    const cells = root.querySelectorAll("[data-slot=grid-toolbar-item]")
+    return [...cells].flatMap((cell) => {
+      const control = cell.querySelector(selector)
+      if (!control) return []
+      const style = getComputedStyle(control)
+      const inner = control.getBoundingClientRect()
+      return {
+        slot: control.getAttribute("data-slot"),
+        border: parseFloat(style.borderTopWidth),
+        radius: parseFloat(style.borderTopLeftRadius),
+        // 格子的边线占 1px
+        gap: cell.getBoundingClientRect().height - inner.height,
+      }
+    })
+  }, CONTROL_SELECTOR)
+  for (const report of reports) {
+    ctx.stats.cells += 1
+    const problems = [
+      report.border > 0 && `还有 ${report.border}px 外框`,
+      report.radius > 0 && `还有 ${report.radius}px 圆角`,
+      report.gap > 1.5 && `比格子矮 ${report.gap}px`,
+    ].filter(Boolean)
+    if (problems.length) {
+      add(
+        ctx,
+        CHECKS.toolbarFit,
+        `${scope.label} · ${report.slot}`,
+        `放进 GridToolbarItem 后${problems.join("、")}，缺少 in-data-[slot=grid-toolbar]: 适配`,
+      )
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* ⑥ 状态切换宽度不变                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -1426,10 +1515,13 @@ async function runDesktop(
   for (const scope of scopes) {
     for (const check of [
       checkSubmitHeight,
+      checkToolbarFit,
       checkKeyboardRing,
       checkPointerRing,
       checkPressedBorder,
       checkCaretAfterPress,
+      // 放最后：它会打开又关闭弹层，排在焦点环检查前面会影响那边的基准样式
+      checkPopupHighlight,
     ]) {
       try {
         await check(ctx, page, scope)
@@ -1592,6 +1684,8 @@ async function main() {
         widths: 0,
         fields: 0,
         bars: 0,
+        popups: 0,
+        cells: 0,
       },
     }
     console.log(`\n· ${name}（${url}）`)
@@ -1610,7 +1704,7 @@ async function main() {
       )
     }
     console.log(
-      `    ${ctx.stats.scopes} 个示例 · 点按 ${ctx.stats.clicks} 次 · 按住 ${ctx.stats.presses} 次 · 量宽度 ${ctx.stats.widths} 次 · 390 下扫到 ${ctx.stats.fields} 个输入框 / ${ctx.stats.bars} 个方条`,
+      `    ${ctx.stats.scopes} 个示例 · 点按 ${ctx.stats.clicks} 次 · 按住 ${ctx.stats.presses} 次 · 弹层 ${ctx.stats.popups} 个 · 工具栏格 ${ctx.stats.cells} 个 · 量宽度 ${ctx.stats.widths} 次 · 390 下扫到 ${ctx.stats.fields} 个输入框 / ${ctx.stats.bars} 个方条`,
     )
   }
 

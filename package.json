@@ -14,11 +14,13 @@
     "registry:index": "tsx scripts/build-registry-index.ts",
     "prebuild": "pnpm registry:lint --max-warnings 0 && pnpm registry:build",
     "postinstall": "fumadocs-mdx",
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
     "registry:lint": "tsx scripts/registry-lint.ts",
     "qa:install": "tsx scripts/qa-install.ts",
     "qa:loading": "tsx scripts/qa-loading.ts",
     "qa:interaction": "tsx scripts/qa-interaction.ts",
     "qa:shots": "tsx scripts/qa-shots.ts",
+    "test": "node --import tsx --test scripts/*.test.ts && pnpm test:chinese-number && tsx scripts/registry-lint/self-test.ts",
     "test:chinese-number": "tsx scripts/chinese-number-self-test.ts",
     "regions:build": "env -u ALL_PROXY -u all_proxy -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy tsx scripts/build-china-regions.ts"
   },

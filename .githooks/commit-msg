@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# 提交信息同样不得出现禁提词
+if [ -f .forbidden-terms ] && grep -Iiq -f .forbidden-terms "$1"; then
+  echo "✗ 提交信息包含禁提词（见 AGENTS.md 第 4 节）" >&2
+  exit 1
+fi
