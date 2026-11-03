@@ -206,6 +206,26 @@ function TypeTable({ type }: { type: Record<string, TypeTableEntry> }) {
   )
 }
 
+/** 组件 Props 的类型与 JSDoc：网页属性表和 /md/ 文档共用。 */
+async function componentPropRows(name: string, component: string) {
+  const item = registry.items.find((item) => item.name === name)
+  if (!item) throw new Error(`未登记的组件：${name}`)
+  const entries = await generate(item.files[0].path, component)
+  return entries.map((entry) => ({
+    name: entry.name,
+    type: entry.type,
+    // `boolean | undefined` 这类可选属性被简化成 union，按完整类型重新推一次
+    simplifiedType:
+      entry.simplifiedType === "union"
+        ? simplifyType(entry.type)
+        : entry.simplifiedType,
+    description: entry.description || genericDescriptions[entry.name],
+    default: entry.tags.find((tag) => tag.name === "default")?.text,
+    required: entry.required,
+    deprecated: entry.deprecated,
+  }))
+}
+
 /** 从源码自动生成：读取组件 Props 的类型与 JSDoc（说明、`@default`、`@deprecated`）。 */
 async function PropsTable({
   name,
@@ -214,11 +234,9 @@ async function PropsTable({
   name: string
   component: string
 }) {
-  const item = registry.items.find((item) => item.name === name)
-  if (!item) throw new Error(`未登记的组件：${name}`)
-  const entries = await generate(item.files[0].path, component)
+  const rows = await componentPropRows(name, component)
   // 只透传原生属性的组件没有自己的 Props，不必硬凑一张空表。
-  if (entries.length === 0) {
+  if (rows.length === 0) {
     return (
       <p className="text-[13px] text-muted-foreground">
         {component} 没有自定义 Props；该组件继承原生元素的全部属性。
@@ -226,22 +244,8 @@ async function PropsTable({
     )
   }
   return (
-    <TypeTableView
-      rows={entries.map((entry) => ({
-        name: entry.name,
-        type: entry.type,
-        // `boolean | undefined` 这类可选属性被简化成 union，按完整类型重新推一次
-        simplifiedType:
-          entry.simplifiedType === "union"
-            ? simplifyType(entry.type)
-            : entry.simplifiedType,
-        description: entry.description || genericDescriptions[entry.name],
-        default: entry.tags.find((tag) => tag.name === "default")?.text,
-        required: entry.required,
-        deprecated: entry.deprecated,
-      }))}
-    />
+    <TypeTableView rows={rows} />
   )
 }
 
-export { PropsTable, TypeTable }
+export { componentPropRows, PropsTable, TypeTable }

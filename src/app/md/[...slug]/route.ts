@@ -1,4 +1,4 @@
-import { pageMarkdown } from "@/components/docs/page-markdown"
+import { agentMarkdown } from "@/components/docs/agent-markdown"
 import { docsPages } from "@/lib/site-content"
 
 export const dynamic = "force-static"
@@ -12,7 +12,7 @@ const markdownPages = () =>
     (page) => !(page.slugs.length === 1 && overviewSections.has(page.slugs[0])),
   )
 
-/** /md/components/grid-layout.md：与页面一致的 Markdown 原文，构建时静态生成。 */
+/** /md/components/grid-layout.md：给 Agent 读的 Markdown，示例和属性表已展开，构建时静态生成。 */
 export function generateStaticParams() {
   return markdownPages().map((page) => ({
     slug: [...page.slugs.slice(0, -1), `${page.slugs.at(-1)}.md`],
@@ -29,7 +29,7 @@ export async function GET(
   )
   const page = markdownPages().find((item) => item.slugs.join("/") === key)
   if (!page) return new Response("Not Found", { status: 404 })
-  return new Response(`${await pageMarkdown(page)}\n`, {
+  return new Response(`${await agentMarkdown(page)}\n`, {
     headers: { "Content-Type": "text/markdown; charset=utf-8" },
   })
 }

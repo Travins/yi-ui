@@ -46,7 +46,7 @@ Yi UI 面向**中文产品**：文档用简体中文写，组件的默认文案�
 - **手机上好用** —— 触屏设备上按钮与输入框自动加高一档（36 / 40 / 44px），拖拽类控件能区分滚动和拖动，数字输入调起数字键盘；每个示例都能扫码在手机上单独打开体验。
 - **动效有分寸** —— 进入视口才播放、离屏自动暂停、尊重「减少动态效果」。
 - **预渲染友好** —— 页面在构建时全部预渲染；依赖测量或画布的组件在脚本加载前渲染同尺寸占位，不会出现空白或布局跳动。
-- **对 AI 友好** —— 每篇文档都有 Markdown 版本，并提供 [`llms.txt`](https://yiui.dev/llms.txt) 与 [`llms-full.txt`](https://yiui.dev/llms-full.txt)。
+- **对 AI 友好** —— 用 `npx skills add Travins/yi-ui --skill yi-ui` 给 Agent 装上使用技能；每篇文档都有展开了示例和属性表的 Markdown 版本，并提供 [`llms.txt`](https://yiui.dev/llms.txt) 与 [`llms-full.txt`](https://yiui.dev/llms-full.txt)。
 
 ## 快速开始
 

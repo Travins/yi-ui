@@ -7,6 +7,7 @@ cd "$(git rev-parse --show-toplevel)" || exit 1
 use_project_node || exit 1
 
 pnpm --silent exec tsx scripts/check-registry-sync.ts --ref HEAD || exit 1
+pnpm --silent exec tsx scripts/build-skill-catalog.ts --check || exit 1
 # registry:lint 读的是工作区：有未提交的改动时，报错可能来自它们
 pnpm --silent registry:lint --max-warnings 0 >/dev/null || {
   echo "✗ registry:lint 未通过，运行 pnpm registry:lint 查看详情" >&2

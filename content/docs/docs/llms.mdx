@@ -13,6 +13,18 @@ description: 让 AI 编辑器与 Agent 读取本站文档，并通过 shadcn MCP
 
 两个文件都在构建时生成，内容与页面保持一致。
 
+## Agent 技能
+
+给 Agent 装上 Yi UI 技能后，它会知道怎么选条目、怎么安装，以及导入路径、按钮高度、方条控件这些容易写错的地方：
+
+```bash title="终端"
+npx skills add Travins/yi-ui --skill yi-ui
+```
+
+技能只面向使用组件的项目。需要细节时，它会读每个条目的 Agent 版文档，例如 [`/md/components/number-stepper.md`](https://yiui.dev/md/components/number-stepper.md)，里面已经展开了示例代码和属性表。
+
+Agent 发现组件有问题时，技能会让它先告诉你，经你同意再提 [issue](https://github.com/Travins/yi-ui/issues)。
+
 ## 在 AI 编辑器中使用
 
 最简单的方式：让 Agent 先读 `https://yiui.dev/llms.txt`，从中找到组件清单和每个条目的 JSON 地址，再按[安装](/docs/installation/)页里的命令运行。

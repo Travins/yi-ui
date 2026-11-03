@@ -86,6 +86,7 @@ src/
   lib/                       source.ts（Fumadocs loader）、themes.ts、utils.ts
 registry.json                shadcn registry 清单
 public/r/                    `shadcn build` 产物（生成物，不手改）
+skills/yi-ui/                给使用者 Agent 的技能（`npx skills add`）；references/catalog.md 由 registry:build 生成
 scripts/                     构建辅助脚本
 ```
 
@@ -123,6 +124,8 @@ scripts/                     构建辅助脚本
 - **所有 registry 代码必须遵守 `component-conventions` 技能（组件书写规范）**：分层依赖、命名、data-slot、导出方式、Props 约定、labels 文案、样式 token、可访问性、文档结构。写任何组件前先读它
 
 ## 5. 项目级技能（`.agents/skills/`，`.claude/skills` 和 `.pi/skills` 是指向它的软链接）
+
+这些是维护本仓库用的。给组件使用者的技能在 `skills/yi-ui/`：改了组件的用法或易错点，要同步它的 `SKILL.md`。
 
 | 技能 | 用途 | 何时必读 |
 |---|---|---|

@@ -46,7 +46,7 @@ Yi UI is **Chinese-first**: the docs are in Simplified Chinese, default componen
 - **Works on phones** — On touch devices buttons and inputs grow one step (36 / 40 / 44px), drag controls tell scrolling from dragging, numeric inputs bring up the number keyboard, and every example can be opened on a phone by scanning a QR code.
 - **Thoughtful motion** — Animations start when scrolled into view, pause off-screen and respect "reduce motion".
 - **Prerender-friendly** — Every page is prerendered at build time. Components that measure layout or draw on a canvas render a same-size placeholder before scripts load, so there are no blank areas or layout shifts.
-- **AI-friendly** — Every doc page has a Markdown version, plus [`llms.txt`](https://yiui.dev/llms.txt) and [`llms-full.txt`](https://yiui.dev/llms-full.txt).
+- **AI-friendly** — Install the agent skill with `npx skills add Travins/yi-ui --skill yi-ui`. Every doc page has a Markdown version with examples and props expanded, plus [`llms.txt`](https://yiui.dev/llms.txt) and [`llms-full.txt`](https://yiui.dev/llms-full.txt).
 
 ## Quick start
 

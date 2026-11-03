@@ -31,6 +31,8 @@ export function GET() {
       ),
       "## 其他资源",
       `- [全部文档与博客原文](${absoluteUrl("/llms-full.txt")}): 去除 frontmatter 的 MDX 全文。`,
+      "- Agent 技能：`npx skills add Travins/yi-ui --skill yi-ui`。",
+      "- 每个条目的 Agent 版文档（含示例代码和属性表）：`https://yiui.dev/md/components/<name>.md`，区块和页面把 components 换成 blocks、pages。",
       `- [安装](${absoluteUrl("/docs/installation/")}): 初始化 shadcn 并安装第一个组件。`,
       `- [Registry 与命名空间](${absoluteUrl("/docs/registry/")}): 用 URL 或 @yiui 命名空间安装组件。`,
       `- [主题](${absoluteUrl("/themes/")}): 颜色主题。`,

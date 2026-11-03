@@ -1,0 +1,45 @@
+{
+  "skill_name": "yi-ui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "在这个 Next.js + shadcn（base-nova）项目里，用 Yi UI 做一个图形样式工具栏：填充色、描边色、线宽（0.5 步进，单位 px）。放在首页。",
+      "expectations": [
+        "用 @yiui 或 yiui.dev/r 安装 grid-toolbar、color-picker、number-stepper",
+        "导入路径带子目录，如 @/components/ui/color-picker/color-picker",
+        "控件放在 GridToolbar 和 GridToolbarItem 里，没有手动去边框",
+        "线宽用 NumberStepper，step={0.5}、unit=\"px\"",
+        "控件通过 label 属性写标签",
+        "没有硬编码颜色，类型检查和构建通过"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "用 Yi UI 做一个收货信息表单：姓名、手机号、省市区、订单金额，带提交按钮，手机上也要好用。",
+      "expectations": [
+        "选用 phone-input、region-picker、amount-input、bar-field，而不是自己写校验和格式化",
+        "字段设置 name，随表单提交原始值",
+        "提交按钮通过 Button 的 size 取高度，没有写 h-*",
+        "错误提示随值计算，没有写死 error",
+        "没有硬编码颜色，类型检查和构建通过"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "这个项目 components.json 的 style 是 radix-nova。帮我装 Yi UI 的 app-shell-01。",
+      "expectations": [
+        "先读 components.json 并指出底座是 Radix",
+        "告诉用户 app-shell-01 在 Radix 项目下要手改，不推荐",
+        "没有擅自把项目迁移到 Base UI，也没有直接覆盖文件"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我要一个确认删除的对话框，项目里装了 Yi UI。",
+      "expectations": [
+        "使用 shadcn 官方的 alert-dialog 或 dialog，没有去 Yi UI 里找或重新实现",
+        "自定义触发器用 render，不用 asChild"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 ---
 name: component-conventions
 description: yiui.dev 组件书写规范（强制）。编写或修改 src/registry 下任何组件、区块、页面、演示时必读：分层与依赖规则、文件与命名、代码结构（data-slot、导出、Props、变体、受控/非受控）、文案与 i18n、样式 token、客户端/静态导出、可访问性、文档结构与自查清单。
+metadata:
+  internal: true
 ---
 
 # 组件书写规范

@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --ignore-pattern \".source/**\"",
-    "registry:build": "pnpm themes:build && tsx scripts/sync-registry-css.ts && pnpm registry:index && env -u ALL_PROXY -u all_proxy shadcn build && tsx scripts/build-registry-catalog.ts && pnpm themes:build",
+    "registry:build": "pnpm themes:build && tsx scripts/sync-registry-css.ts && pnpm registry:index && env -u ALL_PROXY -u all_proxy shadcn build && tsx scripts/build-registry-catalog.ts && tsx scripts/build-skill-catalog.ts && pnpm themes:build",
     "format": "prettier --write .",
     "themes:build": "tsx scripts/build-theme-registry.ts",
     "registry:index": "tsx scripts/build-registry-index.ts",

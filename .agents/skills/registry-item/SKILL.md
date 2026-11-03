@@ -1,6 +1,8 @@
 ---
 name: registry-item
 description: 在 yiui.dev 新增或修改一个 shadcn registry 条目（组件 registry:ui、区块 registry:block、页面 registry:page、主题 registry:theme）的完整流程：源码位置、registry.json、演示、MDX 文档、构建与安装验证。
+metadata:
+  internal: true
 ---
 
 # 新增 registry 条目

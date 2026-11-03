@@ -1,6 +1,8 @@
 ---
 name: grid-design
 description: yiui.dev 的线条网格设计规范。在本项目里做任何页面、区块、页面布局时使用：竖线容器、全屏横线、点阵分隔带与交点十字、虚线分栏、章节编号栏、配色与排版规则。
+metadata:
+  internal: true
 ---
 
 # 线条网格设计规范
