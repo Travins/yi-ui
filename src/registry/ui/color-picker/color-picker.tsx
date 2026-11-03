@@ -263,6 +263,8 @@ function ColorPicker({
                 ? "border-destructive ring-3 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40"
                 : "border-edge focus-within:border-foreground/25 focus-within:bg-background hover:not-focus-within:bg-muted dark:focus-within:bg-input/30",
               disabled && "opacity-50",
+              // 面板打开时方条保持高亮：鼠标移进面板后，仍看得出面板属于这一条
+              panelOpen && "bg-muted in-data-[slot=grid-toolbar]:bg-muted",
             )}
           >
             {label && (
