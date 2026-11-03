@@ -129,7 +129,7 @@ scripts/                     构建辅助脚本
 | `shadcn` | shadcn CLI、组件组合、registry 规范 | 增删 `components/ui`、写 registry |
 | `next-best-practices` | Next.js 文件约定、RSC 边界、元数据 | 写任何路由/布局 |
 | `vercel-react-best-practices` | React 性能 | 写交互组件 |
-| `frontend-design` | 高质量视觉设计 | 做新页面、新组件外观 |
+| `frontend-design` | 高质量视觉设计（与 `grid-design` 冲突时以 `grid-design` 为准） | 做新页面、新组件外观 |
 | `web-design-guidelines` | UI/可访问性审查 | 交付 UI 前自查 |
 | `next-dev-loop` | 在运行中的 `next dev` 里验证行为 | 验收 UI 改动 |
 | `component-conventions` | **组件书写规范（强制）** | 写/改 src/registry 下任何代码 |
