@@ -43,7 +43,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control/segmented-co
 
 ### 放进来的控件
 
-[方条输入](/components/bar-field/)、[分段选择](/components/segmented-control/)、[方条下拉](/components/bar-select/)放进工具栏时会自动换成无框写法：去掉自己的边框、圆角和底色，高度铺满整格，焦点环画在格子内侧。分段选择还会把每个选项拆成一格，选中项整格铺底色，不再是圆角的滑块。单独使用时保持原样，不需要额外传参数。原理是这三个组件带了 `in-data-[slot=grid-toolbar]:` 样式，只在祖先是网格工具栏时生效，组件之间没有互相引用。
+[方条输入](/components/bar-field/)、[分段选择](/components/segmented-control/)、[方条下拉](/components/bar-select/)、[数量选择](/components/number-stepper/)放进工具栏时会自动换成无框写法：去掉自己的边框、圆角和底色，高度铺满整格，焦点环画在格子内侧。分段选择还会把每个选项拆成一格，选中项整格铺底色，不再是圆角的滑块。单独使用时保持原样，不需要额外传参数。原理是这些组件带了 `in-data-[slot=grid-toolbar]:` 样式，只在祖先是网格工具栏时生效，组件之间没有互相引用。
 
 图标按钮用官方 `Button`：`variant="ghost"`、`size="icon-lg"`（默认高度）或 `size="icon"`（`size="sm"` 时），再加 `rounded-none focus-visible:ring-inset`，就是一个方形的格子。
 

@@ -1,9 +1,9 @@
-import { BarField } from "@/registry/ui/bar-field/bar-field"
 import { ColorPicker } from "@/registry/ui/color-picker/color-picker"
 import {
   GridToolbar,
   GridToolbarItem,
 } from "@/registry/ui/grid-toolbar/grid-toolbar"
+import { NumberStepper } from "@/registry/ui/number-stepper/number-stepper"
 
 export default function ColorPickerToolbarDemo() {
   return (
@@ -14,15 +14,13 @@ export default function ColorPickerToolbarDemo() {
       <GridToolbarItem grow className="min-w-44">
         <ColorPicker label="描边" defaultValue="#0f172a" />
       </GridToolbarItem>
-      <GridToolbarItem className="w-32">
-        <BarField
+      <GridToolbarItem grow className="min-w-52">
+        <NumberStepper
           label="线宽"
-          type="number"
-          inputMode="decimal"
-          min={0}
+          defaultValue={1.5}
           step={0.5}
-          defaultValue="1.5"
-          suffix={<span className="pe-2 text-xs">px</span>}
+          unit="px"
+          format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
         />
       </GridToolbarItem>
     </GridToolbar>

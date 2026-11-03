@@ -20,7 +20,7 @@ const DEFAULT_LABELS: NumberStepperLabels = {
 }
 
 const numberStepperControlVariants = cva(
-  "flex min-w-0 items-center rounded-md border border-edge bg-muted/60 text-sm transition-colors not-aria-invalid:has-[[data-slot=number-stepper-input]:focus]:border-foreground/25 not-aria-invalid:has-[[data-slot=number-stepper-input]:focus]:bg-background dark:not-aria-invalid:has-[[data-slot=number-stepper-input]:focus]:bg-input/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+  "flex min-w-0 items-center rounded-md border border-edge bg-muted/60 text-sm transition-colors not-aria-invalid:has-[[data-slot=number-stepper-input]:focus]:border-foreground/25 not-aria-invalid:has-[[data-slot=number-stepper-input]:focus]:bg-background dark:not-aria-invalid:has-[[data-slot=number-stepper-input]:focus]:bg-input/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 in-data-[slot=grid-toolbar]:h-full! in-data-[slot=grid-toolbar]:rounded-none in-data-[slot=grid-toolbar]:border-0 in-data-[slot=grid-toolbar]:bg-transparent! in-data-[slot=grid-toolbar]:aria-invalid:ring-inset in-data-[slot=grid-toolbar]:has-[[data-slot=number-stepper-input]:focus]:ring-3 in-data-[slot=grid-toolbar]:has-[[data-slot=number-stepper-input]:focus]:ring-ring/50 in-data-[slot=grid-toolbar]:has-[[data-slot=number-stepper-input]:focus]:ring-inset",
   {
     variants: {
       size: {
@@ -128,7 +128,7 @@ function NumberStepper({
     // 按下时只缩小图标给一点触感，按钮底色和尺寸不动；减少动态效果时不缩。
     // 按钮留在方条边框里面、撑满框内高度：不用负边距伸到边线上，否则按下时的底色和下沉会盖住边框（出错时的红边尤其明显）
     className:
-      "h-full shrink-0 touch-manipulation self-stretch focus-visible:ring-inset [&_svg]:transition-transform [&_svg]:duration-100 [&_svg]:ease-out active:[&_svg]:scale-[0.8] motion-reduce:[&_svg]:transition-none motion-reduce:active:[&_svg]:scale-100 rounded-none border-0 border-edge text-muted-foreground transition-colors active:not-aria-[haspopup]:translate-y-0 aria-disabled:pointer-events-none aria-disabled:opacity-40 disabled:opacity-40",
+      "h-full pointer-coarse:h-full shrink-0 touch-manipulation self-stretch focus-visible:ring-inset [&_svg]:transition-transform [&_svg]:duration-100 [&_svg]:ease-out active:[&_svg]:scale-[0.8] motion-reduce:[&_svg]:transition-none motion-reduce:active:[&_svg]:scale-100 rounded-none border-0 border-edge text-muted-foreground transition-colors active:not-aria-[haspopup]:translate-y-0 aria-disabled:pointer-events-none aria-disabled:opacity-40 disabled:opacity-40",
   })
 
   function handleCommit(next: number | null) {
@@ -159,6 +159,8 @@ function NumberStepper({
         "inline-flex max-w-full flex-col gap-1.5 align-middle",
         // 只在有标签时建容器：容器查询会让无标签的自适应宽度塌成 0
         label && "@container/number-stepper w-full",
+        // 工具栏的格子按内容定宽，这里取消容器查询（否则宽度塌成 0），标签始终留在条内
+        "in-data-[slot=grid-toolbar]:h-full in-data-[slot=grid-toolbar]:w-full in-data-[slot=grid-toolbar]:[container-type:normal]",
         className,
       )}
       value={value}
@@ -220,7 +222,7 @@ function NumberStepper({
           disabled={pending || readOnly || (value !== null && value <= min)}
           className={cn(
             buttonClass,
-            "border-r border-edge first:rounded-l-[calc(var(--radius-md)-1px)]",
+            "border-r border-edge first:rounded-l-[calc(var(--radius-md)-1px)] in-data-[slot=grid-toolbar]:rounded-none! in-data-[slot=grid-toolbar]:border-dashed",
           )}
         >
           {pending && lastAction === "decrement" ? (
@@ -233,7 +235,7 @@ function NumberStepper({
             <Minus aria-hidden="true" />
           )}
         </NumberField.Decrement>
-        <div className="relative flex min-w-0 shrink items-center justify-center gap-1 px-2 @max-[20rem]/number-stepper:flex-1">
+        <div className="relative flex min-w-0 shrink items-center justify-center gap-1 px-2 in-data-[slot=grid-toolbar]:flex-1 @max-[20rem]/number-stepper:flex-1">
           <NumberField.Input
             ref={inputRef}
             data-slot="number-stepper-input"
@@ -282,7 +284,7 @@ function NumberStepper({
           }
           className={cn(
             buttonClass,
-            "rounded-r-[calc(var(--radius-md)-1px)] border-l border-edge",
+            "rounded-r-[calc(var(--radius-md)-1px)] border-l border-edge in-data-[slot=grid-toolbar]:rounded-none! in-data-[slot=grid-toolbar]:border-dashed",
           )}
         >
           {pending && lastAction === "increment" ? (
