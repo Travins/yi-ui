@@ -100,6 +100,17 @@
       "target": "@components/auth-01/use-auth-form.ts"
     }
   ],
+  "cssVars": {
+    "theme": {
+      "color-edge": "var(--edge)"
+    },
+    "light": {
+      "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+    },
+    "dark": {
+      "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+    }
+  },
   "meta": {
     "iframeHeight": "800px"
   },

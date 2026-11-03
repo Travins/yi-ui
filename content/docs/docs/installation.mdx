@@ -85,7 +85,7 @@ CLI 做三件事：写入源码文件、安装 npm 依赖、把样式合并进�
 
 | 内容 | 由谁写入 | 说明 |
 | --- | --- | --- |
-| `--edge`，以及 `@theme inline` 里的 `--color-edge` | `grid-layout`、`stat-card`、`chart-card`、`control-panel` 等用到线条的条目 | 线条颜色，由 `--foreground` 按比例混合，对应 `border-edge` 等工具类，亮暗各一份 |
+| `--edge`，以及 `@theme inline` 里的 `--color-edge` | 所有用到线条颜色的条目 | 线条颜色，由 `--foreground` 按比例混合，对应 `border-edge` 等工具类，亮暗各一份 |
 | `--flow-blue` 等 6 个 `--flow-*` | `flow-diagram`、`stat-card`、`mini-chart`、`chart-card`、`greeting` | 流程图与图表的辅助色，亮暗各一份 |
 | `screen-line-top`、`pattern-ruler`、`bg-grid` 等 `@utility` | `grid-layout` | 全宽横线、点阵与刻度尺分隔带 |
 | `html, body { overflow-x: clip }`（`@layer base`） | `grid-layout` | 全宽横线比视口宽，用它避免出现横向滚动条 |

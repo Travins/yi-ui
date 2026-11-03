@@ -14,5 +14,16 @@
       "target": "@ui/grid-toolbar/grid-toolbar.tsx"
     }
   ],
+  "cssVars": {
+    "theme": {
+      "color-edge": "var(--edge)"
+    },
+    "light": {
+      "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+    },
+    "dark": {
+      "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+    }
+  },
   "type": "registry:ui"
 }
