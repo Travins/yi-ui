@@ -86,7 +86,7 @@ src/
   lib/                       source.ts（Fumadocs loader）、themes.ts、utils.ts
 registry.json                shadcn registry 清单
 public/r/                    `shadcn build` 产物（生成物，不手改）
-skills/yi-ui/                给使用者 Agent 的技能（`npx skills add`）；references/catalog.md 由 registry:build 生成
+skills/yi-ui/                给使用者 Agent 的技能（`npx skills add`）；references/catalog.md 由 registry:build 生成，评测题在 scripts/skill-evals/
 scripts/                     构建辅助脚本
 ```
 

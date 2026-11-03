@@ -21,7 +21,11 @@ export function installedPath(file: RegistryFile) {
     file.path.match(/^src\/registry\/([^/]+)\/(.+)$/) ?? []
   const target =
     file.target ?? `${DEFAULT_DIR[segment] ?? "components"}/${rest}`
-  return target.replace(/^src\//, "")
+  return target
+    .replace(/^src\//, "")
+    .replace(/^@(ui|lib|hooks|components)\//, (_, alias: string) =>
+      alias === "ui" ? "components/ui/" : `${alias}/`,
+    )
 }
 
 function installedModule(file: RegistryFile) {

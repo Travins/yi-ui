@@ -13,7 +13,7 @@ async function main() {
     const page = await browser.newPage({
       viewport: { width: 1440, height: 1000 },
     })
-    await page.goto(server.base + "/components/color-picker/")
+    await page.goto(server.base + "/components/color-picker/", { waitUntil: "networkidle" })
     await page.waitForTimeout(1500)
     const first = page.locator("[data-slot=color-picker]").first()
     const input = first.locator("input").first()
@@ -75,7 +75,7 @@ async function main() {
       hasTouch: true,
     })
     const p = await mobile.newPage()
-    await p.goto(server.base + "/components/color-picker/")
+    await p.goto(server.base + "/components/color-picker/", { waitUntil: "networkidle" })
     await p
       .locator("[data-slot=color-picker]")
       .first()

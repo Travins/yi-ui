@@ -26,7 +26,7 @@ https://yiui.dev/md/pages/<条目>.md
 1. **看底座。** 读 `components.json`，`style` 以 `base-` 开头才算匹配。没有项目时运行 `pnpm dlx shadcn@latest init -t next -b base -p nova -n my-app`。是 Radix 底座时先告诉用户：大部分条目能用，但不推荐，`app-shell-01` 需要手改；不要自行迁移底座。
 2. **选条目。** 查 catalog。基础原语（按钮、对话框、下拉菜单等）用 shadcn 官方组件，不要用 Yi UI 硬凑，也不要重新实现 catalog 里已有的东西。
 3. **读文档。** 读该条目的 `/md/` 文档，特别是「注意事项」。
-4. **预览再装。** 先看会写什么，已有同名文件时不要覆盖，先问用户。
+4. **预览再装。** 先看会写什么。内容相同的文件 CLI 会自动跳过；内容不同的文件不要覆盖，先问用户。第一次安装时 CLI 会往 `components.json` 写入 `registries.@yiui`，这是正常的。
 
    ```bash
    pnpm dlx shadcn@latest add @yiui/<条目> --dry-run
@@ -34,13 +34,13 @@ https://yiui.dev/md/pages/<条目>.md
    ```
 
    按项目实际的包管理器换命令。CLI 不认识 `@yiui` 时改用 `https://yiui.dev/r/<条目>.json`。依赖的条目和 npm 包会一起装上。
-5. **写代码并验证。** 跑项目的类型检查和构建，在桌面和手机宽度下都看一遍，包括亮暗模式。
+5. **写代码并验证。** 跑项目的类型检查和构建，然后在真实浏览器里操作一遍，构建通过不代表运行没问题。桌面和手机都要看，包括亮暗模式。手机上的底部面板和加高由 `pointer: coarse` 触发，只缩窄视口看不到，要用触屏模拟。
 
 ## 容易写错的地方
 
 - **导入路径带子目录。** 是 `@/components/ui/number-stepper/number-stepper`，不是 `@/components/ui/number-stepper`。以 catalog 或装好的文件为准。
 - **Base UI 用 `render`。** shadcn 原语的自定义触发器用 `render` 属性，不是 Radix 的 `asChild`。
-- **颜色只用主题变量。** 用 `bg-background`、`text-muted-foreground`、`border-edge` 这类 token，不写十六进制或 `bg-blue-500`，否则亮暗模式和颜色主题会失效。`border-edge` 的变量随 `grid-layout`、`stat-card` 等条目写入全局样式。
+- **颜色只用主题变量。** 用 `bg-background`、`text-muted-foreground`、`border-edge` 这类 token，不写十六进制或 `bg-blue-500`，否则亮暗模式和颜色主题会失效。`border-edge` 的变量由安装的 Yi UI 条目写入全局样式；项目里还没有 Yi UI 条目时先用 `border-border`。
 - **按钮高度只有三档。** 通过 `Button` 的 `size` 取得：`sm` 28px、`default` 32px、`lg` 36px，图标按钮对应 `icon-sm`、`icon`、`icon-lg`；触屏上自动加高到 36、40、44px。不要写 `h-*`。同一行的按钮用同一档，表单提交按钮至少和同表单控件同档。
 - **不要穿透内部结构改样式。** 优先用组件的属性和 `className`；确实要定位内部元素时用文档列出的 `data-slot`。
 - **文案走 `labels`。** 组件内置中文文案，要改就传 `labels`，不要改 JSX。
@@ -54,7 +54,7 @@ https://yiui.dev/md/pages/<条目>.md
 
 - **传 `label`。** 容器窄于 20rem 时标签自动挪到条上方，不要自己写一份。
 - **随表单提交用 `name`。** 提交的是不带格式的原始值，支持 `form` 和表单重置。
-- **排成工具栏用 `grid-toolbar`。** 方条文本框、方条下拉、分段选择、颜色选择、数量选择、金额、手机号、证件号放进 `GridToolbarItem` 后，会自动去掉外框铺满整格，不要手动改边框。格子默认按内容定宽，要占满剩余宽度时传 `grow`，并给 `min-w-*`。其他控件放进去之前先实测。
+- **排成工具栏用 `grid-toolbar`。** 方条文本框、方条下拉、分段选择、颜色选择、数量选择、金额、手机号、证件号放进 `GridToolbarItem` 后，会自动去掉外框铺满整格，不要手动改边框。格子默认按内容定宽，要占满剩余宽度时传 `grow`，并给 `min-w-*`。行高由 `GridToolbar` 的 `size` 决定，控件自己的 `size` 在格子里不起作用。其他控件放进去之前先实测。
 
 ## 布局和主题
 

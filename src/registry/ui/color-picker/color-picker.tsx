@@ -219,7 +219,10 @@ function ColorPicker({
       size={size === "sm" ? "icon-sm" : size === "lg" ? "icon-lg" : "icon"}
       variant="ghost"
       disabled={disabled || readOnly}
-      aria-label={labels.open}
+      // 同一页常有多个颜色选择，按钮名带上字段名才分得清
+      aria-label={
+        typeof label === "string" ? `${labels.open}：${label}` : labels.open
+      }
       aria-haspopup="dialog"
       aria-expanded={coarse ? sheetOpen : open}
       className="shrink-0 focus-visible:ring-inset"
