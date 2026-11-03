@@ -21,7 +21,7 @@ const SERIES = ["文档", "组件", "博客", "页面"].map((label, index) => ({
 const CHART_TONES =
   "[--theme-preview-chart-1:var(--chart-2)] [--theme-preview-chart-2:var(--chart-3)] [--theme-preview-chart-3:var(--chart-4)] [--theme-preview-chart-4:var(--chart-5)] dark:[--theme-preview-chart-1:var(--chart-1)] dark:[--theme-preview-chart-2:var(--chart-2)] dark:[--theme-preview-chart-3:var(--chart-3)] dark:[--theme-preview-chart-4:var(--chart-4)]"
 const DATA = Array.from({ length: 7 }, (_, index) => ({
-  day: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"][index],
+  day: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"][index] ?? "",
   ...Object.fromEntries(
     SERIES.map((series, seriesIndex) => [
       series.key,

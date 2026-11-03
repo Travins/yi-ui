@@ -5,8 +5,9 @@ function createMockTransport(): ChatTransport<UIMessage> {
   return {
     async sendMessages({ messages, abortSignal }) {
       const question =
-        messages
-          .findLast((message) => message.role === "user")
+        [...messages]
+          .reverse()
+          .find((message) => message.role === "user")
           ?.parts.filter((part) => part.type === "text")
           .map((part) => part.text)
           .join("") ?? ""

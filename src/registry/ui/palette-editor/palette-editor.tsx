@@ -82,7 +82,7 @@ type PaletteEditorProps = Omit<
 const initial = ["#2563eb"]
 /** 在末项基础上旋转黄金角，保留鲜明的色相变化。 */
 function nextColor(last: string | undefined) {
-  const rgb = parseHex(last ?? "") ?? parseHex(initial[0])!
+  const rgb = parseHex(last ?? "") ?? parseHex(initial.at(0) ?? "")!
   const hsv = rgbToHsv(rgb)
   return rgbToHex(
     hsvToRgb({

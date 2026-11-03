@@ -35,7 +35,7 @@ export default function GridPaginationDemo() {
                 className="flex items-center gap-3 border-b border-dashed border-edge px-4 py-3 last:border-b-0"
               >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs text-primary">
-                  {names[id % names.length].slice(0, 1)}
+                  {(names[id % names.length] ?? "").slice(0, 1)}
                 </span>
                 <span className="flex-1 text-sm">
                   {names[id % names.length]}

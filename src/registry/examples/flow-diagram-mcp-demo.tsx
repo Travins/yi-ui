@@ -32,7 +32,7 @@ const TO_SPLIT_POINTS = [
   [174, 95],
   [188, 95],
 ] as const
-const TO_SERVER_POINTS = SERVERS.map(({ y }) =>
+const serverPoints = ({ y }: { y: number }) =>
   y === 95
     ? ([
         [200, 95],
@@ -42,18 +42,19 @@ const TO_SERVER_POINTS = SERVERS.map(({ y }) =>
         [194, y === 34 ? 89 : 101],
         [194, y],
         [210, y],
-      ] as const),
-)
+      ] as const)
 
 const TO_CLIENT = flowRoute(TO_CLIENT_POINTS)
 const BACK_TO_AGENT = flowRoute(reversed(TO_CLIENT_POINTS))
 const TO_SPLIT = flowRoute(TO_SPLIT_POINTS)
 const BACK_TO_CLIENT = flowRoute(reversed(TO_SPLIT_POINTS))
-const TO_SERVERS = TO_SERVER_POINTS.map((points) => flowRoute(points))
-const BACK_FROM_SERVERS = TO_SERVER_POINTS.map((points) =>
-  flowRoute(reversed(points)),
-)
+const SERVER_ROUTES = SERVERS.map((server) => ({
+  outgoing: flowRoute(serverPoints(server)),
+  incoming: flowRoute(reversed(serverPoints(server))),
+}))
 const DATABASE = 2
+const DATABASE_OUT = flowRoute(serverPoints(SERVERS[2]))
+const DATABASE_BACK = flowRoute(reversed(serverPoints(SERVERS[2])))
 
 // 时间轴（秒）：先 tools/list 向三个服务器发现能力，再 tools/call 调用其中一个并把结果带回
 const LIST_AT = 0.5
@@ -62,21 +63,21 @@ const SPLIT_AT = CLIENT_AT + 0.15
 const SPLIT_LIT = flowArrival(SPLIT_AT, TO_SPLIT)
 const DISCOVER = SPLIT_LIT + 0.1 + 0.8
 // 路径长短不一，反推出发时刻让三束光点同时到达
-const DISCOVER_AT = TO_SERVERS.map(
-  (route) => DISCOVER - route.length / FLOW_BEAM_SPEED,
-)
+const discoveries = SERVER_ROUTES.map(({ outgoing }) => ({
+  route: outgoing,
+  at: DISCOVER - outgoing.length / FLOW_BEAM_SPEED,
+}))
 const REPORT_AT = DISCOVER + 0.3
 const REPORTED = Math.max(
-  ...BACK_FROM_SERVERS.map((route) => flowArrival(REPORT_AT, route)),
+  ...SERVER_ROUTES.map(({ incoming }) => flowArrival(REPORT_AT, incoming)),
 )
 const CALL_AT = REPORTED + 0.4
 const CALL_CLIENT_AT = flowArrival(CALL_AT, TO_CLIENT) + 0.1
 const CALL_SPLIT_AT = flowArrival(CALL_CLIENT_AT, TO_SPLIT) + 0.1
-const RUN_AT = flowArrival(CALL_SPLIT_AT, TO_SERVERS[DATABASE])
+const RUN_AT = flowArrival(CALL_SPLIT_AT, DATABASE_OUT)
 const RUN_END = RUN_AT + 0.8
 const RESULT_AT = RUN_END + 0.1
-const RESULT_SPLIT_AT =
-  flowArrival(RESULT_AT, BACK_FROM_SERVERS[DATABASE]) + 0.1
+const RESULT_SPLIT_AT = flowArrival(RESULT_AT, DATABASE_BACK) + 0.1
 const RESULT_CLIENT_AT = flowArrival(RESULT_SPLIT_AT, BACK_TO_CLIENT) + 0.1
 const ANSWER_AT = flowArrival(RESULT_CLIENT_AT, BACK_TO_AGENT)
 
@@ -98,10 +99,10 @@ export default function FlowDiagramMcpDemo() {
     >
       <FlowBeam route={TO_CLIENT} at={LIST_AT} />
       <FlowBeam route={TO_SPLIT} at={SPLIT_AT} />
-      {TO_SERVERS.map((route, i) => (
-        <FlowBeam key={`list-${i}`} route={route} at={DISCOVER_AT[i]} />
+      {discoveries.map(({ route, at }, i) => (
+        <FlowBeam key={`list-${i}`} route={route} at={at} />
       ))}
-      {BACK_FROM_SERVERS.map((route, i) => (
+      {SERVER_ROUTES.map(({ incoming: route }, i) => (
         <FlowBeam
           key={`report-${i}`}
           route={route}
@@ -111,12 +112,8 @@ export default function FlowDiagramMcpDemo() {
       ))}
       <FlowBeam route={TO_CLIENT} at={CALL_AT} base={false} />
       <FlowBeam route={TO_SPLIT} at={CALL_CLIENT_AT} base={false} />
-      <FlowBeam route={TO_SERVERS[DATABASE]} at={CALL_SPLIT_AT} base={false} />
-      <FlowBeam
-        route={BACK_FROM_SERVERS[DATABASE]}
-        at={RESULT_AT}
-        base={false}
-      />
+      <FlowBeam route={DATABASE_OUT} at={CALL_SPLIT_AT} base={false} />
+      <FlowBeam route={DATABASE_BACK} at={RESULT_AT} base={false} />
       <FlowBeam route={BACK_TO_CLIENT} at={RESULT_SPLIT_AT} base={false} />
       <FlowBeam route={BACK_TO_AGENT} at={RESULT_CLIENT_AT} base={false} />
 

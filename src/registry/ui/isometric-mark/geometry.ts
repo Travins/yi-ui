@@ -87,7 +87,13 @@ function cleanRing(ring: readonly IsometricPoint[]): IsometricPoint[] {
   const points = [...ring]
   const first = points[0]
   const last = points[points.length - 1]
-  if (points.length > 1 && first[0] === last[0] && first[1] === last[1]) {
+  if (
+    points.length > 1 &&
+    first &&
+    last &&
+    first[0] === last[0] &&
+    first[1] === last[1]
+  ) {
     points.pop()
   }
   return points
@@ -96,8 +102,8 @@ function cleanRing(ring: readonly IsometricPoint[]): IsometricPoint[] {
 function signedArea(ring: readonly IsometricPoint[]) {
   let sum = 0
   for (let i = 0; i < ring.length; i++) {
-    const [x0, y0] = ring[i]
-    const [x1, y1] = ring[(i + 1) % ring.length]
+    const [x0, y0] = ring[i]!
+    const [x1, y1] = ring[(i + 1) % ring.length]!
     sum += x0 * y1 - x1 * y0
   }
   return sum / 2
@@ -161,40 +167,49 @@ function compareSegments(a: Segment, b: Segment) {
  * 顺序只取决于平面形状，与挤出高度无关，所以按下动画时不用重排。
  */
 function sortBackToFront(segments: Segment[]) {
-  const n = segments.length
-  const after: number[][] = Array.from({ length: n }, () => [])
-  const blockers = new Array<number>(n).fill(0)
-
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      const order = compareSegments(segments[i], segments[j])
+  type OrderingNode = {
+    segment: Segment
+    after: OrderingNode[]
+    blockers: number
+    done: boolean
+  }
+  const nodes = segments.map((segment): OrderingNode => ({
+    segment,
+    after: [],
+    blockers: 0,
+    done: false,
+  }))
+  for (const [i, node] of nodes.entries()) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      // j 由同一数组的长度约束。
+      const other = nodes[j]!
+      const order = compareSegments(node.segment, other.segment)
       if (order < 0) {
-        after[i].push(j)
-        blockers[j]++
+        node.after.push(other)
+        other.blockers++
       } else if (order > 0) {
-        after[j].push(i)
-        blockers[i]++
+        other.after.push(node)
+        node.blockers++
       }
     }
   }
-
-  const done = new Array<boolean>(n).fill(false)
   const sorted: Segment[] = []
-  for (let k = 0; k < n; k++) {
-    let pick = -1
-    for (let i = 0; i < n; i++) {
-      if (done[i] || blockers[i] > 0) continue
-      if (pick < 0 || depthOf(segments[i]) < depthOf(segments[pick])) pick = i
+  for (let k = 0; k < nodes.length; k++) {
+    let pick: OrderingNode | undefined
+    for (const node of nodes) {
+      if (node.done || node.blockers > 0) continue
+      if (!pick || depthOf(node.segment) < depthOf(pick.segment)) pick = node
     }
-    if (pick < 0) {
-      for (let i = 0; i < n; i++) {
-        if (done[i]) continue
-        if (pick < 0 || depthOf(segments[i]) < depthOf(segments[pick])) pick = i
+    if (!pick) {
+      for (const node of nodes) {
+        if (node.done) continue
+        if (!pick || depthOf(node.segment) < depthOf(pick.segment)) pick = node
       }
     }
-    done[pick] = true
-    sorted.push(segments[pick])
-    for (const next of after[pick]) blockers[next]--
+    if (!pick) break
+    pick.done = true
+    sorted.push(pick.segment)
+    for (const next of pick.after) next.blockers--
   }
   return sorted
 }
@@ -254,8 +269,8 @@ function buildIsometricModel(
   const segments: Segment[] = []
   for (const { ring, tone } of rings) {
     for (let i = 0; i < ring.length; i++) {
-      const [px, py] = ring[i]
-      const [qx, qy] = ring[(i + 1) % ring.length]
+      const [px, py] = ring[i]!
+      const [qx, qy] = ring[(i + 1) % ring.length]!
       if (qy - py - (qx - px) > EPSILON) segments.push({ px, py, qx, qy, tone })
     }
   }
@@ -298,8 +313,8 @@ function buildIsometricModel(
   const weights = new Map<number, { ux: number; uy: number; length: number }>()
   for (const { ring } of rings) {
     for (let i = 0; i < ring.length; i++) {
-      const [px, py] = ring[i]
-      const [qx, qy] = ring[(i + 1) % ring.length]
+      const [px, py] = ring[i]!
+      const [qx, qy] = ring[(i + 1) % ring.length]!
       const length = Math.hypot(qx - px, qy - py)
       if (length < EPSILON) continue
       // 方向取 [0°, 180°)，按 0.5° 分桶，避免浮点误差把同一方向拆开
@@ -349,7 +364,7 @@ function buildIsometricModel(
     const span = hi - lo
     const offsets = [...new Set(points.map(([x, y]) => x * nx + y * ny - lo))]
       .sort((p, q) => p - q)
-      .filter((d, i, all) => i === 0 || d - all[i - 1] > planSize / 400)
+      .filter((d, i, all) => i === 0 || d - all[i - 1]! > planSize / 400)
     let g = 0
     for (const d of offsets) g = approxGcd(g, d)
     let ds: number[]
@@ -389,20 +404,22 @@ function buildIsometricModel(
   const floor = families
     .flatMap((f) => f.offsets.map((off) => lineOf(f, off)))
     .join("")
-  const floorLines = families[0]
-    ? families[0].offsets.map((off) => lineOf(families[0], off)).join("")
+  const firstFamily = families[0]
+  const floorLines = firstFamily
+    ? firstFamily.offsets.map((off) => lineOf(firstFamily, off)).join("")
     : ""
   // 两组格线的交点：解 n1·p = d1、n2·p = d2
   const cross = (d1: number, d2: number): [number, number] | null => {
     const [f1, f2] = families
+    if (!f1 || !f2) return null
     const det = f1.nx * f2.ny - f1.ny * f2.nx
     if (Math.abs(det) < EPSILON) return null
     return [(d1 * f2.ny - f1.ny * d2) / det, (f1.nx * d2 - d1 * f2.nx) / det]
   }
   let floorDots = ""
   let floorCells = ""
-  if (families.length === 2) {
-    const [f1, f2] = families
+  const [f1, f2] = families
+  if (families.length === 2 && f1 && f2) {
     const r = planSize / 130
     f1.offsets.forEach((d1) => {
       f2.offsets.forEach((d2) => {
@@ -415,11 +432,15 @@ function buildIsometricModel(
     for (let i = 0; i < f1.offsets.length - 1; i++) {
       for (let j = 0; j < f2.offsets.length - 1; j++) {
         if ((i + j) % 2) continue
+        const x0 = f1.offsets[i]!
+        const x1 = f1.offsets[i + 1]!
+        const y0 = f2.offsets[j]!
+        const y1 = f2.offsets[j + 1]!
         const corners = [
-          cross(f1.offsets[i], f2.offsets[j]),
-          cross(f1.offsets[i + 1], f2.offsets[j]),
-          cross(f1.offsets[i + 1], f2.offsets[j + 1]),
-          cross(f1.offsets[i], f2.offsets[j + 1]),
+          cross(x0, y0),
+          cross(x1, y0),
+          cross(x1, y1),
+          cross(x0, y1),
         ]
         if (corners.some((c) => !c)) continue
         floorCells +=

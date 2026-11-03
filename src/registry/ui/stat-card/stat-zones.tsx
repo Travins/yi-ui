@@ -55,7 +55,9 @@ function StatZones({ className, zones, labels, ...props }: StatZonesProps) {
                 className="h-5 w-1 shrink-0 rounded-full"
                 style={{
                   backgroundColor: toneColor(
-                    zone.tone ?? ZONE_TONES[index % ZONE_TONES.length],
+                    zone.tone ??
+                      ZONE_TONES[index % ZONE_TONES.length] ??
+                      "green",
                   ),
                 }}
               />

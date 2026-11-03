@@ -85,7 +85,9 @@ export function DocsSidebarNav({
                         aria-current={current === item.url ? "page" : undefined}
                       >
                         <span aria-hidden="true" className="docs-nav-index">
-                          <span>{pad(offsets[groupIndex] + index + 1)}</span>
+                          <span>
+                            {pad((offsets[groupIndex] ?? 0) + index + 1)}
+                          </span>
                         </span>
                         <span className="docs-nav-body">
                           {/* 组件类条目以英文名为主（更直观），中文作副标；没有英文名的只显示中文 */}

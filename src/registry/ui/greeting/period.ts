@@ -30,29 +30,40 @@ function normalizeBoundaries(
       Number.isFinite(hour) &&
       hour >= 0 &&
       hour < 24 &&
-      (index === 0 || hour > hours[index - 1]),
+      (index === 0 || hour > (hours[index - 1] ?? Infinity)),
   )
   return valid ? merged : DEFAULT_BOUNDARIES
 }
 
+const NEXT_PERIOD: Record<GreetingPeriod, GreetingPeriod> = {
+  morning: "noon",
+  noon: "afternoon",
+  afternoon: "evening",
+  evening: "morning",
+}
+
 /** 时刻（小时，可带小数）所在的时段，以及已经过去的比例（0–1）。 */
-function resolvePeriod(time: number, boundaries: GreetingBoundaries) {
+function resolvePeriod(
+  time: number,
+  boundaries: GreetingBoundaries,
+): { period: GreetingPeriod; progress: number } {
   const shifted = time < boundaries.morning ? time + 24 : time
-  const starts = PERIODS.map((period) => boundaries[period])
-  let index = PERIODS.length - 1
-  while (index > 0 && shifted < starts[index]) index--
-  const start = starts[index]
-  const end = index === PERIODS.length - 1 ? starts[0] + 24 : starts[index + 1]
+  let period: GreetingPeriod = "evening"
+  for (const candidate of [...PERIODS].reverse()) {
+    period = candidate
+    if (!(shifted < boundaries[candidate])) break
+  }
+  const start = boundaries[period]
+  const end = boundaries[NEXT_PERIOD[period]] + (period === "evening" ? 24 : 0)
   return {
-    period: PERIODS[index],
+    period,
     progress: Math.min(1, Math.max(0, (shifted - start) / (end - start))),
   }
 }
 
 /** `05–11` 这样的区间文字；`evening` 的终点是次日 `morning` 的起点。 */
 function periodRange(period: GreetingPeriod, boundaries: GreetingBoundaries) {
-  const index = PERIODS.indexOf(period)
-  const end = boundaries[PERIODS[(index + 1) % PERIODS.length]]
+  const end = boundaries[NEXT_PERIOD[period]]
   const pad = (hour: number) => String(hour).padStart(2, "0")
   return `${pad(boundaries[period])}–${pad(end)}`
 }

@@ -147,7 +147,7 @@ function GlyphField({
       return {
         glyph:
           random() <= Math.max(0, Math.min(1, density))
-            ? alphabet[Math.floor(random() * alphabet.length)]
+            ? alphabet[Math.floor(random() * alphabet.length)]!
             : "",
         color: Math.floor(random() * colors.length),
         opacity: 0.18 + random() * 0.55,
@@ -159,8 +159,9 @@ function GlyphField({
       const y = Math.floor(index / columns) * stepY
       ctx.clearRect(x, y, stepX, stepY)
       const cell = cells[index]
+      if (!cell) return
       ctx.globalAlpha = cell.opacity
-      ctx.fillStyle = colors[cell.color % colors.length]
+      ctx.fillStyle = colors[cell.color % colors.length]!
       ctx.fillText(cell.glyph, x + stepX / 2, y + stepY / 2)
     }
     function palette() {
@@ -220,7 +221,7 @@ function GlyphField({
     const resizeObserver = new ResizeObserver(resize)
     resizeObserver.observe(host)
     const intersection = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting
+      visible = entry?.isIntersecting ?? false
       sync()
     })
     intersection.observe(host)

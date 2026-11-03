@@ -25,20 +25,41 @@ import {
 
 // 色调表达角色：三个入口蓝、Agent 紫、三类能力各一种颜色、返回的结果绿
 const CLIENTS = [
-  { y: 46, label: "Web", icon: Globe },
-  { y: 115, label: "App", icon: Smartphone },
-  { y: 184, label: "CLI", icon: Terminal },
+  { y: 46, label: "Web", icon: Globe, requestAt: 0.3 },
+  { y: 115, label: "App", icon: Smartphone, requestAt: 0.7 },
+  { y: 184, label: "CLI", icon: Terminal, requestAt: 1.1 },
 ] as const
 const TOOLS = [
-  { y: 44, label: "知识库", description: "向量检索", icon: Database, tone: "cyan", work: 0.5 },
-  { y: 115, label: "工具", description: "MCP 调用", icon: Wrench, tone: "amber", work: 0.9 },
-  { y: 186, label: "大模型", description: "流式推理", icon: Sparkles, tone: "rose", work: 1.4 },
+  {
+    y: 44,
+    label: "知识库",
+    description: "向量检索",
+    icon: Database,
+    tone: "cyan",
+    work: 0.5,
+  },
+  {
+    y: 115,
+    label: "工具",
+    description: "MCP 调用",
+    icon: Wrench,
+    tone: "amber",
+    work: 0.9,
+  },
+  {
+    y: 186,
+    label: "大模型",
+    description: "流式推理",
+    icon: Sparkles,
+    tone: "rose",
+    work: 1.4,
+  },
 ] as const
 
 const reversed = (points: readonly FlowPoint[]) => [...points].reverse()
 
 // 入口 → 网关：上下两个先横向再汇到中线，中间的直接进网关
-const CLIENT_POINTS = CLIENTS.map(({ y }) =>
+const clientPoints = ({ y }: { y: number }) =>
   y === 115
     ? ([
         [62, 115],
@@ -49,10 +70,8 @@ const CLIENT_POINTS = CLIENTS.map(({ y }) =>
         [74, y],
         [74, 115],
         [85, 115],
-      ] as const),
-)
-const REQUESTS = CLIENT_POINTS.map((points) => flowRoute(points))
-const RESPONSES = CLIENT_POINTS.map((points) => flowRoute(reversed(points)))
+      ] as const)
+
 const TO_AGENT = flowRoute([
   [131, 115],
   [150, 115],
@@ -62,7 +81,7 @@ const BACK_TO_GATEWAY = flowRoute([
   [131, 115],
 ])
 // Agent → 三类能力：中间直连，上下两路先贴着 Agent 出来再分开
-const FAN_OUT_POINTS = TOOLS.map(({ y }) =>
+const toolPoints = ({ y }: { y: number }) =>
   y === 115
     ? ([
         [222, 115],
@@ -73,34 +92,36 @@ const FAN_OUT_POINTS = TOOLS.map(({ y }) =>
         [246, y === 44 ? 103 : 127],
         [246, y],
         [270, y],
-      ] as const),
-)
-const FAN_OUT = FAN_OUT_POINTS.map((points) => flowRoute(points))
-const FAN_IN = FAN_OUT_POINTS.map((points) => flowRoute(reversed(points)))
-
-// 时间轴（秒）：三个入口错开发出请求 → 网关转给 Agent → Agent 同时调度三类能力，
-// 它们耗时不同、各自返回 → 汇总后沿原路把结果送回每个入口
-const REQUEST_AT = [0.3, 0.7, 1.1]
-const FORWARD_AT = REQUESTS.map(
-  (route, i) => flowArrival(REQUEST_AT[i], route) + 0.1,
-)
+      ] as const)
+const REQUESTS = CLIENTS.map((client) => {
+  const route = flowRoute(clientPoints(client))
+  const at = client.requestAt
+  return { ...client, route, at, forwardAt: flowArrival(at, route) + 0.1 }
+})
 const GATEWAY_AT = Math.min(
-  ...REQUESTS.map((route, i) => flowArrival(REQUEST_AT[i], route)),
+  ...REQUESTS.map(({ at, route }) => flowArrival(at, route)),
 )
-const FIRST = FORWARD_AT.indexOf(Math.min(...FORWARD_AT))
-const AGENT_AT = flowArrival(FORWARD_AT[FIRST], TO_AGENT)
+const FIRST_AT = Math.min(...REQUESTS.map(({ forwardAt }) => forwardAt))
+const FIRST = REQUESTS.findIndex(({ forwardAt }) => forwardAt === FIRST_AT)
+const AGENT_AT = flowArrival(FIRST_AT, TO_AGENT)
 const DISPATCH_AT = AGENT_AT + 0.2
-const ARRIVE_AT = FAN_OUT.map((route) => flowArrival(DISPATCH_AT, route))
-const DONE_AT = TOOLS.map(({ work }, i) => ARRIVE_AT[i] + work)
+const RUNS = TOOLS.map((tool) => {
+  const points = toolPoints(tool)
+  const outgoing = flowRoute(points)
+  const incoming = flowRoute(reversed(points))
+  const arriveAt = flowArrival(DISPATCH_AT, outgoing)
+  return { ...tool, outgoing, incoming, arriveAt, doneAt: arriveAt + tool.work }
+})
 const MERGED_AT = Math.max(
-  ...FAN_IN.map((route, i) => flowArrival(DONE_AT[i], route)),
+  ...RUNS.map(({ doneAt, incoming }) => flowArrival(doneAt, incoming)),
 )
 const REPLY_AT = MERGED_AT + 0.2
 const GATEWAY_BACK_AT = flowArrival(REPLY_AT, BACK_TO_GATEWAY) + 0.05
-const CLIENT_BACK_AT = CLIENTS.map((_, i) => GATEWAY_BACK_AT + i * 0.12)
-const DELIVERED_AT = RESPONSES.map((route, i) =>
-  flowArrival(CLIENT_BACK_AT[i], route),
-)
+const RESPONSES = CLIENTS.map((client, i) => ({
+  route: flowRoute(reversed(clientPoints(client))),
+  at: GATEWAY_BACK_AT + i * 0.12,
+}))
+const DELIVERED_AT = RESPONSES.map(({ at, route }) => flowArrival(at, route))
 
 const REST = Math.max(...DELIVERED_AT) + 0.8
 const EXIT = REST + 0.8
@@ -133,11 +154,11 @@ export default function FlowDiagramShowcaseDemo({
       )}
     >
       {/* 请求：三个入口错开出发，进网关前汇成一路 */}
-      {REQUESTS.map((route, i) => (
-        <FlowBeam key={`request-${i}`} route={route} at={REQUEST_AT[i]} tone="blue" />
+      {REQUESTS.map(({ route, at }, i) => (
+        <FlowBeam key={`request-${i}`} route={route} at={at} tone="blue" />
       ))}
       {/* 网关 → Agent：共用一条线，只有最早的一束带底线 */}
-      {FORWARD_AT.map((at, i) => (
+      {REQUESTS.map(({ forwardAt: at }, i) => (
         <FlowBeam
           key={`forward-${i}`}
           route={TO_AGENT}
@@ -147,36 +168,41 @@ export default function FlowDiagramShowcaseDemo({
         />
       ))}
       {/* Agent 到各能力的线是常驻连接，画好后持续流动 */}
-      {FAN_OUT.map((route, i) => (
+      {RUNS.map(({ outgoing: route, tone }, i) => (
         <FlowBeam
           key={`dispatch-${i}`}
           route={route}
           at={DISPATCH_AT}
-          tone={TOOLS[i].tone}
+          tone={tone}
           flow
         />
       ))}
-      {FAN_IN.map((route, i) => (
+      {RUNS.map(({ incoming: route, doneAt, tone }, i) => (
         <FlowBeam
           key={`result-${i}`}
           route={route}
-          at={DONE_AT[i]}
-          tone={TOOLS[i].tone}
+          at={doneAt}
+          tone={tone}
           base={false}
         />
       ))}
-      <FlowBeam route={BACK_TO_GATEWAY} at={REPLY_AT} tone="green" base={false} />
-      {RESPONSES.map((route, i) => (
+      <FlowBeam
+        route={BACK_TO_GATEWAY}
+        at={REPLY_AT}
+        tone="green"
+        base={false}
+      />
+      {RESPONSES.map(({ route, at }, i) => (
         <FlowBeam
           key={`response-${i}`}
           route={route}
-          at={CLIENT_BACK_AT[i]}
+          at={at}
           tone="green"
           base={false}
         />
       ))}
 
-      {CLIENTS.map(({ y, label, icon }, i) => (
+      {REQUESTS.map(({ y, label, icon, at }, i) => (
         <FlowNode
           key={label}
           x={34}
@@ -185,7 +211,7 @@ export default function FlowDiagramShowcaseDemo({
           icon={icon}
           label={label}
           tone="blue"
-          litAt={REQUEST_AT[i] - 0.1}
+          litAt={at - 0.1}
         >
           {/* 结果送达后亮起绿色状态点 */}
           <FlowStatusDot x={57} y={y} at={DELIVERED_AT[i]} tone="green" />
@@ -218,7 +244,7 @@ export default function FlowDiagramShowcaseDemo({
         <FlowStatusDot x={215} y={103} at={MERGED_AT} tone="green" />
       </FlowNode>
 
-      {TOOLS.map(({ y, label, description, icon, tone }, i) => (
+      {RUNS.map(({ y, label, description, icon, tone, arriveAt, doneAt }) => (
         <FlowNode
           key={label}
           x={312}
@@ -230,10 +256,16 @@ export default function FlowDiagramShowcaseDemo({
           label={label}
           description={description}
           tone={tone}
-          litAt={ARRIVE_AT[i]}
+          litAt={arriveAt}
         >
-          <FlowSpinner x={343} y={y - 6} size={9} at={ARRIVE_AT[i]} until={DONE_AT[i]} />
-          <FlowStatusDot x={343} y={y - 6} at={DONE_AT[i]} tone="green" />
+          <FlowSpinner
+            x={343}
+            y={y - 6}
+            size={9}
+            at={arriveAt}
+            until={doneAt}
+          />
+          <FlowStatusDot x={343} y={y - 6} at={doneAt} tone="green" />
         </FlowNode>
       ))}
     </FlowDiagram>

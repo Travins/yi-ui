@@ -26,10 +26,10 @@ const POINTS = [
 function brushPath(tension: number) {
   const step = (Math.min(100, Math.max(0, tension)) / 100) * (1 / 6)
   let d = `M${POINTS[0][0]} ${POINTS[0][1]}`
-  for (let index = 0; index < POINTS.length - 1; index += 1) {
-    const previous = POINTS[index - 1] ?? POINTS[index]
-    const start = POINTS[index]
+  for (const [index, start] of POINTS.entries()) {
     const end = POINTS[index + 1]
+    if (!end) break
+    const previous = POINTS[index - 1] ?? start
     const next = POINTS[index + 2] ?? end
     // 固定一位小数：坐标在服务端与客户端算出的字符串完全一致
     const c1x = (start[0] + (end[0] - previous[0]) * step).toFixed(1)

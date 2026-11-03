@@ -298,7 +298,7 @@ async function resetFocus(page: Page, scope: Scope) {
   await page.waitForTimeout(40)
   const point = await scope.locator.evaluate((root) => {
     const rect = root.getBoundingClientRect()
-    const candidates = [
+    const candidates: [number, number][] = [
       [rect.left + 3, rect.top + 3],
       [rect.right - 3, rect.top + 3],
       [rect.left + 3, rect.bottom - 3],
@@ -357,7 +357,7 @@ async function pressPointer(
     return false
   const reachable = await target.evaluate(
     (node, point) => {
-      const hit = document.elementFromPoint(point[0], point[1])
+      const hit = document.elementFromPoint(point[0] ?? 0, point[1] ?? 0)
       if (!hit) return false
       return hit === node || node.contains(hit) || hit.contains(node)
     },
@@ -619,7 +619,7 @@ function ringLayers(shadow: string): { spread: number; inset: boolean }[] {
       Number(match[1]),
     )
     if (lengths.length < 3) return []
-    const spread = lengths.length >= 4 ? lengths[3] : 0
+    const spread = lengths[3] ?? 0
     if (spread < 1) return []
     return [{ spread, inset: /\binset\b/.test(value) }]
   })
@@ -647,7 +647,7 @@ async function checkKeyboardRing(ctx: Ctx, page: Page, scope: Scope) {
   )
   const picked = await usableIndexes(targets, 1)
   if (!picked.length) return
-  const target = await handleAt(targets.nth(picked[0]))
+  const target = await handleAt(targets.nth(picked[0] ?? 0))
   if (!target) return
   // 先量没聚焦的样子：选中态的环在聚焦前后都在，不能当作焦点指示
   await page.mouse.move(1, 1)
@@ -927,7 +927,9 @@ async function checkPopupHighlight(ctx: Ctx, page: Page, scope: Scope) {
   )
   for (const index of await usableIndexes(controls, 4)) {
     const control = controls.nth(index)
-    const trigger = await handleAt(control.locator("button[aria-expanded]").first())
+    const trigger = await handleAt(
+      control.locator("button[aria-expanded]").first(),
+    )
     if (!trigger) continue
     const background = () =>
       control.evaluate((node) => getComputedStyle(node).backgroundColor)
@@ -1349,7 +1351,7 @@ function checkExampleCards(ctx: Ctx, files: string[]) {
       continue
     const source = readFileSync(file, "utf8")
     for (const match of source.matchAll(/"([^"\n]*rounded-xl[^"\n]*)"/g)) {
-      const value = match[1]
+      const value = match[1] ?? ""
       const tokens = value.split(/\s+/)
       const hasBorder = tokens.some(
         (token) => token === "border" || token.startsWith("border-"),
@@ -1597,6 +1599,7 @@ function parseArgs(argv: string[]) {
   let open = false
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index]
+    if (arg === undefined) continue
     if (arg === "--base") {
       baseArg = argv[++index]
       continue

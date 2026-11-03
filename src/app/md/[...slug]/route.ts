@@ -9,7 +9,8 @@ const overviewSections = new Set(["components", "blocks", "pages"])
 
 const markdownPages = () =>
   docsPages().filter(
-    (page) => !(page.slugs.length === 1 && overviewSections.has(page.slugs[0])),
+    (page) =>
+      !(page.slugs.length === 1 && overviewSections.has(page.slugs[0] ?? "")),
   )
 
 /** /md/components/grid-layout.md：给 Agent 读的 Markdown，示例和属性表已展开，构建时静态生成。 */

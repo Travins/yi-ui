@@ -217,22 +217,13 @@ export function runSelfTests(api: Api) {
   assert.equal(api.packageName("@scope/pkg/sub"), "@scope/pkg")
   assert.equal(api.packageName("@scope/pkg@^1.0"), "@scope/pkg")
   assert.equal(api.packageName("motion@^1"), "motion")
+  assert.equal(api.siteDependency("@yiui/button", "https://yiui.dev"), "button")
   assert.equal(
-    api.siteDependency("@yiui/button", "https://yiui.dev"),
+    api.siteDependency("https://yiui.dev/r/button.json", "https://yiui.dev"),
     "button",
   )
   assert.equal(
-    api.siteDependency(
-      "https://yiui.dev/r/button.json",
-      "https://yiui.dev",
-    ),
-    "button",
-  )
-  assert.equal(
-    api.siteDependency(
-      "https://other.com/r/button.json",
-      "https://yiui.dev",
-    ),
+    api.siteDependency("https://other.com/r/button.json", "https://yiui.dev"),
     undefined,
   )
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "registry-lint-"))
@@ -261,9 +252,9 @@ export function runSelfTests(api: Api) {
     ]
     write("registry.json", JSON.stringify({ items }, null, 2))
     assert.deepEqual(api.lintRegistry(root), [])
-    items[0].dependencies = ["unused@1"]
-    items[0].registryDependencies = []
-    items[0].files.push({ path: "missing.tsx" })
+    items[0]!.dependencies = ["unused@1"]
+    items[0]!.registryDependencies = []
+    items[0]!.files.push({ path: "missing.tsx" })
     write("registry.json", JSON.stringify({ items }, null, 2))
     const result = api.lintRegistry(root)
     assert.equal(result.filter((d) => d.level === "error").length, 4)

@@ -30,7 +30,7 @@ type ParsedDecimal = {
 function expandExponent(text: string) {
   const match = /^([+-]?)(\d+)(?:\.(\d*))?e([+-]?\d+)$/i.exec(text)
   if (!match) return text
-  const [, sign, intPart, fracPart = "", exponent] = match
+  const [, sign = "", intPart = "", fracPart = "", exponent] = match
   const shift = Number(exponent)
   const digits = intPart + fracPart
   const point = intPart.length + shift
@@ -54,7 +54,7 @@ function parseDecimal(value: number | string): ParsedDecimal | null {
   }
   const match = /^([+-]?)(\d*)(?:\.(\d*))?$/.exec(text)
   if (!match) return null
-  const [, sign, intPart, frac = ""] = match
+  const [, sign = "", intPart = "", frac = ""] = match
   if (!intPart && !frac) return null
   const int = intPart.replace(/^0+(?=\d)/, "") || "0"
   if (int.length > MAX_INTEGER_DIGITS) return null
@@ -75,10 +75,10 @@ function readInteger(int: string, digits: string, small: string[]) {
     if (digit === 0) {
       pendingZero = true
     } else {
-      if (pendingZero && out) out += digits[0]
+      if (pendingZero && out) out += digits.charAt(0)
       pendingZero = false
       sectionHasValue = true
-      out += digits[digit] + small[i % 4]
+      out += digits.charAt(digit) + small[i % 4]
     }
     if (i % 4 === 0) {
       if (sectionHasValue) out += SECTION_UNITS[i / 4]
@@ -179,11 +179,13 @@ function toChineseNumerals(
   const small = financial ? UPPER_SMALL : LOWER_SMALL
 
   let out =
-    parsed.int === "0" ? digits[0] : readInteger(parsed.int, digits, small)
-  if (!financial && out.startsWith(`${digits[1]}${small[1]}`))
+    parsed.int === "0"
+      ? digits.charAt(0)
+      : readInteger(parsed.int, digits, small)
+  if (!financial && out.startsWith(`${digits.charAt(1)}${small[1]}`))
     out = out.slice(1)
   if (parsed.frac)
-    out += `点${[...parsed.frac].map((digit) => digits[Number(digit)]).join("")}`
+    out += `点${[...parsed.frac].map((digit) => digits.charAt(Number(digit))).join("")}`
   // 全零（含 -0）不带符号
   const isZero = /^0*$/.test(parsed.int + parsed.frac)
   return parsed.negative && !isZero ? `负${out}` : out

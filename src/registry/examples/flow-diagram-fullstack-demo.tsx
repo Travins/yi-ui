@@ -50,7 +50,7 @@ const TO_BRANCHES = [
     [160, 47],
     [160, 61],
   ]),
-]
+] as const
 const TO_MERGE = [
   flowRoute([
     [56, 81],
@@ -62,7 +62,7 @@ const TO_MERGE = [
     [160, 95],
     [114, 95],
   ]),
-]
+] as const
 const TO_INPUT = flowRoute([
   [108, 101],
   [108, 109],
@@ -107,7 +107,7 @@ function FlowDiagramFullstackDemo({ className }: { className?: string }) {
           key={`branch-${i}`}
           route={path}
           at={BRANCH_AT}
-          tone={BRANCHES[i].tone}
+          tone={i === 0 ? BRANCHES[0].tone : BRANCHES[1].tone}
         />
       ))}
       {TO_MERGE.map((path, i) => (
@@ -115,7 +115,7 @@ function FlowDiagramFullstackDemo({ className }: { className?: string }) {
           key={`merge-${i}`}
           route={path}
           at={MERGE_AT}
-          tone={BRANCHES[i].tone}
+          tone={i === 0 ? BRANCHES[0].tone : BRANCHES[1].tone}
         />
       ))}
       <FlowBeam route={TO_INPUT} at={INPUT_AT} tone="amber" />
@@ -152,7 +152,10 @@ function FlowDiagramFullstackDemo({ className }: { className?: string }) {
           icon={icon}
           label={label}
           tone={tone}
-          litAt={flowArrival(BRANCH_AT, TO_BRANCHES[i])}
+          litAt={flowArrival(
+            BRANCH_AT,
+            i === 0 ? TO_BRANCHES[0] : TO_BRANCHES[1],
+          )}
         />
       ))}
 

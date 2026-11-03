@@ -313,7 +313,8 @@ function ShuffleGrid({
     const wait = Math.max(groupInterval, holdUntil.current - Date.now())
     const id = window.setTimeout(() => {
       const index = groups.findIndex((item) => item.id === group)
-      setGroup(groups[(index + 1) % groups.length].id)
+      const next = groups[(index + 1) % groups.length]
+      if (next) setGroup(next.id)
     }, wait)
     return () => window.clearTimeout(id)
   }, [groups, group, groupInterval, running, setGroup])

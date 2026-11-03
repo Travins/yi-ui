@@ -67,11 +67,12 @@ https://yiui.dev/md/pages/<条目>.md
 
 以下在 shadcn 官方 monorepo 模板（`init --monorepo`）上实测，其他结构按 `components.json` 的 `aliases` 对应调整。
 
-- **组件在 UI 包目录里装。** 在 `packages/ui` 运行 `add`。从 `apps/web` 运行时，组件写进 UI 包，`hooks` 和 `lib` 却写进应用，组件会找不到它们，构建报 `Module not found`。
+- **组件在应用目录或 UI 包目录安装都可以。** 组件和它用到的 `hooks`、`lib` 都会写进 UI 包，npm 包也装在 UI 包。
 - **从 UI 包的路径导入。** 比如 `@workspace/ui/components/number-stepper/number-stepper`，包名以项目为准，不要照抄 `@/components/ui/...`。
 - **UI 包要用 `Bundler` 解析。** 组件内部有相对导入，模板的 `NodeNext` 会让 UI 包的 `tsc` 报 TS2835，应用构建不受影响。在 UI 包的 `tsconfig.json` 里设 `"module": "ESNext"`、`"moduleResolution": "Bundler"`，不要逐个给导入加扩展名。
-- **`noUncheckedIndexedAccess` 是已知问题。** 模板默认开启，部分条目（如 `region-picker`、`isometric-mark`）在这个选项下类型检查不过，应用构建也会失败。安装后跑一次类型检查，有这类错误时告诉用户，不要自行关闭选项或用 `!` 批量绕过。
-- **区块和页面还没跑通。** 从应用目录安装时，它们需要的 npm 包没有装进应用（如 `ai`、`motion`、`@tanstack/react-table`）。要先告诉用户，再按报错补依赖。
+- **区块和页面要多做两步。** 它们的代码写进应用，但 CLI 仍把 npm 包装进 UI 包。
+  1. 安装前，把应用 `components.json` 里的 `aliases.hooks` 和 `aliases.lib` 改成 UI 包的路径（如 `@workspace/ui/hooks`、`@workspace/ui/lib`），否则区块会从应用里导入这些文件而找不到。这是对项目配置的修改，先告诉用户。
+  2. 安装后，跑一次类型检查，把报 `Cannot find module` 的包加到应用的依赖里。
 
 ## 环境问题
 

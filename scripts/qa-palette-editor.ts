@@ -142,9 +142,11 @@ async function main() {
       assert.ok(match, text)
       shownRows.add(Number(match[1]) - 1)
       shownRows.add(Number(match[2]) - 1)
-      assert.equal(Number(match[1]) - 1, expected[i].a)
-      assert.equal(Number(match[2]) - 1, expected[i].b)
-      assert.equal(Number(match[3]), Number(expected[i].deltaE.toFixed(1)))
+      const expectedConflict = expected[i]
+      assert.ok(expectedConflict)
+      assert.equal(Number(match[1]) - 1, expectedConflict.a)
+      assert.equal(Number(match[2]) - 1, expectedConflict.b)
+      assert.equal(Number(match[3]), Number(expectedConflict.deltaE.toFixed(1)))
       return Number(match[3])
     })
     assert.deepEqual(
@@ -166,10 +168,13 @@ async function main() {
     for (const box of await rows
       .locator("input")
       .evaluateAll((els) =>
-        els.map((e) => [
-          (e as HTMLInputElement).scrollWidth,
-          (e as HTMLInputElement).clientWidth,
-        ]),
+        els.map(
+          (e) =>
+            [
+              (e as HTMLInputElement).scrollWidth,
+              (e as HTMLInputElement).clientWidth,
+            ] as const,
+        ),
       ))
       assert.ok(box[0] <= box[1], `HEX 被截断：${box}`)
     assert.equal(

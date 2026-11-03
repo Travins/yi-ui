@@ -24,27 +24,112 @@ type EventRow = {
 }
 
 const events: EventRow[] = [
-  { id: "e-1042", app: "订单中心", target: "POST /api/orders", status: "ok", latency: "128 ms", time: "14:32:05" },
-  { id: "e-1041", app: "用户中心", target: "GET /api/profile", status: "ok", latency: "86 ms", time: "14:31:48" },
-  { id: "e-1040", app: "支付网关", target: "POST /api/pay/notify", status: "error", latency: "超时", time: "14:30:12" },
-  { id: "e-1039", app: "商品服务", target: "GET /api/items?page=1", status: "warning", latency: "1 420 ms", time: "14:28:57" },
-  { id: "e-1038", app: "订单中心", target: "GET /api/orders/9021", status: "ok", latency: "97 ms", time: "14:27:33" },
-  { id: "e-1037", app: "消息推送", target: "POST /api/push", status: "ok", latency: "212 ms", time: "14:26:10" },
-  { id: "e-1036", app: "用户中心", target: "POST /api/login", status: "warning", latency: "960 ms", time: "14:24:41" },
-  { id: "e-1035", app: "支付网关", target: "GET /api/pay/status", status: "ok", latency: "74 ms", time: "14:23:02" },
-  { id: "e-1034", app: "商品服务", target: "GET /api/items/301", status: "ok", latency: "103 ms", time: "14:21:50" },
-  { id: "e-1033", app: "消息推送", target: "GET /api/push/queue", status: "error", latency: "连接被拒绝", time: "14:19:26" },
-  { id: "e-1032", app: "订单中心", target: "PUT /api/orders/9018", status: "ok", latency: "141 ms", time: "14:17:09" },
-  { id: "e-1031", app: "用户中心", target: "GET /api/me", status: "ok", latency: "69 ms", time: "14:15:44" },
+  {
+    id: "e-1042",
+    app: "订单中心",
+    target: "POST /api/orders",
+    status: "ok",
+    latency: "128 ms",
+    time: "14:32:05",
+  },
+  {
+    id: "e-1041",
+    app: "用户中心",
+    target: "GET /api/profile",
+    status: "ok",
+    latency: "86 ms",
+    time: "14:31:48",
+  },
+  {
+    id: "e-1040",
+    app: "支付网关",
+    target: "POST /api/pay/notify",
+    status: "error",
+    latency: "超时",
+    time: "14:30:12",
+  },
+  {
+    id: "e-1039",
+    app: "商品服务",
+    target: "GET /api/items?page=1",
+    status: "warning",
+    latency: "1 420 ms",
+    time: "14:28:57",
+  },
+  {
+    id: "e-1038",
+    app: "订单中心",
+    target: "GET /api/orders/9021",
+    status: "ok",
+    latency: "97 ms",
+    time: "14:27:33",
+  },
+  {
+    id: "e-1037",
+    app: "消息推送",
+    target: "POST /api/push",
+    status: "ok",
+    latency: "212 ms",
+    time: "14:26:10",
+  },
+  {
+    id: "e-1036",
+    app: "用户中心",
+    target: "POST /api/login",
+    status: "warning",
+    latency: "960 ms",
+    time: "14:24:41",
+  },
+  {
+    id: "e-1035",
+    app: "支付网关",
+    target: "GET /api/pay/status",
+    status: "ok",
+    latency: "74 ms",
+    time: "14:23:02",
+  },
+  {
+    id: "e-1034",
+    app: "商品服务",
+    target: "GET /api/items/301",
+    status: "ok",
+    latency: "103 ms",
+    time: "14:21:50",
+  },
+  {
+    id: "e-1033",
+    app: "消息推送",
+    target: "GET /api/push/queue",
+    status: "error",
+    latency: "连接被拒绝",
+    time: "14:19:26",
+  },
+  {
+    id: "e-1032",
+    app: "订单中心",
+    target: "PUT /api/orders/9018",
+    status: "ok",
+    latency: "141 ms",
+    time: "14:17:09",
+  },
+  {
+    id: "e-1031",
+    app: "用户中心",
+    target: "GET /api/me",
+    status: "ok",
+    latency: "69 ms",
+    time: "14:15:44",
+  },
 ]
 
 /** 列表页独立的 180 条记录：固定起点、37 秒间隔与整数公式，服务端和客户端结果一致。 */
 const listEvents = Array.from({ length: 180 }, (_, index) => ({
-  ...events[index % events.length],
+  ...(events[index % events.length] ?? events[0]),
   id: `list-${180 - index}`,
-  latencyMs: 60 + (index * 137) % 1800,
+  latencyMs: 60 + ((index * 137) % 1800),
   time: new Date(Date.UTC(2026, 9, 31, 14, 32, 5) - index * 37000)
-    .toISOString().slice(11, 19),
+    .toISOString()
+    .slice(11, 19),
 }))
 
 type StatItem = {
@@ -75,7 +160,10 @@ const stats: StatItem[] = [
     delta: 0.02,
     deltaFormat: { digits: 2 },
     hint: "近 24 小时",
-    trend: [99.91, 99.93, 99.9, 99.94, 99.95, 99.92, 99.94, 99.96, 99.95, 99.97, 99.96, 99.96],
+    trend: [
+      99.91, 99.93, 99.9, 99.94, 99.95, 99.92, 99.94, 99.96, 99.95, 99.97,
+      99.96, 99.96,
+    ],
     icon: ActivityIcon,
   },
   {
@@ -85,7 +173,10 @@ const stats: StatItem[] = [
     format: { compact: false },
     delta: 4.1,
     hint: "较昨日",
-    trend: [8200, 8900, 9400, 10100, 10800, 11600, 12100, 11800, 12400, 13200, 13900, 14200],
+    trend: [
+      8200, 8900, 9400, 10100, 10800, 11600, 12100, 11800, 12400, 13200, 13900,
+      14200,
+    ],
     icon: RadarIcon,
   },
   {
@@ -130,9 +221,24 @@ const scopes = [
 const dateRange = "2025-06-01 ~ 2025-06-02"
 
 const services = [
-  { id: "probe", label: "拨测服务", state: "healthy" as const, detail: "全部节点在线" },
-  { id: "worker", label: "任务调度", state: "warning" as const, detail: "队列积压 1 200 条，正在消化" },
-  { id: "notify", label: "通知通道", state: "healthy" as const, detail: "站内信、邮件均可用" },
+  {
+    id: "probe",
+    label: "拨测服务",
+    state: "healthy" as const,
+    detail: "全部节点在线",
+  },
+  {
+    id: "worker",
+    label: "任务调度",
+    state: "warning" as const,
+    detail: "队列积压 1 200 条，正在消化",
+  },
+  {
+    id: "notify",
+    label: "通知通道",
+    state: "healthy" as const,
+    detail: "站内信、邮件均可用",
+  },
 ]
 
 /** 每 2 小时一档的横轴标签，共 12 档，概览以外的页面摘要共用 */
@@ -168,21 +274,23 @@ const slowestEndpoints = [
 ]
 
 /** 拨测记录：每 2 小时一档、按拨测类型的次数，合计 128 640 次，与概览的拨测次数一致 */
-const probeVolume = [
-  [4787, 1390, 927, 618],
-  [5196, 1509, 1006, 670],
-  [5489, 1593, 1062, 708],
-  [5897, 1712, 1141, 761],
-  [6305, 1831, 1221, 814],
-  [6773, 1966, 1311, 874],
-  [7065, 2051, 1367, 912],
-  [6890, 2000, 1333, 889],
-  [7240, 2102, 1401, 934],
-  [7707, 2238, 1492, 994],
-  [8116, 2356, 1571, 1047],
-  [8292, 2407, 1605, 1070],
-].map(([http, tcp, dns, ping], index) => ({
-  hour: bucketHours[index],
+const probeVolume = (
+  [
+    [4787, 1390, 927, 618],
+    [5196, 1509, 1006, 670],
+    [5489, 1593, 1062, 708],
+    [5897, 1712, 1141, 761],
+    [6305, 1831, 1221, 814],
+    [6773, 1966, 1311, 874],
+    [7065, 2051, 1367, 912],
+    [6890, 2000, 1333, 889],
+    [7240, 2102, 1401, 934],
+    [7707, 2238, 1492, 994],
+    [8116, 2356, 1571, 1047],
+    [8292, 2407, 1605, 1070],
+  ] satisfies [number, number, number, number][]
+).map(([http, tcp, dns, ping], index) => ({
+  hour: bucketHours[index] ?? "",
   http,
   tcp,
   dns,
@@ -223,11 +331,23 @@ const nodeGroups = [
 ]
 
 /** 事件与异常：每 2 小时一档的事件数，按级别拆分 */
-const eventVolume = [
-  [1, 4], [0, 3], [0, 2], [2, 5], [1, 4], [0, 3],
-  [1, 6], [3, 7], [2, 5], [1, 6], [4, 8], [3, 7],
-].map(([error, warning], index) => ({
-  hour: bucketHours[index],
+const eventVolume = (
+  [
+    [1, 4],
+    [0, 3],
+    [0, 2],
+    [2, 5],
+    [1, 4],
+    [0, 3],
+    [1, 6],
+    [3, 7],
+    [2, 5],
+    [1, 6],
+    [4, 8],
+    [3, 7],
+  ] satisfies [number, number][]
+).map(([error, warning], index) => ({
+  hour: bucketHours[index] ?? "",
   error,
   warning,
 }))

@@ -19,13 +19,13 @@ type Mood = {
 }
 
 /** 1 到 5 五档：读数与读屏文本都取这里的词 */
-const MOODS: readonly Mood[] = [
+const MOODS = [
   { label: "很差", tone: "rose", icon: Frown },
   { label: "不太好", tone: "rose", icon: Annoyed },
   { label: "一般", tone: "amber", icon: Meh },
   { label: "不错", tone: "primary", icon: Smile },
   { label: "很棒", tone: "green", icon: Laugh },
-]
+] as const satisfies readonly Mood[]
 
 /** 内置色调名换成变量，图标与滑块用同一个颜色 */
 const TONE_COLORS: Record<Mood["tone"], string> = {
@@ -36,7 +36,10 @@ const TONE_COLORS: Record<Mood["tone"], string> = {
 }
 
 function moodOf(value: number) {
-  return MOODS[Math.min(MOODS.length, Math.max(1, Math.round(value))) - 1]
+  return (
+    MOODS[Math.min(MOODS.length, Math.max(1, Math.round(value))) - 1] ??
+    MOODS[0]
+  )
 }
 
 function moodLabel(value: number) {

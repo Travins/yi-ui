@@ -2551,7 +2551,7 @@
         {
           "path": "src/registry/lib/color.ts",
           "type": "registry:lib",
-          "target": "@lib/color.ts"
+          "target": "lib/color.ts"
         }
       ]
     },
@@ -2617,7 +2617,7 @@
         {
           "path": "src/registry/lib/color-vision.ts",
           "type": "registry:lib",
-          "target": "@lib/color-vision.ts"
+          "target": "lib/color-vision.ts"
         }
       ]
     },

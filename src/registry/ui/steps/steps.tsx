@@ -44,11 +44,17 @@ function Steps({
   const value = Number.isFinite(rawValue)
     ? Math.min(Math.max(Math.trunc(rawValue), 0), Math.max(items.length - 1, 0))
     : 0
-  const statuses = items.map(
-    (item, index): StepStatus =>
+  const resolvedItems = items.map((item, index) => ({
+    item,
+    status:
       item.status ??
-      (index < value ? "finish" : index === value ? "process" : "wait"),
-  )
+      ((index < value
+        ? "finish"
+        : index === value
+          ? "process"
+          : "wait") satisfies StepStatus),
+  }))
+  const current = resolvedItems[value]
   const statusText = {
     wait: labels.srWait,
     process: labels.srProcess,
@@ -88,7 +94,7 @@ function Steps({
           aria-atomic="true"
         >
           <span className="text-muted-foreground tabular-nums">{summary}</span>
-          {items.length > 0 && (
+          {current && (
             <>
               <span aria-hidden="true" className="text-muted-foreground">
                 ·
@@ -97,21 +103,20 @@ function Steps({
                 data-slot="steps-title"
                 className={cn(
                   "min-w-0 font-medium wrap-anywhere",
-                  statuses[value] === "error" && "text-destructive",
+                  current.status === "error" && "text-destructive",
                 )}
               >
-                {statuses[value] === "error" && (
+                {current.status === "error" && (
                   <span aria-hidden="true">! </span>
                 )}
-                {items[value].title}
+                {current.item.title}
               </span>
-              <span className="sr-only">{statusText[statuses[value]]}</span>
+              <span className="sr-only">{statusText[current.status]}</span>
             </>
           )}
         </p>
         <ol aria-label={labels.list} className="flex list-none gap-1.5 p-0">
-          {items.map((item, index) => {
-            const status = statuses[index]
+          {resolvedItems.map(({ item, status }, index) => {
             const canGoBack =
               clickable === "completed" &&
               index < value &&
@@ -176,8 +181,7 @@ function Steps({
           compact ? "hidden" : auto ? "hidden @min-[28rem]/steps:flex" : "flex",
         )}
       >
-        {items.map((item, index) => {
-          const status = statuses[index]
+        {resolvedItems.map(({ item, status }, index) => {
           const canGoBack =
             clickable === "completed" &&
             index < value &&

@@ -20,7 +20,7 @@ export function searchGroup(url: string): SearchGroup {
     themes: "主题",
     blog: "博客",
   }
-  return groups[section] ?? "页面"
+  return groups[section ?? ""] ?? "页面"
 }
 
 /** 空状态的快捷入口：group 决定图标。 */
@@ -39,6 +39,6 @@ export const searchShortcuts: {
 
 /** `/components/grid-layout/` → `/components/grid-layout`（根路径保持 `/`）。 */
 export function displayPath(url: string) {
-  const path = url.split("#")[0].replace(/\/+$/, "")
+  const path = url.split("#", 1).join("").replace(/\/+$/, "")
   return path || "/"
 }

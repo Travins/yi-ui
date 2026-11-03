@@ -49,7 +49,7 @@ function parseInline(markdown: string) {
   let last = 0
   for (const match of source.matchAll(/`([^`]+)`/g)) {
     push(cleanInline(source.slice(last, match.index)), false)
-    push(match[1], true)
+    push(match[1] ?? "", true)
     last = match.index + match[0].length
   }
   push(cleanInline(source.slice(last)), false)
@@ -93,7 +93,7 @@ export function toSegments(
     ) {
       last.text += text[i]
     } else {
-      segments.push({ text: text[i], code: code[i], match: matched[i] })
+      segments.push({ text: text.charAt(i), code: code[i], match: matched[i] })
     }
   }
   if (end < text.length) segments.push({ text: "…" })

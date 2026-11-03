@@ -14,7 +14,7 @@ test("HEX 简写、大小写与透明度", () => {
     ["#ABCD", "#aabbccdd"],
     ["ABCDEF", "#abcdef"],
     ["#ABCDEF80", "#abcdef80"],
-  ])
+  ] as const)
     assert.equal(rgbToHex(parseHex(a)!, b.length === 9), b)
 })
 test("非法输入", () => {

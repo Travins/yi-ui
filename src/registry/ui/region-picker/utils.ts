@@ -201,6 +201,7 @@ function matchEntry(
 ): Match | null {
   let best: Match | null = null
   const own = entry.nodes[entry.level]
+  if (!own) return null
 
   // 整句去掉分隔后直接匹配本节点：「hang zhou」「hangzhou」都能命中杭州市
   const whole = matchNode(own, compact)
@@ -213,15 +214,16 @@ function matchEntry(
   // 带路径的检索：「杭州 西湖」——最后一个词命中本节点，其余的词命中本节点或任一上级。
   // 整句已经命中的不再走这里（路径检索的 tier 恒大于直接命中）
   if (!best && tokens.length > 1) {
-    const last = matchNode(own, tokens[tokens.length - 1])
+    const last = matchNode(own, tokens.at(-1) ?? "")
     if (last) {
       const highlights = entry.nodes.map(() => null) as Match["highlights"]
       highlights[entry.level] = last.highlight
       let ok = true
       for (const token of tokens.slice(0, -1)) {
         let found = false
-        for (let i = 0; i <= entry.level && !found; i++) {
-          const hit = matchNode(entry.nodes[i], token)
+        for (const [i, node] of entry.nodes.entries()) {
+          if (i > entry.level || found) break
+          const hit = matchNode(node, token)
           if (hit) {
             highlights[i] = { ...hit.highlight, ...highlights[i] }
             found = true
@@ -263,12 +265,19 @@ function searchRegionIndex(
   )
   return {
     total: matched.length,
-    results: matched.slice(0, limit).map(({ entry, match }) => ({
-      node: entry.path[entry.level],
-      path: entry.path,
-      level: entry.level,
-      highlights: match.highlights,
-    })),
+    results: matched.slice(0, limit).flatMap(({ entry, match }) => {
+      const node = entry.path[entry.level]
+      return node
+        ? [
+            {
+              node,
+              path: entry.path,
+              level: entry.level,
+              highlights: match.highlights,
+            },
+          ]
+        : []
+    }),
   }
 }
 
@@ -328,7 +337,7 @@ function groupRegionsByInitial(nodes: RegionOption[]): RegionGroup[] | null {
   )
   const groups: RegionGroup[] = []
   for (const node of sorted) {
-    const letter = node.pinyin!.trim()[0].toUpperCase()
+    const letter = node.pinyin!.trim().charAt(0).toUpperCase()
     const last = groups[groups.length - 1]
     if (last?.letter === letter) last.items.push(node)
     else groups.push({ letter, items: [node] })

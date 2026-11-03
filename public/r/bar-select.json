@@ -35,7 +35,7 @@
     {
       "path": "src/registry/hooks/use-controllable-state.ts",
       "content": "\"use client\"\n\nimport * as React from \"react\"\n\ntype UseControllableStateParams<T> = {\n  /** 受控值；传入后组件不再维护内部状态 */\n  prop?: T\n  /** 非受控时的初始值 */\n  defaultProp: T\n  /** 值变化时回调（受控与非受控都会触发） */\n  onChange?: (value: T) => void\n}\n\n/**\n * 同时支持受控与非受控的状态 hook。\n * 约定见 component-conventions 技能第 4 节：open/defaultOpen/onOpenChange 等成对 props 都用它实现。\n */\nfunction useControllableState<T>({\n  prop,\n  defaultProp,\n  onChange,\n}: UseControllableStateParams<T>) {\n  const [uncontrolled, setUncontrolled] = React.useState(defaultProp)\n  const isControlled = prop !== undefined\n  const value = isControlled ? prop : uncontrolled\n\n  // 用 ref 保存最新的回调和值，保证 setValue 引用稳定\n  const onChangeRef = React.useRef(onChange)\n  const valueRef = React.useRef(value)\n  React.useEffect(() => {\n    onChangeRef.current = onChange\n    valueRef.current = value\n  })\n\n  const setValue = React.useCallback(\n    (next: React.SetStateAction<T>) => {\n      const resolved =\n        typeof next === \"function\"\n          ? (next as (prev: T) => T)(valueRef.current)\n          : next\n      if (Object.is(resolved, valueRef.current)) return\n      valueRef.current = resolved\n      if (!isControlled) setUncontrolled(resolved)\n      onChangeRef.current?.(resolved)\n    },\n    [isControlled],\n  )\n\n  return [value, setValue] as const\n}\n\nexport { useControllableState }\n",
-      "type": "registry:hook",
+      "type": "registry:ui",
       "target": "hooks/use-controllable-state.ts"
     }
   ],

@@ -236,7 +236,10 @@ function useAgentChatPosition({
     const start = current.current ?? defaultPosition(panel)
     const step = event.shiftKey ? 64 : 16
     const next = constrain(
-      { x: start.x + direction[0] * step, y: start.y + direction[1] * step },
+      {
+        x: start.x + (direction[0] ?? 0) * step,
+        y: start.y + (direction[1] ?? 0) * step,
+      },
       panel,
     )
     writePosition(panel, next)

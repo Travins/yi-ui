@@ -121,8 +121,10 @@ function syllables(text: string) {
 export function toPinyin(name: string) {
   const key = OVERRIDE_KEYS.find((k) => name.startsWith(k))
   if (!key) return syllables(name)
+  const override = PINYIN_OVERRIDES[key]
+  if (override === undefined) return syllables(name)
   const rest = name.slice(key.length)
-  return rest ? `${PINYIN_OVERRIDES[key]} ${syllables(rest)}` : PINYIN_OVERRIDES[key]
+  return rest ? `${override} ${syllables(rest)}` : override
 }
 
 async function fetchList(query: string): Promise<ApiNode> {
@@ -144,7 +146,11 @@ async function fetchList(query: string): Promise<ApiNode> {
  * 不收录的省级：香港、澳门、台湾。它们在官方数据里只有省级一条、没有下级，
  * 放进省市区选择里只会多出几个选不下去的项（台湾省的代码还是占位文字「资料暂缺」）
  */
-const EXCLUDED_PROVINCES = new Set(["香港特别行政区", "澳门特别行政区", "台湾省"])
+const EXCLUDED_PROVINCES = new Set([
+  "香港特别行政区",
+  "澳门特别行政区",
+  "台湾省",
+])
 
 function toCode(node: ApiNode) {
   // 遇到非数字代码直接报错，避免占位值之类的脏数据进库
@@ -168,7 +174,14 @@ function render(region: Region, depth: number): string {
   const head = `code: ${JSON.stringify(region.code)}, name: ${JSON.stringify(region.name)}, pinyin: ${JSON.stringify(region.pinyin)}`
   if (!region.children) return `${indent}{ ${head} },`
   const children = region.children.map((child) => render(child, depth + 1))
-  return [`${indent}{`, `${indent}  ${head},`, `${indent}  children: [`, ...children.map((line) => `  ${line}`), `${indent}  ],`, `${indent}},`].join("\n")
+  return [
+    `${indent}{`,
+    `${indent}  ${head},`,
+    `${indent}  children: [`,
+    ...children.map((line) => `  ${line}`),
+    `${indent}  ],`,
+    `${indent}},`,
+  ].join("\n")
 }
 
 async function main() {

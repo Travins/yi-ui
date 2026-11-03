@@ -69,7 +69,7 @@ function MiniDonut({
   const config: ChartConfig = {}
   const data = segments.map((segment, index) => {
     const color = toneColor(
-      segment.tone ?? SERIES_TONES[index % SERIES_TONES.length],
+      segment.tone ?? SERIES_TONES[index % SERIES_TONES.length] ?? "blue",
     )
     config[segment.label] = { label: segment.label, color }
     return { label: segment.label, value: segment.value, fill: color }

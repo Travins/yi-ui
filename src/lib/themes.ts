@@ -18,7 +18,17 @@
  * 注意：此文件会被 scripts/build-theme-registry.ts 直接运行，不要使用 `@/` 别名导入。
  */
 
-export type ThemeVars = Record<string, string>
+export type ThemeVars = Record<string, string> &
+  Record<
+    | "background"
+    | "primary"
+    | "primary-foreground"
+    | "foreground"
+    | "muted-foreground"
+    | "muted"
+    | "destructive",
+    string
+  >
 
 export type ThemeVarSets = { light: ThemeVars; dark: ThemeVars }
 
@@ -327,12 +337,16 @@ function colorVars(r: ColorRamp, spec: ColorSpec): ThemeVarSets {
   const destructive = spec.destructive ?? DESTRUCTIVE
 
   const lightPrimary = oklch(
-    typeof spec.light.primary === "number" ? r[spec.light.primary] : spec.light.primary
+    typeof spec.light.primary === "number"
+      ? r[spec.light.primary]
+      : spec.light.primary,
   )
   // 彩色主题按钮一律白字：深色字压在饱和色上显得发脏，统一白字观感更协调
   const lightOnPrimary = WHITE
   const darkPrimary = oklch(
-    typeof spec.dark.primary === "number" ? r[spec.dark.primary] : spec.dark.primary
+    typeof spec.dark.primary === "number"
+      ? r[spec.dark.primary]
+      : spec.dark.primary,
   )
   const darkOnPrimary = WHITE
 
@@ -609,12 +623,16 @@ export function isColorTheme(value: unknown): value is ColorThemeId {
   return COLOR_THEMES.some((theme) => theme.id === value)
 }
 
-export function getColorTheme(id: string): (typeof COLOR_THEMES)[number] | undefined {
+export function getColorTheme(
+  id: string,
+): (typeof COLOR_THEMES)[number] | undefined {
   return COLOR_THEMES.find((theme) => theme.id === id)
 }
 
 /** 「中文 · English」格式的主题名，选择器、页面标题、文档表格统一使用。 */
-export function formatThemeLabel(theme: Pick<ColorTheme, "name" | "title">): string {
+export function formatThemeLabel(
+  theme: Pick<ColorTheme, "name" | "title">,
+): string {
   return `${theme.name} · ${theme.title}`
 }
 
@@ -631,10 +649,12 @@ export function getThemeGroups(): Array<
 /** 把变量集渲染成 `selector { --k: v; }`，themes.css 与「复制代码」共用。 */
 export function formatCssBlock(
   selector: string,
-  vars: ThemeVars,
-  indent = "  "
+  vars: Record<string, string>,
+  indent = "  ",
 ): string {
-  const lines = Object.entries(vars).map(([key, value]) => `${indent}--${key}: ${value};`)
+  const lines = Object.entries(vars).map(
+    ([key, value]) => `${indent}--${key}: ${value};`,
+  )
   return `${selector} {\n${lines.join("\n")}\n}`
 }
 
@@ -652,9 +672,9 @@ export function formatThemeCss(theme: Pick<ColorTheme, "cssVars">): string {
  * 读到的值不在当前主题清单里（例如已移除的旧 id）时回落到默认主题。
  */
 export const COLOR_THEME_INIT_SCRIPT = `(function(){try{var ids=${JSON.stringify(
-  COLOR_THEMES.map((theme) => theme.id)
+  COLOR_THEMES.map((theme) => theme.id),
 )};var t=localStorage.getItem(${JSON.stringify(COLOR_THEME_STORAGE_KEY)});if(ids.indexOf(t)<0)t=${JSON.stringify(
-  DEFAULT_COLOR_THEME
+  DEFAULT_COLOR_THEME,
 )};document.documentElement.setAttribute("data-theme",t)}catch(e){document.documentElement.setAttribute("data-theme",${JSON.stringify(
-  DEFAULT_COLOR_THEME
+  DEFAULT_COLOR_THEME,
 )})}})()`

@@ -169,7 +169,7 @@ function DataTable<T>({
   const touchedVisibility = React.useRef(false)
   React.useEffect(() => {
     const observer = new ResizeObserver(([entry]) => {
-      if (touchedVisibility.current) return
+      if (!entry || touchedVisibility.current) return
       setVisibility(
         Object.fromEntries(
           columns.map((column) => [
@@ -240,7 +240,10 @@ function DataTable<T>({
   })
   const items = virtualizer.getVirtualItems()
   const shown = virtualization
-    ? items.map((item) => ({ row: rows[item.index], index: item.index }))
+    ? items.flatMap((item) => {
+        const row = rows[item.index]
+        return row ? [{ row, index: item.index }] : []
+      })
     : rows.map((row, index) => ({ row, index }))
   const selected = Object.values(rowSelection).filter(Boolean).length
   const count =
@@ -542,7 +545,7 @@ function DataTable<T>({
               <>
                 {!!virtualization && items.length > 0 && (
                   <tr aria-hidden="true">
-                    <td colSpan={span} style={{ height: items[0].start }} />
+                    <td colSpan={span} style={{ height: items[0]?.start }} />
                   </tr>
                 )}
                 {shown.map(({ row, index }) => (
@@ -731,8 +734,7 @@ function DataTable<T>({
                       colSpan={span}
                       style={{
                         height:
-                          virtualizer.getTotalSize() -
-                          items[items.length - 1].end,
+                          virtualizer.getTotalSize() - (items.at(-1)?.end ?? 0),
                       }}
                     />
                   </tr>

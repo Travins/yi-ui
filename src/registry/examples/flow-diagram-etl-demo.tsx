@@ -23,7 +23,7 @@ const SOURCES = [
 ] as const
 const BARS = [10, 16, 12, 22, 18] as const
 
-const TO_CLEAN = SOURCES.map(({ x }) =>
+const toClean = ({ x }: { x: number }) =>
   flowRoute(
     x === 130
       ? [
@@ -36,8 +36,8 @@ const TO_CLEAN = SOURCES.map(({ x }) =>
           [130, 52],
           [130, 68],
         ],
-  ),
-)
+  )
+
 const TO_STORE = flowRoute([
   [130, 102],
   [130, 128],
@@ -49,7 +49,7 @@ const TO_BOARD = flowRoute([
 
 // 时间轴（秒）：多源汇入 → 清洗（进度条走完）→ 入仓 → 看板的柱子依次长出来
 const INTAKE_AT = 0.5
-const CLEAN_AT = flowArrival(INTAKE_AT, TO_CLEAN[0])
+const CLEAN_AT = flowArrival(INTAKE_AT, toClean(SOURCES[0]))
 const CLEAN_END = CLEAN_AT + 1.4
 const STORE_AT = CLEAN_END + 0.1
 const WAREHOUSE_AT = flowArrival(STORE_AT, TO_STORE)
@@ -129,13 +129,13 @@ export default function FlowDiagramEtlDemo() {
       rest={REST}
       className="w-full max-w-sm"
     >
-      {TO_CLEAN.map((route, i) => (
+      {SOURCES.map((source, i) => (
         // 数据源是常驻的接入：线画好后持续流动，直到清洗完成
         <FlowBeam
           key={`intake-${i}`}
-          route={route}
+          route={toClean(source)}
           at={INTAKE_AT}
-          tone={SOURCES[i].tone}
+          tone={source.tone}
           flow
         />
       ))}

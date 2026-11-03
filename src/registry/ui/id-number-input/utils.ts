@@ -67,7 +67,8 @@ function birthDateOf(value: string, today: number) {
   const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
   if (
     day >
-    [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]
+    ([31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1] ??
+      0)
   )
     return null
   if (Number(digits) > today) return null
@@ -83,7 +84,7 @@ function isValidIdCardAtDate(
     return birthDateOf(value, today) !== null
   if (!/^\d{17}[\dX]$/.test(value) || !birthDateOf(value, today)) return false
   const sum = ID_WEIGHTS.reduce(
-    (total, weight, index) => total + Number(value[index]) * weight,
+    (total, weight, index) => total + Number(value.charAt(index)) * weight,
     0,
   )
   return "10X98765432"[sum % 11] === value[17]
@@ -121,7 +122,7 @@ function isValidBankCard(
   if (!luhn) return true
   let sum = 0
   for (let index = value.length - 1; index >= 0; index--) {
-    let digit = Number(value[index])
+    let digit = Number(value.charAt(index))
     if ((value.length - 1 - index) % 2 === 1) {
       digit *= 2
       if (digit > 9) digit -= 9
@@ -139,7 +140,7 @@ function isValidUscc(value: string) {
     return false
   const sum = USCC_WEIGHTS.reduce(
     (total, weight, index) =>
-      total + USCC_CHARACTERS.indexOf(value[index]) * weight,
+      total + USCC_CHARACTERS.indexOf(value.charAt(index)) * weight,
     0,
   )
   return USCC_CHARACTERS[(31 - (sum % 31)) % 31] === value[17]

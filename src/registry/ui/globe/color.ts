@@ -44,7 +44,7 @@ function resolveColor(scope: Element, css: string): GlobeRgb {
   ctx.fillStyle = "rgba(0, 0, 0, 0)"
   ctx.fillStyle = computed
   ctx.fillRect(0, 0, 1, 1)
-  const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
+  const [r = 0, g = 0, b = 0, a] = ctx.getImageData(0, 0, 1, 1).data
   if (a === 0) return [0.5, 0.5, 0.5]
   return [r / 255, g / 255, b / 255]
 }

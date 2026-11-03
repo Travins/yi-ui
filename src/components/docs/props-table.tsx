@@ -62,7 +62,7 @@ function hasTopLevel(
   let depth = 0
   let quote = ""
   for (let i = 0; i < source.length; i++) {
-    const char = source[i]
+    const char = source.charAt(i)
     if (quote) {
       if (char === "\\") i++
       else if (char === quote) quote = ""
@@ -86,7 +86,7 @@ function simplifyType(type: string): string {
     const members = source
       .split(/\s*\|\s*/)
       .filter((member) => member !== "undefined" && member !== "null")
-    if (members.length === 1) return simplifyType(members[0])
+    if (members.length === 1) return simplifyType(members[0] ?? "")
     return members.every((member) => member === "true" || member === "false")
       ? "boolean"
       : "union"
@@ -210,7 +210,9 @@ function TypeTable({ type }: { type: Record<string, TypeTableEntry> }) {
 async function componentPropRows(name: string, component: string) {
   const item = registry.items.find((item) => item.name === name)
   if (!item) throw new Error(`未登记的组件：${name}`)
-  const entries = await generate(item.files[0].path, component)
+  const first = item.files[0]
+  if (!first) throw new Error(`组件没有源码：${name}`)
+  const entries = await generate(first.path, component)
   return entries.map((entry) => ({
     name: entry.name,
     type: entry.type,
@@ -243,9 +245,7 @@ async function PropsTable({
       </p>
     )
   }
-  return (
-    <TypeTableView rows={rows} />
-  )
+  return <TypeTableView rows={rows} />
 }
 
 export { componentPropRows, PropsTable, TypeTable }

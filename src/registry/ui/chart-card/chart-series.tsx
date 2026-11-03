@@ -128,7 +128,9 @@ function ChartSeries({
   const gradientBase = React.useId().replaceAll(":", "")
   const resolved = series.map((item, index) => ({
     ...item,
-    color: toneColor(item.tone ?? SERIES_TONES[index % SERIES_TONES.length]),
+    color: toneColor(
+      item.tone ?? SERIES_TONES[index % SERIES_TONES.length] ?? "blue",
+    ),
   }))
   const config: ChartConfig = {}
   for (const item of resolved)

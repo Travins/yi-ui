@@ -80,7 +80,7 @@ export function buildResultModel(
   const seen = new Set<string>()
 
   for (const result of results) {
-    const url = result.url.split("#")[0]
+    const url = result.url.split("#", 1).join("")
     let page = pages.get(url)
     if (!page) {
       page = { url, title: "", hits: [] }

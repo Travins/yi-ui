@@ -47,16 +47,16 @@ const TARGETS = [
 ] as const
 
 // 模型 → 推理引擎：先下行，再在 y=56 汇到中线
-const INTAKE = MODELS.map(({ x }) =>
+const intakeRoute = ({ x }: { x: number }) =>
   flowRoute([
     [x, 34],
     [x, 56],
     [108, 56],
     [108, 76],
-  ]),
-)
+  ])
+
 // 推理引擎 → 三个出口：中间直下，两侧先下到 y=132 再横向分开
-const DISPATCH = TARGETS.map(({ x }) =>
+const dispatchRoute = ({ x }: { x: number }) =>
   flowRoute(
     x === 108
       ? [
@@ -69,12 +69,11 @@ const DISPATCH = TARGETS.map(({ x }) =>
           [x, 132],
           [x, 158],
         ],
-  ),
-)
+  )
 
 /** 大模型部署：模型汇入推理引擎，再分发到 API / Chat / Agent。 */
 function FlowDiagramDeployDemo({ className }: { className?: string }) {
-  const engineLit = flowArrival(ROUNDS[0].intake, INTAKE[0])
+  const engineLit = flowArrival(ROUNDS[0].intake, intakeRoute(MODELS[0]))
 
   return (
     <FlowDiagram
@@ -85,19 +84,19 @@ function FlowDiagramDeployDemo({ className }: { className?: string }) {
     >
       {ROUNDS.map((round, index) => (
         <Fragment key={round.intake}>
-          {INTAKE.map((path, i) => (
+          {MODELS.map((model, i) => (
             <FlowBeam
               key={`in-${i}`}
-              route={path}
+              route={intakeRoute(model)}
               at={round.intake}
-              tone={MODELS[i].tone}
+              tone={model.tone}
               base={index === 0}
             />
           ))}
-          {DISPATCH.map((path, i) => (
+          {TARGETS.map((target, i) => (
             <FlowBeam
               key={`out-${i}`}
-              route={path}
+              route={dispatchRoute(target)}
               at={round.dispatch}
               tone="green"
               base={index === 0}
@@ -147,8 +146,8 @@ function FlowDiagramDeployDemo({ className }: { className?: string }) {
         </FlowLabel>
       </FlowNode>
 
-      {TARGETS.map(({ x, label, icon }, i) => {
-        const arrival = flowArrival(ROUNDS[0].dispatch, DISPATCH[i])
+      {TARGETS.map(({ x, label, icon }) => {
+        const arrival = flowArrival(ROUNDS[0].dispatch, dispatchRoute({ x }))
         return (
           <FlowNode
             key={label}

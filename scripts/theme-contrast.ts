@@ -13,13 +13,17 @@ type Rgb = [number, number, number]
 
 /** 解析 oklch(L C H) 或 oklch(L C H / A%)；带透明度时叠加到 backdrop 上。 */
 function parseOklch(value: string, backdrop?: Rgb): Rgb {
-  const match = value.match(/^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+)%)?\s*\)$/)
+  const match = value.match(
+    /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+)%)?\s*\)$/,
+  )
   if (!match) throw new Error(`无法解析颜色：${value}`)
   const [l, c, h] = [Number(match[1]), Number(match[2]), Number(match[3])]
   const alpha = match[4] === undefined ? 1 : Number(match[4]) / 100
   const rgb = oklchToSrgb(l, c, h)
   if (alpha === 1 || !backdrop) return rgb
-  return rgb.map((channel, index) => channel * alpha + backdrop[index] * (1 - alpha)) as Rgb
+  return rgb.map(
+    (channel, index) => channel * alpha + backdrop[index]! * (1 - alpha),
+  ) as Rgb
 }
 
 /** oklch → sRGB（0–1），超出色域的通道裁剪。 */
@@ -42,7 +46,9 @@ function oklchToSrgb(l: number, c: number, h: number): Rgb {
 }
 
 function luminance(rgb: Rgb): number {
-  const [r, g, b] = rgb.map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+  const [r = 0, g = 0, b = 0] = rgb.map((v) =>
+    v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
+  )
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
@@ -53,10 +59,16 @@ function contrast(a: Rgb, b: Rgb): number {
 
 /** sRGB 欧氏距离的粗略色差（仅用来判断“看起来是不是同一种红”）。 */
 function colorDistance(a: Rgb, b: Rgb): number {
-  return Math.hypot(...a.map((v, i) => (v - b[i]) * 100)) / 1.7
+  return Math.hypot(...a.map((v, i) => (v - b[i]!) * 100)) / 1.7
 }
 
-const MIN = { primaryText: 3, text: 4.5, muted: 4.5, graphic: 3, destructive: 8 }
+const MIN = {
+  primaryText: 3,
+  text: 4.5,
+  muted: 4.5,
+  graphic: 3,
+  destructive: 8,
+}
 
 const rows: string[] = []
 let failures = 0
@@ -72,10 +84,16 @@ for (const theme of COLOR_THEMES) {
     const vars = theme.cssVars[mode]
     const background = parseOklch(vars.background)
     const primary = parseOklch(vars.primary)
-    const primaryText = contrast(parseOklch(vars["primary-foreground"]), primary)
+    const primaryText = contrast(
+      parseOklch(vars["primary-foreground"]),
+      primary,
+    )
     const text = contrast(parseOklch(vars.foreground), background)
     const muted = contrast(parseOklch(vars["muted-foreground"]), background)
-    const mutedOnMuted = contrast(parseOklch(vars["muted-foreground"]), parseOklch(vars.muted))
+    const mutedOnMuted = contrast(
+      parseOklch(vars["muted-foreground"]),
+      parseOklch(vars.muted),
+    )
     const graphic = contrast(primary, background)
     const destructiveGap = colorDistance(parseOklch(vars.destructive), primary)
     rows.push(
@@ -88,7 +106,7 @@ for (const theme of COLOR_THEMES) {
         mutedOnMuted.toFixed(2),
         cell(graphic, MIN.graphic),
         theme.group === "color" ? cell(destructiveGap, MIN.destructive) : "—",
-      ].join(" | ")
+      ].join(" | "),
     )
   }
 }
@@ -98,7 +116,7 @@ console.log(
     "| 主题 | 模式 | primary-fg / primary | fg / bg | muted-fg / bg | muted-fg / muted | primary / bg | 危险色 vs 主色 ΔE |",
     "|---|---|---|---|---|---|---|---|",
     ...rows.map((row) => `| ${row} |`),
-  ].join("\n")
+  ].join("\n"),
 )
 
 if (failures > 0) {

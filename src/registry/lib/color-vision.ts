@@ -26,7 +26,7 @@ const matrices = {
     [-0.078411, 0.930809, 0.147602],
     [0.004733, 0.691367, 0.3039],
   ],
-}
+} as const
 function linear(v: number) {
   v /= 255
   return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
@@ -34,31 +34,36 @@ function linear(v: number) {
 function channels(hex: string) {
   const rgb = parseHex(hex)
   if (!rgb) throw new TypeError("无效的 HEX 颜色")
-  return [rgb.r, rgb.g, rgb.b].map(linear)
+  return [linear(rgb.r), linear(rgb.g), linear(rgb.b)] as const
 }
 /** 模拟结果保留线性 RGB 浮点值：色差直接用它计算，取整只发生在输出 HEX 时 */
 function simulateLinear(hex: string, type: Exclude<ColorVision, "normal">) {
   const rgb = channels(hex)
-  return matrices[type].map((row) =>
+  const transform = (row: readonly [number, number, number]) =>
     Math.max(
       0,
       Math.min(
         1,
-        row.reduce((s, c, i) => s + c * rgb[i], 0),
+        row.reduce((sum, coefficient, i) => sum + coefficient * rgb[i]!, 0),
       ),
-    ),
-  )
+    )
+  const matrix = matrices[type]
+  return [
+    transform(matrix[0]),
+    transform(matrix[1]),
+    transform(matrix[2]),
+  ] as const
 }
 function simulateColorVision(
   hex: string,
   type: Exclude<ColorVision, "normal">,
 ) {
-  const [r, g, b] = simulateLinear(hex, type).map(
-    (v) => 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055),
-  )
-  return rgbToHex({ r, g, b, a: 1 })
+  const [r, g, b] = simulateLinear(hex, type)
+  const encode = (v: number) =>
+    255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)
+  return rgbToHex({ r: encode(r), g: encode(g), b: encode(b), a: 1 })
 }
-function linearToLab([r, g, b]: number[]): Lab {
+function linearToLab([r, g, b]: readonly [number, number, number]): Lab {
   const f = (v: number) =>
     v > (6 / 29) ** 3 ? Math.cbrt(v) : v / (3 * (6 / 29) ** 2) + 4 / 29
   const x = f((0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047)
@@ -128,11 +133,13 @@ function findColorConflicts(
   const result: ColorConflict[] = []
   for (const vision of visions) {
     const labs = colors.map((c) =>
-      linearToLab(vision === "normal" ? channels(c) : simulateLinear(c, vision)),
+      linearToLab(
+        vision === "normal" ? channels(c) : simulateLinear(c, vision),
+      ),
     )
     for (let a = 0; a < labs.length; a++)
       for (let b = a + 1; b < labs.length; b++) {
-        const deltaE = deltaE2000(labs[a], labs[b])
+        const deltaE = deltaE2000(labs[a]!, labs[b]!)
         if (deltaE < threshold) result.push({ a, b, vision, deltaE })
       }
   }

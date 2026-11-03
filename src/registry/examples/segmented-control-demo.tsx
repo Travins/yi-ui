@@ -85,6 +85,7 @@ function AssetBoard() {
           </span>
           {[0, 1].map((row) => {
             const asset = ASSETS[columnIndex * 2 + row]
+            if (!asset) return null
             return (
               <span
                 key={asset.name}

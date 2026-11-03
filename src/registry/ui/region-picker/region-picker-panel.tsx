@@ -124,14 +124,12 @@ function RegionPickerPanel({
   const trail = trailState ?? defaultTrail
   const level = trail.length
   const roots = index?.roots ?? EMPTY_PATH
-  const options = trail.length
-    ? (trail[level - 1].children ?? EMPTY_PATH)
-    : roots
+  const options = trail.length ? (trail.at(-1)?.children ?? EMPTY_PATH) : roots
 
   // 当前这一步里属于已选路径的那一项（上级路径一致时才算）
   const selectedHere =
     valuePath.length > level &&
-    trail.every((node, i) => node.code === valuePath[i].code)
+    trail.every((node, i) => node.code === valuePath[i]?.code)
       ? valuePath[level]
       : undefined
 
@@ -150,7 +148,8 @@ function RegionPickerPanel({
     { length: stepCount },
     (_, step) => {
       const label = stepLabel(step)
-      if (step < level) return { label, value: trail[step].name, state: "done" }
+      const node = trail[step]
+      if (node) return { label, value: node.name, state: "done" }
       if (step === level)
         return {
           label,
@@ -268,7 +267,7 @@ function RegionPickerPanel({
         return
       case "Enter":
         event.preventDefault()
-        if (active >= 0) choose(rows[active])
+        if (rows[active]) choose(rows[active])
         return
       case "Backspace":
         if (!query && trail.length) {
@@ -366,7 +365,7 @@ function RegionPickerPanel({
     // 浮层里两栏排布：多数字母下只有一两个地名，单栏会留下大片空白
     <div className={cn(!sheet && "gap-x-3 sm:columns-2")}>
       {groups.map((group, g) => {
-        const start = groupStarts[g]
+        const start = groupStarts[g] ?? 0
         const groupId = `${baseId}-group-${group.letter}`
         return (
           <div
@@ -396,7 +395,7 @@ function RegionPickerPanel({
             <div className={cn(sheet ? "" : "flex flex-wrap gap-1.5")}>
               {group.items.map((node, i) =>
                 renderOption(
-                  rows[start + i],
+                  { node, path: [...trail, node], level },
                   start + i,
                   sheet ? "row" : "chip",
                   // 右侧给字母索引条留出位置，箭头和对勾不被它压住
@@ -438,7 +437,7 @@ function RegionPickerPanel({
     spy?.key === listKey ? spy.letter : (spyGroups?.[0]?.letter ?? null)
   const onListScroll = () => {
     const list = scrollRef.current
-    if (!list || !spyGroups) return
+    if (!list || !spyGroups?.[0]) return
     const top = list.getBoundingClientRect().top
     let letter = spyGroups[0].letter
     for (const group of spyGroups) {

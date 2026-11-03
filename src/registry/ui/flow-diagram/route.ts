@@ -20,11 +20,13 @@ function round(value: number) {
  * 建议在组件外调用，每次渲染重新计算没有意义。
  */
 function flowRoute(points: readonly FlowPoint[], radius = 6): FlowRoute {
-  let d = `M${points[0][0]} ${points[0][1]}`
+  const first = points[0]
+  if (!first) throw new TypeError("路径至少需要一个点")
+  let d = `M${first[0]} ${first[1]}`
   let length = 0
   for (let index = 1; index < points.length; index += 1) {
-    const [px, py] = points[index - 1]
-    const [cx, cy] = points[index]
+    const [px, py] = points[index - 1]!
+    const [cx, cy] = points[index]!
     const next = points[index + 1]
     const incoming = Math.hypot(cx - px, cy - py)
     length += incoming

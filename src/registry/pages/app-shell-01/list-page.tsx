@@ -14,7 +14,11 @@ import { PageFrame } from "./page-header"
 import { listEvents } from "./sample-data"
 
 const getRowId = (row: (typeof listEvents)[number]) => row.id
-const applications = [...new Set(listEvents.map((row) => row.app))]
+const applications = [
+  ...new Set(
+    listEvents.flatMap((row) => (row.app === undefined ? [] : [row.app])),
+  ),
+]
 
 /**
  * 通用列表页示例：标题栏 + 可选的数据摘要 + 数据表格区块。其余导航项在演示里都显示它。

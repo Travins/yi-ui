@@ -56,7 +56,7 @@ function sanitizeAmount(
   let frac = ""
 
   for (let i = 0; i < raw.length; i++) {
-    const ch = normalizeChar(raw[i])
+    const ch = normalizeChar(raw.charAt(i))
     const before = i < caret
     if (ch === "-") {
       if (allowNegative && kept.length === 0) {

@@ -8,7 +8,7 @@ import { ColorPicker } from "@/registry/ui/color-picker/color-picker"
 function contrastOnWhite(hex: string) {
   const rgb = parseHex(hex)
   if (!rgb) return 21
-  const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((v) => {
+  const [r = 0, g = 0, b = 0] = [rgb.r, rgb.g, rgb.b].map((v) => {
     const c = v / 255
     return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })

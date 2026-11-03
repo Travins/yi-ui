@@ -23,7 +23,8 @@ export function ogCards(): (OgCardProps & { key: string })[] {
       kind: "YI UI · 组件库",
       title: "线条网格组件库",
       titleEn: "Line-grid Component Library",
-      description: "Yi UI（易）：为中文界面打磨的线条网格 React 组件库，以 shadcn registry 分发，由 Travins 个人维护。",
+      description:
+        "Yi UI（易）：为中文界面打磨的线条网格 React 组件库，以 shadcn registry 分发，由 Travins 个人维护。",
       path: "/",
     },
     {
@@ -39,12 +40,13 @@ export function ogCards(): (OgCardProps & { key: string })[] {
       kind: "THEMES · 主题",
       title: "主题",
       titleEn: "Themes",
-      description: "每套颜色主题在统计卡、图表、清单、设置控件与表单上的表现，一键应用到整站。",
+      description:
+        "每套颜色主题在统计卡、图表、清单、设置控件与表单上的表现，一键应用到整站。",
       path: "/themes/",
     },
     ...source.getPages(siteConfig.defaultLanguage).map((page) => ({
       key: page.slugs.join("/"),
-      kind: kinds[page.slugs[0]] ?? "DOCS · 文档",
+      kind: kinds[page.slugs[0] ?? ""] ?? "DOCS · 文档",
       title: page.data.title,
       titleEn: page.data.titleEn,
       description: page.data.description,

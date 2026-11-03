@@ -24,6 +24,7 @@ const FALLBACK_WIDTH = 120
 function smooth(points: [number, number][]) {
   const fmt = (n: number) => n.toFixed(1)
   const [first, ...rest] = points
+  if (!first) return ""
   let d = `M${fmt(first[0])} ${fmt(first[1])}`
   rest.forEach((point, i) => {
     const next = rest[i + 1]

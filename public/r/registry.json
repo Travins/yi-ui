@@ -161,7 +161,7 @@
         },
         {
           "path": "src/registry/hooks/use-now.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-now.ts"
         }
       ],
@@ -210,7 +210,7 @@
         },
         {
           "path": "src/registry/hooks/use-now.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-now.ts"
         }
       ],
@@ -784,7 +784,7 @@
       "files": [
         {
           "path": "src/registry/lib/flow-tone.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/flow-tone.ts"
         }
       ],
@@ -902,7 +902,7 @@
         },
         {
           "path": "src/registry/lib/data-display.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/data-display.ts"
         }
       ],
@@ -961,7 +961,7 @@
         },
         {
           "path": "src/registry/lib/data-display.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/data-display.ts"
         }
       ],
@@ -1035,7 +1035,7 @@
         },
         {
           "path": "src/registry/lib/data-display.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/data-display.ts"
         }
       ],
@@ -1184,7 +1184,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1221,7 +1221,7 @@
       "files": [
         {
           "path": "src/registry/lib/chinese-number.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/chinese-number.ts"
         }
       ],
@@ -1235,7 +1235,7 @@
       "files": [
         {
           "path": "src/registry/lib/china-regions.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/china-regions.ts"
         }
       ],
@@ -1281,17 +1281,17 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         },
         {
           "path": "src/registry/lib/data-display.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/data-display.ts"
         },
         {
           "path": "src/registry/hooks/use-caret-restore.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-caret-restore.ts"
         }
       ],
@@ -1357,12 +1357,12 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         },
         {
           "path": "src/registry/hooks/use-caret-restore.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-caret-restore.ts"
         }
       ],
@@ -1420,12 +1420,12 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         },
         {
           "path": "src/registry/hooks/use-caret-restore.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-caret-restore.ts"
         }
       ],
@@ -1515,7 +1515,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1581,7 +1581,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1620,7 +1620,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1689,7 +1689,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1725,7 +1725,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1759,7 +1759,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1895,7 +1895,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -1994,7 +1994,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -2048,7 +2048,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -2235,7 +2235,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         },
         {
@@ -2449,7 +2449,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -2488,12 +2488,12 @@
         },
         {
           "path": "src/registry/lib/pagination-slots.ts",
-          "type": "registry:lib",
+          "type": "registry:ui",
           "target": "lib/pagination-slots.ts"
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -2571,7 +2571,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],
@@ -2596,8 +2596,8 @@
       "files": [
         {
           "path": "src/registry/lib/color.ts",
-          "type": "registry:lib",
-          "target": "@lib/color.ts"
+          "type": "registry:ui",
+          "target": "lib/color.ts"
         }
       ],
       "type": "registry:lib"
@@ -2631,7 +2631,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         },
         {
@@ -2664,8 +2664,8 @@
       "files": [
         {
           "path": "src/registry/lib/color-vision.ts",
-          "type": "registry:lib",
-          "target": "@lib/color-vision.ts"
+          "type": "registry:ui",
+          "target": "lib/color-vision.ts"
         }
       ],
       "type": "registry:lib"
@@ -2693,7 +2693,7 @@
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
-          "type": "registry:hook",
+          "type": "registry:ui",
           "target": "hooks/use-controllable-state.ts"
         }
       ],

@@ -19,14 +19,16 @@ function createRandom(seed: number): Random {
 }
 
 function pick<T>(list: T[], random: Random): T {
-  return list[Math.floor(random() * list.length)]
+  const value = list[Math.floor(random() * list.length)]
+  if (value === undefined) throw new RangeError("不能从空列表中抽取条目")
+  return value
 }
 
 function shuffled<T>(list: T[], random: Random): T[] {
   const result = [...list]
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
+    ;[result[i], result[j]] = [result[j]!, result[i]!]
   }
   return result
 }
@@ -51,7 +53,7 @@ function initialSlots(
     random,
   )
   for (let i = 0; i < Math.min(activeCount, cells, poolSize); i++)
-    slots[spots[i]] = pool[i]
+    slots[spots[i]!] = pool[i]!
   return slots
 }
 
@@ -81,7 +83,7 @@ function stepSlots(
     const roll = random()
     if (roll < 0.4 && empty.length && filled.length) {
       const from = pick(filled, random)
-      next[pick(empty, random)] = next[from]
+      next[pick(empty, random)] = next[from] ?? null
       next[from] = null
     } else if (roll < 0.8 && empty.length && unused.length && filled.length) {
       next[pick(filled, random)] = null
@@ -92,7 +94,7 @@ function stepSlots(
         filled.filter((i) => i !== a),
         random,
       )
-      ;[next[a], next[b]] = [next[b], next[a]]
+      ;[next[a], next[b]] = [next[b] ?? null, next[a] ?? null]
     }
   }
   return next
@@ -108,7 +110,7 @@ function arrangeSlots(slots: Slots, target: number[], random: Random): Slots {
   for (const from of shuffled(indicesWhere(next, false), random)) {
     const empty = indicesWhere(next, true)
     if (empty.length && random() < 0.5) {
-      next[pick(empty, random)] = next[from]
+      next[pick(empty, random)] = next[from] ?? null
       next[from] = null
     }
   }

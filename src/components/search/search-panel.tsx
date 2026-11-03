@@ -349,6 +349,7 @@ export function SearchPanel({
                 </div>
                 {section.blocks.map((block) => {
                   const [head, ...rest] = block
+                  if (!head) return null
                   return (
                     <Fragment key={head.key}>
                       <ResultRow

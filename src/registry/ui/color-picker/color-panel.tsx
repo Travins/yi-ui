@@ -59,10 +59,16 @@ function ColorPickerPanel({
     hsl = hsvToHsl(hsv)
   const channels =
     format === "RGB"
-      ? [labels.red, labels.green, labels.blue]
-      : [labels.hue, labels.saturation, labels.lightness]
-  const values =
-    format === "RGB" ? [rgb.r, rgb.g, rgb.b] : [hsl.h, hsl.s * 100, hsl.l * 100]
+      ? [
+          { label: labels.red, key: "r", value: rgb.r },
+          { label: labels.green, key: "g", value: rgb.g },
+          { label: labels.blue, key: "b", value: rgb.b },
+        ]
+      : [
+          { label: labels.hue, key: "h", value: hsl.h },
+          { label: labels.saturation, key: "s", value: hsl.s * 100 },
+          { label: labels.lightness, key: "l", value: hsl.l * 100 },
+        ]
   return (
     <div
       inert={locked}
@@ -122,28 +128,28 @@ function ColorPickerPanel({
         />
       ) : (
         <div className="grid grid-cols-3 gap-2">
-          {channels.map((c, i) => (
+          {channels.map(({ label: c, key, value }, i) => (
             <BarField
               key={`${format}-${c}`}
               label={c}
               type="number"
               min={0}
               max={format === "RGB" ? 255 : i === 0 ? 360 : 100}
-              value={String(Math.round(values[i]))}
+              value={String(Math.round(value))}
               onValueChange={(text) => {
                 const n = Number(text)
                 if (!Number.isFinite(n)) return
                 if (format === "RGB") {
                   const next = {
                     ...rgb,
-                    [["r", "g", "b"][i]]: Math.min(255, Math.max(0, n)),
+                    [key]: Math.min(255, Math.max(0, n)),
                   }
                   change(rgbToHsv(next, hsv.h))
                 } else {
                   change(
                     hslToHsv({
                       ...hsl,
-                      [["h", "s", "l"][i]]:
+                      [key]:
                         Math.min(i === 0 ? 360 : 100, Math.max(0, n)) /
                         (i === 0 ? 1 : 100),
                     }),

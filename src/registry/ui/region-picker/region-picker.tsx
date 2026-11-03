@@ -165,10 +165,10 @@ function RegionPicker({
   let text: React.ReactNode = null
   let title: string | undefined
   if (code !== null) {
-    if (valuePath.length) {
+    const last = valuePath.at(-1)
+    if (last) {
       title = formatRegionPath(valuePath)
       // 放不下时只截上级，最末一级（真正选中的那个）始终完整显示
-      const last = valuePath[valuePath.length - 1]
       const parents = valuePath.slice(0, -1)
       const sep = <span className="text-muted-foreground/60"> / </span>
       text = (
@@ -200,7 +200,7 @@ function RegionPicker({
   }
 
   const commit = (path: RegionOption[]) => {
-    setCode(path.length ? path[path.length - 1].code : null)
+    setCode(path.at(-1)?.code ?? null)
     setOpen(false)
   }
 

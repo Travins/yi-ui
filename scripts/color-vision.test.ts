@@ -18,7 +18,15 @@ const rows = readFileSync(
 test("Sharma 34 组 CIEDE2000 数据", () => {
   assert.equal(rows.length, 34)
   for (const row of rows) {
-    const [l, a, b, L, A, B, expected] = row.trim().split(/\s+/).map(Number)
+    const [
+      l = NaN,
+      a = NaN,
+      b = NaN,
+      L = NaN,
+      A = NaN,
+      B = NaN,
+      expected = NaN,
+    ] = row.trim().split(/\s+/).map(Number)
     assert.ok(
       Math.abs(deltaE2000({ l, a, b }, { l: L, a: A, b: B }) - expected) < 1e-4,
       row,
@@ -62,6 +70,7 @@ test("模拟后不取整：阈值附近的判定与浮点结果一致（#23）",
       threshold: Infinity,
       visions: [vision],
     })
+    assert.ok(hit)
     assert.ok(Math.abs(hit.deltaE - expected) < 1e-5, `${a} ${b} ${vision}`)
     assert.equal(
       findColorConflicts([a, b], { visions: [vision] }).length > 0,

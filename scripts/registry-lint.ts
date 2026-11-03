@@ -165,7 +165,7 @@ function lintFile(
     )
     if (!match) continue
     const line = sf.getLineAndCharacterOfPosition(comment.pos).line + 1
-    const ids = match[1]
+    const ids = (match[1] ?? "")
       .split(",")
       .map((id) => id.trim())
       .filter((id) => id.length > 0)
@@ -434,7 +434,7 @@ function packageName(spec: string) {
         .slice(0, 2)
         .join("/")
         .replace(/@[^@/]+$/, "")
-    : spec.split("/")[0].split("@")[0]
+    : spec.split("/", 1).join("").split("@", 1).join("")
 }
 function siteDependency(spec: string, homepage: string): string | undefined {
   if (spec.startsWith("@yiui/")) return spec.slice("@yiui/".length)
@@ -564,7 +564,8 @@ function lintRegistry(root: string): Diagnostic[] {
         if (spec.startsWith("@/components/ui/")) {
           const name = spec
             .slice("@/components/ui/".length)
-            .split("/")[0]
+            .split("/", 1)
+            .join("")
             .replace(/\.[jt]sx?$/, "")
           if (!deps.has(name))
             add(item, "error", `缺少 registryDependencies：${name}`, location)
@@ -696,7 +697,8 @@ async function main() {
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--rule") {
       rule = args[++i]
-      if (!rules.includes(rule)) throw new Error("--rule 必须是有效的规则 id")
+      if (!rule || !rules.includes(rule))
+        throw new Error("--rule 必须是有效的规则 id")
     } else if (args[i] === "--max-warnings") {
       const value = args[++i]
       if (!value || !/^\d+$/.test(value))

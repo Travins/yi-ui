@@ -139,11 +139,14 @@ env -u ALL_PROXY -u all_proxy pnpm dlx shadcn@latest add https://yiui.dev/r/grid
 
 ### 项目是 monorepo
 
-组件要在 UI 包目录（如 `packages/ui`）里安装，并从 UI 包的路径导入，如 `@workspace/ui/components/number-stepper/number-stepper`。从应用目录安装时，`hooks` 和 `lib` 会写进应用，组件找不到它们。
+组件在应用目录或 UI 包目录安装都可以，组件、`hooks`、`lib` 和 npm 包都会进 UI 包。导入时用 UI 包的路径，如 `@workspace/ui/components/number-stepper/number-stepper`。
 
 UI 包的 `tsconfig.json` 要设 `"module": "ESNext"` 和 `"moduleResolution": "Bundler"`，否则 `NodeNext` 会让组件内部的相对导入报 TS2835。
 
-目前还有两个已知问题：部分条目在 `noUncheckedIndexedAccess` 下类型检查不过，区块和页面需要的 npm 包不会自动装进应用。
+区块和页面的代码写进应用，所以要多做两步：
+
+1. 安装前，把应用 `components.json` 里的 `aliases.hooks` 和 `aliases.lib` 改成 UI 包的路径，如 `@workspace/ui/hooks`、`@workspace/ui/lib`。
+2. 安装后，把类型检查报 `Cannot find module` 的 npm 包加到应用的依赖里。CLI 只把它们装进了 UI 包。
 
 ### 样式没生效：线条不显示、`border-edge` 无效
 

@@ -71,7 +71,9 @@ function ChartRanking({
     rank: String(index + 1),
     label: item.label,
     value: item.value,
-    fill: toneColor(item.tone ?? SERIES_TONES[index % SERIES_TONES.length]),
+    fill: toneColor(
+      item.tone ?? SERIES_TONES[index % SERIES_TONES.length] ?? "blue",
+    ),
   }))
   const config: ChartConfig = { value: { label: "数值" } }
   const ceiling = max ?? Math.max(...items.map((item) => item.value), 1)
@@ -135,7 +137,8 @@ function ChartRanking({
         <ChartLegendGrid
           items={items.map((item, index) => ({
             label: `${index + 1}. ${item.label}`,
-            tone: item.tone ?? SERIES_TONES[index % SERIES_TONES.length],
+            tone:
+              item.tone ?? SERIES_TONES[index % SERIES_TONES.length] ?? "blue",
             value: formatStat(item.value, format),
           }))}
         />

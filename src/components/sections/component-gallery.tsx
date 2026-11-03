@@ -58,7 +58,7 @@ export function ComponentGallery() {
             </GridSection>
           ) : null}
           {rowsOf(group.items).map((row) => (
-            <GridSection key={row[0].url}>
+            <GridSection key={row[0]?.url}>
               <GridColumns>
                 {row.map((page) => {
                   const name = page.slugs.at(-1)!

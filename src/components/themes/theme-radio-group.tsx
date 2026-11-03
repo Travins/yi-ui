@@ -48,9 +48,11 @@ export function ThemeRadioGroup({
     if (!isEdge && !(event.key in KEY_STEP)) return
 
     const radios = Array.from(
-      event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')
+      event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]'),
     )
-    const current = radios.findIndex((radio) => radio === document.activeElement)
+    const current = radios.findIndex(
+      (radio) => radio === document.activeElement,
+    )
     if (current < 0) return
 
     event.preventDefault()
@@ -59,8 +61,10 @@ export function ThemeRadioGroup({
         ? 0
         : event.key === "End"
           ? radios.length - 1
-          : (current + KEY_STEP[event.key] + radios.length) % radios.length
+          : (current + (KEY_STEP[event.key] ?? 0) + radios.length) %
+            radios.length
     const next = radios[nextIndex]
+    if (!next) return
     next.focus()
     const id = next.dataset.themeId
     if (isColorTheme(id)) onValueChange(id)
@@ -75,20 +79,25 @@ export function ThemeRadioGroup({
       className={cn(
         "flex flex-col",
         variant === "card" ? "gap-6" : "gap-3",
-        className
+        className,
       )}
     >
       {GROUPS.map((group) => (
         <div
           key={group.id}
-          className={cn("flex flex-col", variant === "card" ? "gap-3" : "gap-1")}
+          className={cn(
+            "flex flex-col",
+            variant === "card" ? "gap-3" : "gap-1",
+          )}
         >
           {variant === "card" ? (
             <p className="flex flex-wrap items-baseline gap-x-2 font-mono text-xs text-muted-foreground">
               <span>
                 {group.name} · {group.title}
               </span>
-              <span className="text-muted-foreground/80">{group.description}</span>
+              <span className="text-muted-foreground/80">
+                {group.description}
+              </span>
             </p>
           ) : (
             <p className="px-1 text-[11px] text-muted-foreground">
@@ -100,7 +109,7 @@ export function ThemeRadioGroup({
               "grid gap-1",
               variant === "card"
                 ? "grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-                : "grid-cols-2"
+                : "grid-cols-2",
             )}
           >
             {group.themes.map((theme) => {
@@ -118,14 +127,14 @@ export function ThemeRadioGroup({
                   title={theme.description}
                   onClick={() => onValueChange(theme.id)}
                   className={cn(
-                    "flex items-center gap-2 text-left text-xs outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none",
+                    "flex items-center gap-2 text-left text-xs transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none",
                     variant === "card"
                       ? "rounded-lg border border-edge bg-background px-3 py-2.5 hover:bg-muted"
                       : "h-7 rounded-md px-2 hover:bg-muted",
                     checked &&
                       (variant === "card"
                         ? "border-foreground/60 bg-muted font-medium"
-                        : "bg-muted font-medium ring-1 ring-foreground/15")
+                        : "bg-muted font-medium ring-1 ring-foreground/15"),
                   )}
                 >
                   <ThemeSwatch

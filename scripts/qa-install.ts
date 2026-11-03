@@ -50,7 +50,9 @@ async function run(label: string, command: string[], cwd: string) {
   console.log(`→ ${label}`)
   const result = await new Promise<{ code: number; output: string }>(
     (resolveResult, reject) => {
-      const child = spawn(command[0], command.slice(1), {
+      const [executable, ...parameters] = command
+      if (!executable) throw new Error("缺少命令")
+      const child = spawn(executable, parameters, {
         cwd,
         env,
         stdio: ["ignore", "pipe", "pipe"],
@@ -353,7 +355,7 @@ async function main() {
           alias[1] === "ui" || args.includes("--monorepo")
             ? "components/ui"
             : "components",
-          alias[2],
+          alias[2] ?? "",
         )
         if (!existsSync(target)) row.notes.push(`缺少组件独立文件 ${target}`)
         else if (!installedTargets.has(target))
@@ -417,6 +419,7 @@ async function main() {
               /(?:from\s*|import\s*\()(["'])([^"']+)\1/g,
             )) {
               const spec = m[2]
+              if (spec === undefined) continue
               if (spec.startsWith("./")) {
                 const dep = resolve(dirname(source), spec)
                 const actual = [dep, dep + ".tsx", dep + ".ts"].find(existsSync)
@@ -432,7 +435,7 @@ async function main() {
                   candidate,
                 )
                 if (
-                  official &&
+                  official?.[1] &&
                   ![path + ".tsx", path + ".ts"].some(existsSync)
                 ) {
                   const added = await run(

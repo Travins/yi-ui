@@ -23,20 +23,21 @@ const TO_SPLIT = flowRoute([
   [64, 100],
   [82, 100],
 ])
-const TO_JOBS = JOBS.map(({ y }) =>
+const toJob = ({ y }: { y: number }) =>
   flowRoute([
     [88, y === 62 ? 94 : 106],
     [88, y],
     [112, y],
-  ]),
-)
-const TO_MERGE = JOBS.map(({ y }) =>
+  ])
+
+const TO_JOBS = JOBS.map(toJob)
+const toMerge = ({ y }: { y: number }) =>
   flowRoute([
     [172, y],
     [200, y],
     [200, y === 62 ? 94 : 106],
-  ]),
-)
+  ])
+
 const TO_BUILD = flowRoute([
   [206, 100],
   [226, 100],
@@ -49,12 +50,16 @@ const TO_DEPLOY = flowRoute([
 // 时间轴（秒）：push → 并行跑 lint / test（耗时不同）→ 都通过后汇合 → build → deploy
 const SPLIT_AT = 0.5
 const JOBS_AT = flowArrival(SPLIT_AT, TO_SPLIT) + 0.15
-const JOBS_START = flowArrival(JOBS_AT, TO_JOBS[0])
-const JOBS_DONE = JOBS.map(({ duration }) => JOBS_START + duration)
-// 先跑完的 job 先发光点，但汇合点要等最慢的那个
-const MERGE_AT = JOBS_DONE.map((done) => done + 0.1)
+const JOBS_START = flowArrival(JOBS_AT, toJob(JOBS[0]))
+const RUNS = JOBS.map((job) => ({
+  ...job,
+  done: JOBS_START + job.duration,
+  mergeAt: JOBS_START + job.duration + 0.1,
+  toJob: toJob(job),
+  toMerge: toMerge(job),
+}))
 const MERGED = Math.max(
-  ...MERGE_AT.map((at, i) => flowArrival(at, TO_MERGE[i])),
+  ...RUNS.map((job) => flowArrival(job.mergeAt, job.toMerge)),
 )
 const BUILD_AT = MERGED + 0.15
 const BUILD_START = flowArrival(BUILD_AT, TO_BUILD)
@@ -115,13 +120,8 @@ export default function FlowDiagramCicdDemo() {
         <FlowBeam key={`job-${i}`} route={route} at={JOBS_AT} />
       ))}
       {/* 通过之后的光点是绿色：红 / 绿 / 琥珀分别表示失败 / 通过 / 进行中 */}
-      {TO_MERGE.map((route, i) => (
-        <FlowBeam
-          key={`merge-${i}`}
-          route={route}
-          at={MERGE_AT[i]}
-          tone="green"
-        />
+      {RUNS.map(({ toMerge: route, mergeAt }, i) => (
+        <FlowBeam key={`merge-${i}`} route={route} at={mergeAt} tone="green" />
       ))}
       <FlowBeam route={TO_BUILD} at={BUILD_AT} tone="green" />
       <FlowBeam route={TO_DEPLOY} at={DEPLOY_AT} tone="green" />
@@ -142,9 +142,9 @@ export default function FlowDiagramCicdDemo() {
 
       <FlowDiamond x={88} y={100} litAt={flowArrival(SPLIT_AT, TO_SPLIT)} />
 
-      {JOBS.map(({ y, label }, i) => (
+      {RUNS.map(({ y, label, done }) => (
         <FlowNode key={label} x={142} y={y} width={60} litAt={JOBS_START}>
-          <JobStatus x={124} y={y} from={JOBS_START} to={JOBS_DONE[i]} />
+          <JobStatus x={124} y={y} from={JOBS_START} to={done} />
           <FlowLabel x={150} y={y}>
             {label}
           </FlowLabel>

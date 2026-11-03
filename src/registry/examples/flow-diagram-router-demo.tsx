@@ -20,8 +20,12 @@ const TO_ROUTER = flowRoute([
   [72, 100],
   [112, 100],
 ])
-const TO_MODELS = MODELS.map(({ y }) =>
-  flowRoute(
+// 时间轴（秒）：三个请求依次进来，每个被路由到不同的模型
+const ROUND = 1.7
+const PROCESS = 0.7
+const RUNS = MODELS.map((model, i) => {
+  const { y } = model
+  const route = flowRoute(
     y === 100
       ? [
           [176, 100],
@@ -33,18 +37,20 @@ const TO_MODELS = MODELS.map(({ y }) =>
           [194, y],
           [212, y],
         ],
-  ),
-)
-
-// 时间轴（秒）：三个请求依次进来，每个被路由到不同的模型，模型处理完亮起状态点
-const ROUND = 1.7
-const PROCESS = 0.7
-const REQUEST_AT = MODELS.map((_, i) => 0.5 + i * ROUND)
-const ROUTED_AT = REQUEST_AT.map((at) => flowArrival(at, TO_ROUTER) + 0.2)
-const ARRIVE_AT = ROUTED_AT.map((at, i) => flowArrival(at, TO_MODELS[i]))
-const DONE_AT = ARRIVE_AT.map((at) => at + PROCESS)
-
-const REST = DONE_AT[MODELS.length - 1] + 0.8
+  )
+  const requestAt = 0.5 + i * ROUND
+  const routedAt = flowArrival(requestAt, TO_ROUTER) + 0.2
+  const arriveAt = flowArrival(routedAt, route)
+  return {
+    ...model,
+    route,
+    requestAt,
+    routedAt,
+    arriveAt,
+    doneAt: arriveAt + PROCESS,
+  }
+})
+const REST = Math.max(...RUNS.map(({ doneAt }) => doneAt)) + 0.8
 const EXIT = REST + 0.8
 const DURATION = EXIT + 0.8
 
@@ -65,23 +71,18 @@ export default function FlowDiagramRouterDemo() {
     >
       {/* 入口的线只画一次，三个请求的光点都走这条线，所以光点都不带底线 */}
       <FlowEdge route={TO_ROUTER} at={0.1} />
-      {MODELS.map(({ tone }, i) => (
+      {RUNS.map(({ tone, requestAt }, i) => (
         <FlowBeam
           key={`request-${i}`}
           route={TO_ROUTER}
-          at={REQUEST_AT[i]}
+          at={requestAt}
           base={false}
           tone={tone}
         />
       ))}
       {/* 路由器到各模型的连线是常驻的，光点沿着它们走 */}
-      {MODELS.map(({ tone }, i) => (
-        <FlowBeam
-          key={`route-${i}`}
-          route={TO_MODELS[i]}
-          at={ROUTED_AT[i]}
-          tone={tone}
-        />
+      {RUNS.map(({ tone, route, routedAt }, i) => (
+        <FlowBeam key={`route-${i}`} route={route} at={routedAt} tone={tone} />
       ))}
 
       <FlowNode x={40} y={100} width={64} litAt={0.2} label="请求" />
@@ -91,12 +92,12 @@ export default function FlowDiagramRouterDemo() {
         width={64}
         height={36}
         shape="box"
-        litAt={ROUTED_AT[0]}
+        litAt={RUNS.at(0)?.routedAt}
         label="路由"
         description="按任务分流"
       />
 
-      {MODELS.map(({ y, label, description, tone }, i) => (
+      {RUNS.map(({ y, label, description, tone, arriveAt, doneAt }) => (
         <FlowNode
           key={label}
           x={266}
@@ -105,19 +106,13 @@ export default function FlowDiagramRouterDemo() {
           height={34}
           shape="box"
           tone={tone}
-          litAt={ARRIVE_AT[i]}
+          litAt={arriveAt}
           label={label}
           description={description}
         >
           {/* 处理中转圈，处理完换成状态点；两者都继承节点的颜色 */}
-          <FlowSpinner
-            x={230}
-            y={y}
-            size={10}
-            at={ARRIVE_AT[i]}
-            until={DONE_AT[i]}
-          />
-          <FlowStatusDot x={230} y={y} at={DONE_AT[i]} />
+          <FlowSpinner x={230} y={y} size={10} at={arriveAt} until={doneAt} />
+          <FlowStatusDot x={230} y={y} at={doneAt} />
         </FlowNode>
       ))}
     </FlowDiagram>

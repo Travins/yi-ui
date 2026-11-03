@@ -65,8 +65,8 @@ function Checkout01({
   React.useEffect(() => {
     const element = root.current
     if (!element) return
-    const observer = new ResizeObserver(([entry]) =>
-      setNarrow(entry.contentRect.width < 768),
+    const observer = new ResizeObserver(
+      ([entry]) => entry && setNarrow(entry.contentRect.width < 768),
     )
     observer.observe(element)
     return () => observer.disconnect()

@@ -8,7 +8,7 @@ import {
 const data: Dataset[] = Array.from({ length: 10000 }, (_, i) => ({
   id: String(i),
   name: "观测数据 " + (i + 1),
-  owner: ["林小满", "周远"][i % 2],
+  owner: i % 2 === 0 ? "林小满" : "周远",
   status: "进行中",
   samples: ((i * 1664525 + 1013904223) >>> 0) % 100000,
   code: "DS-" + String(i + 1).padStart(4, "0"),

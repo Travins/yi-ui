@@ -139,7 +139,7 @@ export function BlockViewerClient({
     if (!stage) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setNear(true)
           observer.disconnect()
         }
@@ -155,8 +155,8 @@ export function BlockViewerClient({
   useEffect(() => {
     const stage = stageRef.current
     if (!stage) return
-    const observer = new ResizeObserver(([entry]) =>
-      setAvailable(Math.floor(entry.contentRect.width)),
+    const observer = new ResizeObserver(
+      ([entry]) => entry && setAvailable(Math.floor(entry.contentRect.width)),
     )
     observer.observe(stage)
     return () => observer.disconnect()

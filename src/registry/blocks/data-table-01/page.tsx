@@ -49,8 +49,8 @@ const datasets: Dataset[] = Array.from({ length: 666 }, (_, i) => ({
     ["城市声景", "植物图谱", "手写字迹", "街道影像"][i % 4] +
     " " +
     String(i + 1).padStart(2, "0"),
-  owner: ["林小满", "陈青", "周远"][i % 3],
-  status: ["进行中", "已归档", "待审核"][i % 3],
+  owner: ["林小满", "陈青", "周远"][i % 3] ?? "林小满",
+  status: ["进行中", "已归档", "待审核"][i % 3] ?? "进行中",
   samples: 1200 + i * 137,
   updatedAt: new Date(
     Date.UTC(2026, 9, 31, 0) - (i < 6 ? (i + 1) * 3600000 : (i - 4) * 86400000),
@@ -261,12 +261,14 @@ function DataTablePage() {
             </Button>
             <Button
               onClick={() => {
+                const first = datasets[0]
+                if (!first) return
                 const id = String(
                   Math.max(0, ...data.map((row) => Number(row.id))) + 1,
                 )
                 setData((previous) => [
                   {
-                    ...datasets[0],
+                    ...first,
                     id,
                     code: "DS-" + id.padStart(4, "0"),
                     name: "新建数据集",

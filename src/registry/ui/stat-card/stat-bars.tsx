@@ -217,7 +217,9 @@ function StatSegments({
               style={{
                 flexGrow: item.value,
                 backgroundColor: toneColor(
-                  item.tone ?? SERIES_TONES[index % SERIES_TONES.length],
+                  item.tone ??
+                    SERIES_TONES[index % SERIES_TONES.length] ??
+                    "blue",
                 ),
               }}
             />
@@ -286,7 +288,9 @@ function StatDistribution({
                   className="h-8 w-1 shrink-0 rounded-full"
                   style={{
                     backgroundColor: toneColor(
-                      item.tone ?? SERIES_TONES[index % SERIES_TONES.length],
+                      item.tone ??
+                        SERIES_TONES[index % SERIES_TONES.length] ??
+                        "blue",
                     ),
                   }}
                 />

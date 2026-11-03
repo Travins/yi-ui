@@ -41,19 +41,20 @@ const ANSWERS = [
   { title: "运行并验证调用", tag: "结果", icon: CircleCheck, tone: "green" },
 ] as const
 
-const FEED = SOURCES.map(({ x }) =>
+const feedRoute = ({ x }: { x: number }) =>
   flowRoute([
     [x, 33],
     [x, 50],
     [108, 50],
     [108, 63],
-  ]),
-)
+  ])
+
 const FEED_AT = 0.4
-const ASK_AT = flowArrival(FEED_AT, FEED[0]) + 0.35
+const ASK_AT = flowArrival(FEED_AT, feedRoute(SOURCES[0])) + 0.35
 const THINK_AT = ASK_AT + Array.from(QUESTION).length * QUESTION_INTERVAL + 0.15
 const ANSWER_AT = THINK_AT + 1
 const ROW_Y = [113, 140, 167]
+const answerY = (index: number) => 113 + index * 27
 
 /** 输入框右侧的状态图标：平时是星花，思考时换成旋转的加载环。 */
 function Status() {
@@ -131,12 +132,12 @@ function FlowDiagramAgentDemo({ className }: { className?: string }) {
       exit={EXIT}
       rest={REST}
     >
-      {FEED.map((path, i) => (
+      {SOURCES.map((source, i) => (
         <FlowBeam
           key={`feed-${i}`}
-          route={path}
+          route={feedRoute(source)}
           at={FEED_AT}
-          tone={SOURCES[i].tone}
+          tone={source.tone}
         />
       ))}
 
@@ -200,7 +201,7 @@ function FlowDiagramAgentDemo({ className }: { className?: string }) {
         height={26}
         radius={5}
         tone="violet"
-        litAt={flowArrival(FEED_AT, FEED[0])}
+        litAt={flowArrival(FEED_AT, feedRoute(SOURCES[0]))}
       >
         <Search
           x={22}
@@ -226,7 +227,7 @@ function FlowDiagramAgentDemo({ className }: { className?: string }) {
         <FlowReveal key={title} at={ANSWER_AT + i * 0.25} rise={5}>
           <FlowNode
             x={108}
-            y={ROW_Y[i]}
+            y={answerY(i)}
             width={188}
             height={22}
             shape="box"
@@ -235,19 +236,19 @@ function FlowDiagramAgentDemo({ className }: { className?: string }) {
           >
             <Icon
               x={22}
-              y={ROW_Y[i] - 6}
+              y={answerY(i) - 6}
               width={12}
               height={12}
               strokeWidth={1.5}
               aria-hidden="true"
               className="text-(--flow-tone)"
             />
-            <FlowLabel x={44} y={ROW_Y[i]} anchor="start">
+            <FlowLabel x={44} y={answerY(i)} anchor="start">
               {title}
             </FlowLabel>
             <FlowLabel
               x={194}
-              y={ROW_Y[i]}
+              y={answerY(i)}
               anchor="end"
               className="fill-(--flow-tone) text-[9px]"
             >

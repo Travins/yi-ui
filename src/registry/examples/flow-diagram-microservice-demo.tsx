@@ -25,7 +25,7 @@ const TO_SPLIT = flowRoute([
   [68, 110],
   [92, 110],
 ])
-const FAN_OUT = SERVICES.map(({ y }) =>
+const fanOut = ({ y }: { y: number }) =>
   flowRoute(
     y === 110
       ? [
@@ -37,9 +37,9 @@ const FAN_OUT = SERVICES.map(({ y }) =>
           [98, y],
           [126, y],
         ],
-  ),
-)
-const FAN_IN = SERVICES.map(({ y }) =>
+  )
+
+const fanIn = ({ y }: { y: number }) =>
   flowRoute(
     y === 110
       ? [
@@ -51,8 +51,8 @@ const FAN_IN = SERVICES.map(({ y }) =>
           [238, y],
           [238, y === 40 ? 104 : 116],
         ],
-  ),
-)
+  )
+
 const TO_REPLY = flowRoute([
   [244, 110],
   [256, 110],
@@ -62,11 +62,19 @@ const TO_REPLY = flowRoute([
 const SPLIT_AT = 0.5
 const ARRIVE = 1.9
 // 长短不一的路径反推出发时刻，让三束光点同时到达
-const FAN_OUT_AT = FAN_OUT.map(
-  (route) => ARRIVE - route.length / FLOW_BEAM_SPEED,
+const RUNS = SERVICES.map((service) => {
+  const out = fanOut(service)
+  return {
+    ...service,
+    out,
+    incoming: fanIn(service),
+    outAt: ARRIVE - out.length / FLOW_BEAM_SPEED,
+    doneAt: ARRIVE + service.ms / MS_PER_SECOND,
+  }
+})
+const MERGED = Math.max(
+  ...RUNS.map(({ doneAt, incoming }) => flowArrival(doneAt, incoming)),
 )
-const DONE_AT = SERVICES.map(({ ms }) => ARRIVE + ms / MS_PER_SECOND)
-const MERGED = Math.max(...DONE_AT.map((at, i) => flowArrival(at, FAN_IN[i])))
 const REPLY_AT = MERGED + 0.15
 const REPLIED = flowArrival(REPLY_AT, TO_REPLY)
 // 总耗时 = 最慢的服务 + 网关与汇合的 2ms 开销
@@ -88,21 +96,11 @@ export default function FlowDiagramMicroserviceDemo() {
       className="w-full max-w-md"
     >
       <FlowBeam route={TO_SPLIT} at={SPLIT_AT} />
-      {FAN_OUT.map((route, i) => (
-        <FlowBeam
-          key={`out-${i}`}
-          route={route}
-          at={FAN_OUT_AT[i]}
-          tone={SERVICES[i].tone}
-        />
+      {RUNS.map(({ out: route, outAt, tone }, i) => (
+        <FlowBeam key={`out-${i}`} route={route} at={outAt} tone={tone} />
       ))}
-      {FAN_IN.map((route, i) => (
-        <FlowBeam
-          key={`in-${i}`}
-          route={route}
-          at={DONE_AT[i]}
-          tone={SERVICES[i].tone}
-        />
+      {RUNS.map(({ incoming: route, doneAt, tone }, i) => (
+        <FlowBeam key={`in-${i}`} route={route} at={doneAt} tone={tone} />
       ))}
       <FlowBeam route={TO_REPLY} at={REPLY_AT} tone="green" />
 
@@ -113,23 +111,17 @@ export default function FlowDiagramMicroserviceDemo() {
       </FlowNode>
       <FlowDiamond x={98} y={110} litAt={flowArrival(SPLIT_AT, TO_SPLIT)} />
 
-      {SERVICES.map(({ y, label, ms, tone }, i) => (
+      {RUNS.map(({ y, label, ms, tone, doneAt }) => (
         <g key={label}>
           {/* 节点的色调会传给里面的加载圈和状态点，不用再各写一遍 */}
           <FlowNode x={160} y={y} width={68} tone={tone} litAt={ARRIVE}>
-            <FlowSpinner
-              x={138}
-              y={y}
-              size={9}
-              at={ARRIVE}
-              until={DONE_AT[i]}
-            />
-            <FlowStatusDot x={138} y={y} at={DONE_AT[i]} />
+            <FlowSpinner x={138} y={y} size={9} at={ARRIVE} until={doneAt} />
+            <FlowStatusDot x={138} y={y} at={doneAt} />
             <FlowLabel x={165} y={y}>
               {label}
             </FlowLabel>
           </FlowNode>
-          <FlowReveal at={DONE_AT[i]}>
+          <FlowReveal at={doneAt}>
             <FlowLabel
               x={213}
               y={y - 9}

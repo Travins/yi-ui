@@ -23,7 +23,7 @@ const CURRENCY: Intl.NumberFormatOptions = {
 export default function ValueSliderRangeDemo() {
   // 只用来画图与统计，滑块自己管值（非受控）
   const [range, setRange] = React.useState<number[]>([200, 1200])
-  const [low, high] = range
+  const [low = 200, high = 1200] = range
   const picked = BUCKETS.reduce((sum, count, index) => {
     const start = index * BUCKET_WIDTH
     return start >= low && start + BUCKET_WIDTH <= high ? sum + count : sum
