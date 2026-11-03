@@ -312,6 +312,8 @@ function BarSelect(props: BarSelectProps) {
             "relative",
             error ? "border-destructive" : "border-edge hover:bg-muted",
             disabled && "opacity-50",
+            // 展开时标签和值作为一个整体铺底色，不只亮触发键那一段
+            "has-[[data-slot=combobox-trigger][aria-expanded=true]]:bg-muted in-data-[slot=grid-toolbar]:has-[[data-slot=combobox-trigger][aria-expanded=true]]:bg-muted",
             // 放进网格工具栏：去掉外框、圆角和底色，铺满整格
             "in-data-[slot=grid-toolbar]:h-full! in-data-[slot=grid-toolbar]:min-h-0! in-data-[slot=grid-toolbar]:rounded-none in-data-[slot=grid-toolbar]:border-0 in-data-[slot=grid-toolbar]:bg-transparent in-data-[slot=grid-toolbar]:hover:bg-muted",
           )}
