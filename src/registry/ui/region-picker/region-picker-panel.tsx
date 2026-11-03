@@ -361,7 +361,8 @@ function RegionPickerPanel({
         groups.slice(0, g).reduce((sum, group) => sum + group.items.length, 0),
       )
     : []
-  const browseList = groups ? (
+  // 搜索时 rows 是搜索结果，和 groups 对不上，不能按分组取，否则会越界
+  const browseList = searching ? null : groups ? (
     // 浮层里两栏排布：多数字母下只有一两个地名，单栏会留下大片空白
     <div className={cn(!sheet && "gap-x-3 sm:columns-2")}>
       {groups.map((group, g) => {
