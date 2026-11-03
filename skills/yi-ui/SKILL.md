@@ -26,19 +26,20 @@ https://yiui.dev/md/pages/<条目>.md
 1. **看底座。** 读 `components.json`，`style` 以 `base-` 开头才算匹配。没有项目时运行 `pnpm dlx shadcn@latest init -t next -b base -p nova -n my-app`。是 Radix 底座时先告诉用户：大部分条目能用，但不推荐，`app-shell-01` 需要手改；不要自行迁移底座。
 2. **选条目。** 查 catalog。基础原语（按钮、对话框、下拉菜单等）用 shadcn 官方组件，不要用 Yi UI 硬凑，也不要重新实现 catalog 里已有的东西。
 3. **读文档。** 读该条目的 `/md/` 文档，特别是「注意事项」。
-4. **预览再装。** 先看会写什么。内容相同的文件 CLI 会自动跳过；内容不同的文件不要覆盖，先问用户。第一次安装时 CLI 会往 `components.json` 写入 `registries.@yiui`，这是正常的。
+4. **预览再装。** 先看会写什么。`--dry-run` 只列出文件和操作；标记为 `overwrite` 的文件要加 `--diff` 看具体改动。依赖项也可能被标记，比如项目改过的 `button`，不只是所装的条目。内容相同的文件 CLI 会自动跳过；内容不同的文件不要覆盖，先把差异告诉用户。`-y` 不会跳过覆盖确认，`--overwrite` 会覆盖全部，只在用户同意后使用。第一次安装时 CLI 会往 `components.json` 写入 `registries.@yiui`，这是正常的。
 
    ```bash
    pnpm dlx shadcn@latest add @yiui/<条目> --dry-run
+   pnpm dlx shadcn@latest add @yiui/<条目> --dry-run --diff  # 有 overwrite 时
    pnpm dlx shadcn@latest add @yiui/<条目>
    ```
 
-   按项目实际的包管理器换命令。CLI 不认识 `@yiui` 时改用 `https://yiui.dev/r/<条目>.json`。依赖的条目和 npm 包会一起装上。
+   按项目实际的包管理器换命令。CLI 不认识 `@yiui` 时改用 `https://yiui.dev/r/<条目>.json`。依赖的条目和 npm 包会一起装上。Monorepo 先看下面的「Monorepo」一节。
 5. **写代码并验证。** 跑项目的类型检查和构建，然后在真实浏览器里操作一遍，构建通过不代表运行没问题。桌面和手机都要看，包括亮暗模式。手机上的底部面板和加高由 `pointer: coarse` 触发，只缩窄视口看不到，要用触屏模拟。
 
 ## 容易写错的地方
 
-- **导入路径带子目录。** 是 `@/components/ui/number-stepper/number-stepper`，不是 `@/components/ui/number-stepper`。以 catalog 或装好的文件为准。
+- **导入路径带子目录。** 是 `@/components/ui/number-stepper/number-stepper`，不是 `@/components/ui/number-stepper`。catalog 写的是单应用项目的默认路径，实际前缀由 `components.json` 的 `aliases` 决定，以装好的文件为准。
 - **Base UI 用 `render`。** shadcn 原语的自定义触发器用 `render` 属性，不是 Radix 的 `asChild`。
 - **颜色只用主题变量。** 用 `bg-background`、`text-muted-foreground`、`border-edge` 这类 token，不写十六进制或 `bg-blue-500`，否则亮暗模式和颜色主题会失效。`border-edge` 的变量由安装的 Yi UI 条目写入全局样式；项目里还没有 Yi UI 条目时先用 `border-border`。
 - **按钮高度只有三档。** 通过 `Button` 的 `size` 取得：`sm` 28px、`default` 32px、`lg` 36px，图标按钮对应 `icon-sm`、`icon`、`icon-lg`；触屏上自动加高到 36、40、44px。不要写 `h-*`。同一行的按钮用同一档，表单提交按钮至少和同表单控件同档。
@@ -61,6 +62,16 @@ https://yiui.dev/md/pages/<条目>.md
 - **线条网格：** 用 `grid-layout` 的原语搭页面骨架，不要每页手写边框。
 - **颜色主题：** `pnpm dlx shadcn@latest add https://yiui.dev/r/theme-<id>.json`，详见 https://yiui.dev/docs/theming/ 。
 - **区块和页面：** 其中的页面文件按 Next.js App Router 写，会写入 `app/` 下的固定路径，安装前务必 `--dry-run`。
+
+## Monorepo
+
+以下在 shadcn 官方 monorepo 模板（`init --monorepo`）上实测，其他结构按 `components.json` 的 `aliases` 对应调整。
+
+- **组件在 UI 包目录里装。** 在 `packages/ui` 运行 `add`。从 `apps/web` 运行时，组件写进 UI 包，`hooks` 和 `lib` 却写进应用，组件会找不到它们，构建报 `Module not found`。
+- **从 UI 包的路径导入。** 比如 `@workspace/ui/components/number-stepper/number-stepper`，包名以项目为准，不要照抄 `@/components/ui/...`。
+- **UI 包要用 `Bundler` 解析。** 组件内部有相对导入，模板的 `NodeNext` 会让 UI 包的 `tsc` 报 TS2835，应用构建不受影响。在 UI 包的 `tsconfig.json` 里设 `"module": "ESNext"`、`"moduleResolution": "Bundler"`，不要逐个给导入加扩展名。
+- **`noUncheckedIndexedAccess` 是已知问题。** 模板默认开启，部分条目（如 `region-picker`、`isometric-mark`）在这个选项下类型检查不过，应用构建也会失败。安装后跑一次类型检查，有这类错误时告诉用户，不要自行关闭选项或用 `!` 批量绕过。
+- **区块和页面还没跑通。** 从应用目录安装时，它们需要的 npm 包没有装进应用（如 `ai`、`motion`、`@tanstack/react-table`）。要先告诉用户，再按报错补依赖。
 
 ## 环境问题
 
