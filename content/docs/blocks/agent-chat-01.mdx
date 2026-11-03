@@ -218,7 +218,7 @@ export default function Workspace() {
 }
 ```
 
-下面的服务端示例应放在支持服务端运行的应用或独立 API 服务中。**本站是纯静态导出，不部署这个 POST Route Handler。** 跨域后端可以给 `api` 配置完整 URL，并在后端配置 CORS。真实应用还需实现认证、输入校验与工具权限控制。
+下面的服务端示例应放在支持服务端运行的应用或独立 API 服务中。**本站页面全部预渲染，不部署这个 POST Route Handler。** 跨域后端可以给 `api` 配置完整 URL，并在后端配置 CORS。真实应用还需实现认证、输入校验与工具权限控制。
 
 ```tsx title="app/api/chat/route.ts（服务端应用示例）"
 import {

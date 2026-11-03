@@ -42,7 +42,7 @@ MDX 内置组件由 `src/components/docs/mdx-components.tsx` 注册，无需在�
 - `<PropsTable name="grid-layout" component="GridSection" />`：用 `fumadocs-typescript` 从条目首个源码文件解析导出组件，通过 Parameters<typeof Component>[0] 自动解析自定义属性及 className/children，排除其余继承的 HTML 属性。
 - Markdown 代码围栏支持 `title="文件名.tsx"`，构建时用 Shiki 高亮，颜色映射主题 token。
 
-文档分区为 `content/docs/components/`、`content/docs/agents/`；新增 blocks/pages 时沿用 `src/app/(docs)/components/[[...slug]]/page.tsx`，扩充 `src/lib/source.ts` 分区类型及配置。每个动态路由必须设置 `dynamicParams = false` 并生成静态参数。
+文档分区为 `content/docs/` 下的 `docs`、`components`、`blocks`、`pages`；新增分区时扩充 `src/lib/source.ts` 的分区类型及配置。每个动态路由必须设置 `dynamicParams = false` 并生成静态参数。
 
 ## 构建流程
 

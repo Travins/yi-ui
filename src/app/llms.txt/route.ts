@@ -9,7 +9,7 @@ export function GET() {
   const text =
     [
       `# ${siteConfig.name}`,
-      `> ${siteConfig.description}。基于 Next.js 静态导出，提供可复制的 React 组件源码、中文文档与实践文章。`,
+      `> ${siteConfig.description}。基于 Next.js，页面全部在构建时预渲染，提供可复制的 React 组件源码、中文文档与实践文章。`,
       "组件库名为 Yi UI，采用 React、Tailwind CSS v4 与 shadcn/ui（Base UI）。所有链接使用站点正式域名；全文原始 MDX 见下方链接。",
       '安装：先在目标项目初始化 shadcn，再运行 `pnpm dlx shadcn@latest add https://yiui.dev/r/<name>.json`。Yi UI 已收录进 shadcn 官方 Registry 目录，也可直接运行 `pnpm dlx shadcn@latest add @yiui/<name>`，无需配置 components.json。',
       "## 组件",

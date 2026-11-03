@@ -123,6 +123,7 @@ pnpm dev
 | `pnpm lint` | Lint |
 | `pnpm registry:build` | Generate `public/r/*.json` and other registry output |
 | `pnpm registry:lint` | Check registry items for dependencies, files and conventions |
+| `pnpm test` | Script unit tests and self-tests |
 | `pnpm qa:shots <name>` | Screenshot QA on the build (light / dark, color themes, narrow widths, errors, overflow) |
 | `pnpm qa:install [name…]` | Local install, type, build and browser QA; `--fresh`, `--keep`, `--namespace`, `--monorepo` |
 | `pnpm qa:interaction` | Interaction QA: touch heights, focus styles, keyboard use, whether errors clear once fixed; `--build` checks the production build |

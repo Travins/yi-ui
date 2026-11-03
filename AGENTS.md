@@ -33,7 +33,9 @@ source ~/.nvm/nvm.sh && nvm use      # 每个新 shell 都要先切到 Node 24
 pnpm dev                              # 开发
 pnpm build                            # 生产构建，产物在 .next/（pnpm start 可本地预览）
 pnpm lint
-pnpm registry:build                   # 生成 public/r/*.json（registry 管道建好后可用）
+pnpm registry:lint                    # registry 规范检查
+pnpm test                             # 脚本单测与自测
+pnpm registry:build                   # 生成 public/r/*.json，改了发布源码要一起提交
 python3 scripts/build-og-font.py      # 分享卡片（/og/*.png）出现方块字时，重新生成中文字体子集并提交
 ```
 
@@ -44,6 +46,22 @@ python3 scripts/build-og-font.py      # 分享卡片（/og/*.png）出现方块�
 env -u ALL_PROXY -u all_proxy pnpm dlx shadcn@latest add <name>
 ```
 
+### 改了什么就跑什么
+
+git 钩子由 `pnpm install` 自动启用（`.githooks/`），不用手动跑：提交前查禁提词和 `public/r` 同步，推送前再跑 `registry:lint` 和 `pnpm test`。下面这些仍要手动跑；`--build` 和 `qa:shots` 用的是构建产物，要在 `pnpm build` 之后。
+
+| 改动 | 运行 |
+|---|---|
+| 组件、区块、页面的源码或 `registry.json` | `pnpm registry:build`（产物一起提交）、`pnpm lint`、`pnpm build`，再加下面对应的行 |
+| 可交互的组件或示例 | `pnpm qa:interaction <name> --build` |
+| 外观或示例 | `pnpm qa:shots <name>`，截图逐张看过 |
+| 依赖、`files` 或 `registryDependencies` | `pnpm qa:install <name>` |
+| 文档预览、路由或加载方式 | `pnpm build`、`pnpm qa:loading` |
+| 可能引起 hydration 不匹配的改动 | 在 `next dev` 下验证，生产构建不报这类错误 |
+| 只改 MDX | `pnpm build` |
+| `scripts/` 或颜色、数字等纯函数 | `pnpm test` |
+| 发布前 | 核对 README，`pnpm qa:install` 验收全部条目 |
+
 ## 3. 目录约定
 
 ```
@@ -51,7 +69,7 @@ content/                     MDX 内容（Fumadocs 读取）
   docs/components/*.mdx      组件文档
   docs/blocks/*.mdx          区块文档
   docs/pages/*.mdx       页面文档
-  docs/agents/*.mdx          智能体开发引导
+  docs/docs/*.mdx            入门：安装、registry、主题、llms
   blog/*.mdx                 博客
 src/
   app/                       路由（页面全部可预渲染）

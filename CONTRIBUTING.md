@@ -31,13 +31,17 @@ pnpm dev
 ## 提交 Pull Request
 
 1. 从 `dev` 新建分支，PR 也提到 `dev`，一个 PR 只做一件事。`master` 只用于发布，合并进去就会自动部署到 yiui.dev。
-2. 以下检查需要全部通过：
+2. `pnpm install` 会自动启用 `.githooks/` 里的 git 钩子：提交前检查 `public/r` 是否与源码同步，推送前跑 `registry:lint` 和 `pnpm test`。以下检查需要全部通过：
 
    ```bash
+   pnpm registry:build   # 改了发布源码时运行，并提交 public/r
    pnpm lint
    pnpm registry:lint
+   pnpm test
    pnpm build
    ```
+
+   改了可交互的组件或示例时，再运行 `pnpm qa:interaction <组件名> --build`；改了文档预览、路由或加载方式时，再运行 `pnpm qa:loading`。完整的对照表见 [`AGENTS.md`](./AGENTS.md) 第 2 节。
 
    发布前运行 `pnpm qa:install` 验收全部条目；抽测用 `pnpm qa:install value-slider`，命名空间用 `pnpm qa:install --namespace value-slider`。先运行 `pnpm registry:build`；`--fresh` 跳过初始化缓存，`--keep` 保留临时项目，报告在 `.qa/`。
 

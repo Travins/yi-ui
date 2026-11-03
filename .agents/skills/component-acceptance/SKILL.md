@@ -102,13 +102,21 @@ pnpm qa:shots <组件名> [更多组件名] [--open]
 - **状态切换宽度不变**：按钮、触发条在「初始 / 进行中 / 倒计时 / 完成」等状态之间宽度一致（叠放占位）。
 - **错误能消失**：示例里不写死 `error`，改成随值计算；把值改对后错误立即消失。
 - **手机不横向溢出，输入字号不小于 16px**（iOS 聚焦时不缩放页面），触屏高度符合 36 / 40 / 44px。
+- **弹层打开时方条保持高亮**：鼠标移进下拉或面板后，触发它的方条不能退回原底色，标签和值也要是同一块底色，否则看不出弹层属于哪一条。
+- **工具栏里铺满整格**：方条控件放进 `GridToolbarItem` 后没有外框和圆角，高度铺满整格。新增方条控件要带上 `in-data-[slot=grid-toolbar]:` 适配，并用 `GridToolbarItem` 实测。
 - **测试用正确的按键**：macOS 上输入框跳到行尾是 ⌘→ 而不是 End，别把测试脚本的问题当成组件问题。
+
+### 写检查和复现问题
+
+- **测试必须能失败**：新写一条检查后，先弄坏它要保护的行为，确认它报错，再恢复。
+- **修问题先复现**：修 bug 前先让检查或脚本因为这个问题失败，修完再看它通过。
+- **量真实效果**：可交互要看点击后的结果，不看内部属性（`__reactProps` 在提交前就写好了）。没跑到的场景要如实写出来，不能算通过。
 
 ## 7. 收尾
 
 ```bash
 source ~/.nvm/nvm.sh && nvm use
-pnpm registry:build && pnpm lint && pnpm registry:lint && pnpm build
+pnpm registry:build && pnpm lint && pnpm registry:lint && pnpm test && pnpm build
 pnpm qa:shots <组件名>    # 报告里 0 个问题，截图逐张看过
 grep -rIil -f .forbidden-terms --exclude-dir={node_modules,.next,.source,.git} --exclude=.forbidden-terms .   # 必须为空
 ```
