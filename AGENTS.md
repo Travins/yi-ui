@@ -55,12 +55,12 @@ git 钩子由 `pnpm install` 自动启用（`.githooks/`），不用手动跑：
 | 组件、区块、页面的源码或 `registry.json` | `pnpm registry:build`（产物一起提交）、`pnpm lint`、`pnpm build`，再加下面对应的行 |
 | 可交互的组件或示例 | `pnpm qa:interaction <name> --build` |
 | 外观或示例 | `pnpm qa:shots <name>`，截图逐张看过 |
-| 依赖、`files` 或 `registryDependencies` | `pnpm qa:install <name>` |
+| 依赖、`files` 或 `registryDependencies` | `pnpm qa:install <name>`，改了 hook、lib 的安装方式时再加 `--monorepo` |
 | 文档预览、路由或加载方式 | `pnpm build`、`pnpm qa:loading` |
 | 可能引起 hydration 不匹配的改动 | 在 `next dev` 下验证，生产构建不报这类错误 |
 | 只改 MDX | `pnpm build` |
 | `scripts/` 或颜色、数字等纯函数 | `pnpm test` |
-| 发布前 | 核对 README，`pnpm qa:install` 验收全部条目 |
+| 发布前 | 核对 README，`pnpm qa:install` 和 `pnpm qa:install --monorepo` 验收全部条目 |
 
 ## 3. 目录约定
 

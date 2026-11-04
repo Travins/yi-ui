@@ -125,7 +125,7 @@ pnpm dev
 | `pnpm registry:lint` | 检查 registry 条目的依赖、文件与书写规范 |
 | `pnpm test` | 脚本单测与自测 |
 | `pnpm qa:shots <组件名>` | 对构建产物截图验收（亮暗、颜色主题、窄屏、报错与溢出） |
-| `pnpm qa:install [条目名…]` | 本地安装、类型、构建与浏览器验收；支持 `--fresh`、`--keep`、`--namespace`、`--monorepo` |
+| `pnpm qa:install [条目名…]` | 本地安装、类型、构建与浏览器验收；支持 `--fresh`、`--keep`、`--namespace`；`--monorepo` 改用 shadcn 官方 monorepo 模板验收 |
 | `pnpm qa:interaction` | 交互验收：触屏高度、焦点样式、键盘操作、出错态能否随输入消失等必查项；`--build` 对构建产物检查 |
 | `pnpm qa:loading` | 拦截脚本检查加载前的占位与空白 |
 

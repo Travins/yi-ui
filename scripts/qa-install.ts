@@ -17,6 +17,8 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve, relative } from "node:path"
 import { chromium } from "playwright-core"
 
+import { runMonorepoInstall } from "./qa-install-monorepo"
+
 type Item = {
   name: string
   type: string
@@ -144,6 +146,28 @@ async function main() {
     await new Promise<void>((r) => server.listen(0, "127.0.0.1", r))
     base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
     project = await mkdtemp(join(tmpdir(), "yiui-install-"))
+    if (args.includes("--monorepo")) {
+      if (args.includes("--namespace"))
+        throw Error("--monorepo 不支持 --namespace")
+      const steps = await runMonorepoInstall({
+        root,
+        items,
+        base,
+        cli,
+        fresh: args.includes("--fresh"),
+        project,
+        run,
+      })
+      for (const step of steps)
+        rows.push({
+          name: step.name,
+          install: step.ok ? "通过" : "失败",
+          render: "不适用",
+          notes: step.note ? [step.note] : [],
+          routes: [],
+        })
+      return
+    }
     const version = await run("cli-version", [...cli, "--version"], root)
     if (version.code) throw Error("无法读取 shadcn 版本")
     const cache = join(
@@ -214,74 +238,6 @@ async function main() {
       )
     }
     const appRoot = existsSync(join(app, "src/app")) ? "src" : ""
-    if (args.includes("--monorepo")) {
-      const configPath = join(app, "components.json")
-      const config = JSON.parse(await readFile(configPath, "utf8"))
-      config.aliases = {
-        components: "@acme/ui/components",
-        ui: "@acme/ui/components",
-        lib: "@acme/ui/lib",
-        hooks: "@acme/ui/hooks",
-        utils: "@acme/ui/lib/utils",
-      }
-      await writeFile(configPath, JSON.stringify(config, null, 2))
-      const tsconfigPath = join(app, "tsconfig.json")
-      const ts = await import("typescript")
-      const parsed = ts.parseConfigFileTextToJson(
-        tsconfigPath,
-        await readFile(tsconfigPath, "utf8"),
-      )
-      if (parsed.error) throw Error("无法读取探针 tsconfig")
-      const configTs = parsed.config
-      configTs.compilerOptions.paths = {
-        ...configTs.compilerOptions.paths,
-        "@acme/ui/components": [
-          `./${appRoot ? appRoot + "/" : ""}components/ui`,
-        ],
-        "@acme/ui/lib": [`./${appRoot ? appRoot + "/" : ""}lib`],
-        "@acme/ui/hooks": [`./${appRoot ? appRoot + "/" : ""}hooks`],
-        "@acme/ui/components/*": [
-          `./${appRoot ? appRoot + "/" : ""}components/ui/*`,
-        ],
-        "@acme/ui/lib/*": [`./${appRoot ? appRoot + "/" : ""}lib/*`],
-        "@acme/ui/hooks/*": [`./${appRoot ? appRoot + "/" : ""}hooks/*`],
-      }
-      await writeFile(tsconfigPath, JSON.stringify(configTs, null, 2))
-      // 初始化已有的官方原语也必须采用探针别名。
-      async function rewriteAliases(dir: string) {
-        for (const entry of await readdir(dir, { withFileTypes: true })) {
-          if (["node_modules", ".next", ".git"].includes(entry.name)) continue
-          const filename = join(dir, entry.name)
-          if (entry.isDirectory()) await rewriteAliases(filename)
-          else if (/\.tsx?$/.test(entry.name)) {
-            const text = await readFile(filename, "utf8")
-            await writeFile(
-              filename,
-              text
-                .replaceAll("@/components/ui/", "@acme/ui/components/")
-                .replaceAll("@/lib/", "@acme/ui/lib/")
-                .replaceAll("@/hooks/", "@acme/ui/hooks/"),
-            )
-          }
-        }
-      }
-      await rewriteAliases(app)
-      if (items.some((item) => item.name === "value-slider")) {
-        const view = await run(
-          "monorepo-dry-run-view",
-          [
-            ...cli,
-            "add",
-            `${base}/r/value-slider.json`,
-            "--dry-run",
-            "--view",
-            `${appRoot ? appRoot + "/" : ""}components/ui/value-slider/value-slider.tsx`,
-          ],
-          app,
-        )
-        if (view.code) throw Error("monorepo dry-run view 失败")
-      }
-    }
     const installedTargets = new Map<string, string>()
     for (const item of items) {
       const row = {
@@ -345,16 +301,13 @@ async function main() {
         continue
       }
       for (const file of item.files) {
-        // @ui/ 与 @components/ 跟随使用方的别名落点（monorepo 下在 UI 包里），其余 target 不在这里核对
+        // @ui/ 与 @components/ 跟随使用方的别名落点，其余 target 不在这里核对
         const alias = file.target?.match(/^@(ui|components)\/(.+)$/)
         if (!alias) continue
         const target = join(
           app,
           appRoot,
-          // 探针 monorepo 把 components 与 ui 两个别名都指向 UI 包的 components/ui
-          alias[1] === "ui" || args.includes("--monorepo")
-            ? "components/ui"
-            : "components",
+          alias[1] === "ui" ? "components/ui" : "components",
           alias[2] ?? "",
         )
         if (!existsSync(target)) row.notes.push(`缺少组件独立文件 ${target}`)
@@ -498,11 +451,6 @@ async function main() {
               relative(join(root, "src/registry/examples"), source),
             )
             await mkdir(dirname(target), { recursive: true })
-            if (args.includes("--monorepo"))
-              text = text
-                .replaceAll("@/components/ui/", "@acme/ui/components/")
-                .replaceAll("@/lib/", "@acme/ui/lib/")
-                .replaceAll("@/hooks/", "@acme/ui/hooks/")
             await writeFile(target, text)
           }
           await copyDemo(resolve(root, "src/registry", match[1] + ".tsx"))
@@ -635,7 +583,11 @@ async function main() {
     process.exitCode =
       issues.length ||
       rows.some(
-        (r) => r.install !== "通过" || r.render !== "通过" || r.notes.length,
+        (r) =>
+          r.install !== "通过" ||
+          (r.render === "不适用"
+            ? false
+            : r.render !== "通过" || r.notes.length),
       )
         ? 1
         : 0

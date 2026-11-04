@@ -125,7 +125,7 @@ pnpm dev
 | `pnpm registry:lint` | Check registry items for dependencies, files and conventions |
 | `pnpm test` | Script unit tests and self-tests |
 | `pnpm qa:shots <name>` | Screenshot QA on the build (light / dark, color themes, narrow widths, errors, overflow) |
-| `pnpm qa:install [name…]` | Local install, type, build and browser QA; `--fresh`, `--keep`, `--namespace`, `--monorepo` |
+| `pnpm qa:install [name…]` | Local install, type, build and browser QA; `--fresh`, `--keep`, `--namespace`; `--monorepo` uses the official shadcn monorepo template |
 | `pnpm qa:interaction` | Interaction QA: touch heights, focus styles, keyboard use, whether errors clear once fixed; `--build` checks the production build |
 | `pnpm qa:loading` | Block scripts and check pre-hydration placeholders and blank areas |
 
