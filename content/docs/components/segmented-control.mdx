@@ -199,6 +199,7 @@ type SegmentedControlProps = Omit<
 - 触屏设备（`pointer: coarse`）上方条各加高一档（`sm` / `default` / `lg` 变成 36 / 40 / 44px），手指好点；`compact` 是密排用的，不加高，手机上请用默认的方条。
 - 同一页里可能有多个分段选择，选中块的共享布局 id 用 `React.useId()` 各自生成，动画不会串到另一个组上。
 - 系统开启「减少动态效果」时，选中块直接跳到位，不做滑动。
+- 默认撑满父级。要按内容定宽时传 `className="w-max"` 或 `w-fit`，放在其他会按内容收缩的容器里时，先确认宽度正常。
 - 选项文字不换行，窄列会自动收紧水平内边距；98px 可容纳三个两字选项。收紧后仍放不下时，请改用 [方条下拉](/components/bar-select/)，不要靠缩小字号。
 - 值是字符串。需要数字或其他类型时在 `onValueChange` 里自己转，或者用 `String(value)` 存选项的 `value`。
 - 受控 / 非受控共用一个 `useControllableState`；`options` 变化后如果当前值已不存在，组件不会自动改选，请在父级同步。

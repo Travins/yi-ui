@@ -190,11 +190,12 @@ function SegmentedControl({
       */}
       <span
         data-slot="segmented-control-options"
-        // 内部容器不包含标签；纯图标与工具栏按内容收紧，不能启用尺寸包含。
+        // 内部容器不包含标签；纯图标、工具栏和外部要求按内容定宽（w-max、w-fit）时，
+        // 不能启用尺寸包含，否则内容宽度算作 0，整条会塌成一根线。
         className={cn(
           "relative flex min-w-0 flex-1 items-stretch",
           !iconOnly &&
-            "@container/segments in-data-[slot=grid-toolbar]:[container-type:normal]",
+            "@container/segments in-data-[slot=grid-toolbar]:[container-type:normal] in-[.w-max]:[container-type:normal] in-[.w-fit]:[container-type:normal]",
         )}
       >
         {options.map((option) => {
