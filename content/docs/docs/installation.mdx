@@ -141,6 +141,8 @@ env -u ALL_PROXY -u all_proxy pnpm dlx shadcn@latest add https://yiui.dev/r/grid
 
 组件在应用目录或 UI 包目录安装都可以，组件、`hooks`、`lib` 和 npm 包都会进 UI 包。导入时用 UI 包的路径，如 `@workspace/ui/components/number-stepper/number-stepper`。
 
+预览组件时要在 UI 包目录运行 `--dry-run`。应用目录的预览不准：`hooks`、`lib` 会显示写进应用，实际安装时都在 UI 包。
+
 UI 包的 `tsconfig.json` 要设 `"module": "ESNext"` 和 `"moduleResolution": "Bundler"`，否则 `NodeNext` 会让组件内部的相对导入报 TS2835。
 
 区块和页面的代码写进应用，所以要多做两步：

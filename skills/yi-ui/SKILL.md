@@ -26,7 +26,7 @@ https://yiui.dev/md/pages/<条目>.md
 1. **看底座。** 读 `components.json`，`style` 以 `base-` 开头才算匹配。没有项目时运行 `pnpm dlx shadcn@latest init -t next -b base -p nova -n my-app`。是 Radix 底座时先告诉用户：大部分条目能用，但不推荐，`app-shell-01` 需要手改；不要自行迁移底座。
 2. **选条目。** 查 catalog。基础原语（按钮、对话框、下拉菜单等）用 shadcn 官方组件，不要用 Yi UI 硬凑，也不要重新实现 catalog 里已有的东西。
 3. **读文档。** 读该条目的 `/md/` 文档，特别是「注意事项」。
-4. **预览再装。** 先看会写什么。`--dry-run` 只列出文件和操作；标记为 `overwrite` 的文件要加 `--diff` 看具体改动。依赖项也可能被标记，比如项目改过的 `button`，不只是所装的条目。内容相同的文件 CLI 会自动跳过；内容不同的文件不要覆盖，先把差异告诉用户。`-y` 不会跳过覆盖确认，`--overwrite` 会覆盖全部，只在用户同意后使用。第一次安装时 CLI 会往 `components.json` 写入 `registries.@yiui`，这是正常的。
+4. **预览再装。** 先看会写什么。`--dry-run` 只列出文件和操作；标记为 `overwrite` 的文件要看具体改动。`--diff` 一次只显示前 5 个文件，提示 `Showing 5 of N files` 时，其余的逐个用 `--diff <路径>` 看，不要漏。依赖项也可能被标记，比如项目改过的 `button`，不只是所装的条目。内容相同的文件 CLI 会自动跳过；只有格式不同的文件仍标 `overwrite`，`--diff` 会提示 `Formatting-only changes`。内容不同的文件不要覆盖，先把差异告诉用户。`-y` 不会跳过覆盖确认，`--overwrite` 会覆盖全部，只在用户同意后使用。拒绝覆盖后，CLI 仍可能写入 npm 依赖和全局样式变量，安装后看一眼 `package.json` 和全局样式的改动。第一次安装时 CLI 会往 `components.json` 写入 `registries.@yiui`，这是正常的。
 
    ```bash
    pnpm dlx shadcn@latest add @yiui/<条目> --dry-run
@@ -68,6 +68,7 @@ https://yiui.dev/md/pages/<条目>.md
 以下在 shadcn 官方 monorepo 模板（`init --monorepo`）上实测，其他结构按 `components.json` 的 `aliases` 对应调整。
 
 - **组件在应用目录或 UI 包目录安装都可以。** 组件和它用到的 `hooks`、`lib` 都会写进 UI 包，npm 包也装在 UI 包。
+- **组件要在 UI 包目录预览。** 应用目录的 `--dry-run` 不准：`hooks`、`lib` 显示写进应用，导入路径也是 `@/...`，实际安装时都在 UI 包。
 - **从 UI 包的路径导入。** 比如 `@workspace/ui/components/number-stepper/number-stepper`，包名以项目为准，不要照抄 `@/components/ui/...`。
 - **UI 包要用 `Bundler` 解析。** 组件内部有相对导入，模板的 `NodeNext` 会让 UI 包的 `tsc` 报 TS2835，应用构建不受影响。在 UI 包的 `tsconfig.json` 里设 `"module": "ESNext"`、`"moduleResolution": "Bundler"`，不要逐个给导入加扩展名。
 - **区块和页面要多做两步。** 它们的代码写进应用，但 CLI 仍把 npm 包装进 UI 包。
