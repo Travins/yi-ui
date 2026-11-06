@@ -78,13 +78,23 @@ type GridToolbarItemProps = React.ComponentProps<"div"> & {
    * @default "dashed"
    */
   separator?: "dashed" | "solid"
+  /**
+   * 容器窄于 40rem 时独占一行（如搜索框）；后面的格子自动换到下一行，
+   * 带 `grow` 的格子在下一行平分宽度。宽容器里不受影响
+   * @default false
+   */
+  fullOnNarrow?: boolean
 }
 
-/** 工具栏里的一格：高度跟随工具栏，里面的控件铺满整格 */
+/**
+ * 工具栏里的一格：高度跟随工具栏，里面的控件铺满整格。
+ * 直接放进来的官方 `Button` 也会自动变成方形的格子（铺满高度、无圆角、焦点环在格内），不用再手写类名。
+ */
 function GridToolbarItem({
   className,
   grow = false,
   separator = "dashed",
+  fullOnNarrow = false,
   ...props
 }: GridToolbarItemProps) {
   return (
@@ -99,6 +109,11 @@ function GridToolbarItem({
           ? "[border-inline-start-style:solid]"
           : "[border-inline-start-style:dashed]",
         grow ? "flex-1" : "shrink-0",
+        // 按钮格：和方条控件一样去掉圆角、铺满整格；grow 的格子里按钮拉伸占满
+        "*:data-[slot=button]:h-full *:data-[slot=button]:rounded-none *:data-[slot=button]:focus-visible:ring-inset",
+        grow && "*:data-[slot=button]:flex-1",
+        // 窄容器独占一行：basis 取整行，后面的格子装不下就换行
+        fullOnNarrow && "@max-[40rem]/grid-toolbar:basis-full",
         className,
       )}
       {...props}

@@ -58,6 +58,9 @@ function DataTable<T>({
   loading,
   error,
   onRetry,
+  filtered = false,
+  onClearFilters,
+  ariaLabel,
   sorting: sortingProp,
   defaultSorting = [],
   onSortingChange,
@@ -275,7 +278,11 @@ function DataTable<T>({
     }
   }
   const detail = rows.find((row) => row.id === detailId)
+  // 外部筛选（工具栏插槽里的、页面持有的）表格看不到，由 filtered 告知
+  const hasFilter = !!(globalFilter || columnFilters.length || filtered)
+  const listLabel = ariaLabel ?? labels.dataset
   function clearFilters() {
+    onClearFilters?.()
     setGlobalFilter("")
     setColumnFilters([])
     table.setPageIndex(0)
@@ -334,7 +341,7 @@ function DataTable<T>({
         }}
       >
         <table
-          aria-label={labels.search}
+          aria-label={listLabel}
           aria-rowcount={count + 1}
           // 最后一行不画虚线，底边由分页栏的实线收口，避免虚线 + 实线叠成两道
           className="table-fixed border-separate border-spacing-0 text-sm [&>tbody>tr:last-child>td]:border-b-0"
@@ -516,24 +523,22 @@ function DataTable<T>({
                   <Empty className="sticky left-0 min-h-60 w-[100cqw] max-w-full bg-dots">
                     <EmptyHeader>
                       <EmptyMedia variant="icon">
-                        {globalFilter || columnFilters.length ? (
+                        {hasFilter ? (
                           <SearchX aria-hidden="true" />
                         ) : (
                           <Inbox aria-hidden="true" />
                         )}
                       </EmptyMedia>
                       <EmptyTitle>
-                        {globalFilter || columnFilters.length
-                          ? labels.noResults
-                          : labels.empty}
+                        {hasFilter ? labels.noResults : labels.empty}
                       </EmptyTitle>
                       <EmptyDescription>
-                        {globalFilter || columnFilters.length
+                        {hasFilter
                           ? labels.noResultsDescription
                           : labels.emptyDescription}
                       </EmptyDescription>
                     </EmptyHeader>
-                    {(globalFilter || columnFilters.length > 0) && (
+                    {hasFilter && (
                       <Button variant="outline" onClick={clearFilters}>
                         {labels.clearFilters}
                       </Button>
@@ -746,7 +751,7 @@ function DataTable<T>({
       </div>
       <ul
         data-slot="data-table-list"
-        aria-label={labels.search}
+        aria-label={listLabel}
         className="border-t border-edge @min-[40rem]:hidden"
       >
         {loading ? (
@@ -761,11 +766,16 @@ function DataTable<T>({
           ))
         ) : !rows.length || error ? (
           <li className="bg-dots p-10 text-center">
-            <Inbox className="mx-auto mb-3 size-6" />
-            <p>{error || labels.noResults}</p>
-            <Button variant="outline" onClick={error ? onRetry : clearFilters}>
-              {error ? labels.retry : labels.clearFilters}
-            </Button>
+            <Inbox aria-hidden="true" className="mx-auto mb-3 size-6" />
+            <p>{error || (hasFilter ? labels.noResults : labels.empty)}</p>
+            {(error ? onRetry : hasFilter) && (
+              <Button
+                variant="outline"
+                onClick={error ? onRetry : clearFilters}
+              >
+                {error ? labels.retry : labels.clearFilters}
+              </Button>
+            )}
           </li>
         ) : (
           (virtualization ? rows.slice(0, listLimit) : rows).map(

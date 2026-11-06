@@ -36,6 +36,10 @@ type DataTableLabels = {
   /** 虚拟滚动模式下窄屏列表的「显示更多」 */
   showMore: (rest: number) => string
   search: string
+  /** 列表（桌面 table、手机 ul）的读屏名称；`ariaLabel` 优先 */
+  dataset: string
+  /** 行操作按钮的读屏名称模板，`{name}` 替换为行名称 */
+  rowActions: string
   /** 搜索框的读屏名称（未传 searchLabel 时使用） */
   searchField: string
   status: string
@@ -62,6 +66,10 @@ type DataTableLabels = {
   total: string
   perPage: string
   jump: string
+  /** 跳页输入框的读屏名称 */
+  jumpInput: string
+  /** 窄容器里「当前页 / 总页数」入口的读屏说明 */
+  jumpTrigger: string
   cancel: string
   save: string
   saveError: string
@@ -78,6 +86,10 @@ type DataTableHandle = {
 }
 type DataTableProps<T> = Omit<React.ComponentProps<"div">, "onChange"> & {
   apiRef?: React.Ref<DataTableHandle>
+  /**
+   * 列表的读屏名称，用于桌面 table 与手机 ul；不传时取 `labels.dataset`（默认「数据列表」）
+   */
+  ariaLabel?: string
   columns: DataTableColumn<T>[]
   data: T[]
   getRowId: (row: T) => string
@@ -86,6 +98,14 @@ type DataTableProps<T> = Omit<React.ComponentProps<"div">, "onChange"> & {
   loading?: boolean
   error?: string | null
   onRetry?: () => void
+  /**
+   * 外部筛选是否生效。服务端分页时筛选状态通常放在页面里（比如 `toolbar` 插槽里的下拉），
+   * 表格感知不到；传 true 后无结果的空状态会显示「没有符合条件的结果」和「清除筛选」
+   * @default false
+   */
+  filtered?: boolean
+  /** 点「清除筛选」时调用：表格先清掉自己的搜索和列筛选，再调用它，用来重置外部筛选 */
+  onClearFilters?: () => void
   sorting?: SortingState
   defaultSorting?: SortingState
   onSortingChange?: (value: SortingState) => void

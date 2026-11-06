@@ -39,6 +39,7 @@ const DEFAULT_LABELS = {
   jump: "跳至",
   pageUnit: "页",
   jumpInput: "跳转页码",
+  jumpTrigger: "跳转到指定页",
   page: (page: number) => `第 ${page} 页`,
 }
 
@@ -63,6 +64,12 @@ type GridPaginationProps = Omit<React.ComponentProps<"nav">, "onChange"> & {
   info?: React.ReactNode
   /** 显示跳页格 @default false */
   jumper?: boolean
+  /**
+   * 窄容器（窄于 36rem）里把「当前页 / 总页数」变成可点击的跳页入口：点开后就地换成数字输入框，
+   * 回车跳转，Esc 或失焦取消。只在 `jumper` 开启且总页数大于 1 时生效，不影响宽容器的外观
+   * @default true
+   */
+  compactJumper?: boolean
   /** 当前页两侧页数 @default 1 */
   siblings?: number
   /** 生成真实链接；未传入时使用按钮 */
@@ -96,6 +103,7 @@ function GridPagination({
   onPageSizeChange,
   info,
   jumper = false,
+  compactJumper = true,
   siblings = 1,
   getHref,
   bordered = true,
@@ -114,6 +122,25 @@ function GridPagination({
   })
   const page = clamp(rawPage)
   const [jump, setJump] = React.useState("")
+  // 窄容器的紧凑跳页：editing 时「当前页 / 总页数」换成输入框
+  const [editing, setEditing] = React.useState(false)
+  const [compactValue, setCompactValue] = React.useState("")
+  const compactTrigger = React.useRef<HTMLButtonElement>(null)
+  const canCompactJump = jumper && compactJumper && count > 1
+  /** 提交跳页：非法输入忽略并返回 false；链接模式额外整页跳转 */
+  function submitJump(value: string) {
+    if (!value.trim() || !Number.isFinite(Number(value))) return false
+    const next = clamp(Number(value))
+    setPage(next)
+    if (getHref) window.location.assign(getHref(next))
+    return true
+  }
+  /** 关闭输入框并把焦点还给入口，键盘用户不会丢位置 */
+  function closeCompact() {
+    setEditing(false)
+    setCompactValue("")
+    requestAnimationFrame(() => compactTrigger.current?.focus())
+  }
   const buttonSize = size === "sm" ? "icon" : "icon-lg"
   // 固定槽位：翻页时格子数量不变，整条不抖动
   const pages = getPaginationSlots(page, count, siblings)
@@ -327,9 +354,63 @@ function GridPagination({
         ))}
         {/* 窄容器：页码收成一格「当前页 / 总页数」，占满中间 */}
         <PaginationItem className="flex flex-1 items-center justify-center font-mono text-xs tabular-nums @min-[36rem]/grid-pagination:hidden">
-          <span aria-live="polite">
-            {page} / {count}
-          </span>
+          {canCompactJump ? (
+            <>
+              {/* 读屏播报翻页结果；入口按钮自己的名称不是 live 区域 */}
+              <span aria-live="polite" className="sr-only">
+                {page} / {count}
+              </span>
+              {editing ? (
+                <label className="flex h-full w-full items-center justify-center gap-1.5">
+                  <input
+                    // 打开即聚焦；不用 autoFocus 属性，免得服务端渲染出的标记带上它
+                    ref={(node) => node?.focus()}
+                    aria-label={labels.jumpInput}
+                    inputMode="numeric"
+                    enterKeyHint="go"
+                    value={compactValue}
+                    placeholder={String(page)}
+                    onChange={(event) => setCompactValue(event.target.value)}
+                    onBlur={() => {
+                      // 失焦即取消；焦点已被别处接走，不再抢回来
+                      setEditing(false)
+                      setCompactValue("")
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        closeCompact()
+                      } else if (event.key === "Enter") {
+                        event.preventDefault()
+                        if (submitJump(compactValue)) closeCompact()
+                      }
+                    }}
+                    // 触屏输入框保持 16px，避免 iOS 聚焦时页面放大
+                    className="h-6 w-12 rounded-sm border border-edge bg-background text-center font-mono text-base text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-xs"
+                  />
+                  <span aria-hidden="true">/ {count}</span>
+                </label>
+              ) : (
+                <button
+                  ref={compactTrigger}
+                  type="button"
+                  data-slot="grid-pagination-jump-trigger"
+                  aria-label={`${page} / ${count}，${labels.jumpTrigger}`}
+                  onClick={() => setEditing(true)}
+                  className="h-full w-full cursor-pointer outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
+                >
+                  <span aria-hidden="true">
+                    {page} / {count}
+                  </span>
+                </button>
+              )}
+            </>
+          ) : (
+            <span aria-live="polite">
+              {page} / {count}
+            </span>
+          )}
         </PaginationItem>
         <PaginationItem>
           {item(
@@ -360,11 +441,7 @@ function GridPagination({
                 onKeyDown={(event) => {
                   if (event.key !== "Enter") return
                   event.preventDefault()
-                  if (!jump.trim() || !Number.isFinite(Number(jump))) return
-                  const next = clamp(Number(jump))
-                  setPage(next)
-                  setJump("")
-                  if (getHref) window.location.assign(getHref(next))
+                  if (submitJump(jump)) setJump("")
                 }}
                 className="h-6 w-10 rounded-sm border border-edge bg-background text-center font-mono text-base text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-xs"
               />

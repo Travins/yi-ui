@@ -95,17 +95,19 @@ function DataTableToolbar<T>({
     ? table.getColumn(statusFilter.columnId)
     : undefined
   const status = String(statusColumn?.getFilterValue() ?? "")
-  // 格内的图标按钮：方形、无圆角，焦点环画在格子内侧
-  const cellButton = "h-full rounded-none focus-visible:ring-inset"
+  // 有第二行内容（状态筛选或插槽）时，窄容器里搜索格独占一行，其余格在下一行平分；
+  // 只有搜索和两个图标按钮时仍保持一行，不多占高度
+  const stacked = !!statusFilter || !!children
   return (
     <GridToolbar
       bordered={false}
       // 表格工具栏统一 12px；触屏输入框保持 16px，避免 iOS 聚焦时页面放大
       className="[&_*]:text-xs! pointer-coarse:[&_input]:text-base!"
     >
-      {/* 搜索：宽容器里定宽，窄容器里占满第一行 */}
+      {/* 搜索：宽容器里定宽；窄容器里有第二行内容时独占第一行，否则和图标按钮同行 */}
       <GridToolbarItem
         grow
+        fullOnNarrow={stacked}
         className="@min-[40rem]:w-64 @min-[40rem]:flex-none"
       >
         <BarField
@@ -128,8 +130,11 @@ function DataTableToolbar<T>({
         />
       </GridToolbarItem>
       {statusFilter && (
-        // 状态筛选用方条下拉：清除即「全部」；窄容器里独占最后一行
-        <GridToolbarItem className="order-last basis-full @min-[40rem]:order-none @min-[40rem]:w-36 @min-[40rem]:basis-auto">
+        // 状态筛选用方条下拉：清除即「全部」；窄容器里占满第二行剩余宽度，右边是列设置与排序
+        <GridToolbarItem
+          grow
+          className="@min-[40rem]:w-36 @min-[40rem]:flex-none"
+        >
           <BarSelect
             aria-label={labels.status}
             placeholder={
@@ -182,7 +187,6 @@ function DataTableToolbar<T>({
                       variant="ghost"
                       size="icon-lg"
                       aria-label={labels.columns}
-                      className={cellButton}
                     />
                   }
                 />
@@ -247,7 +251,6 @@ function DataTableToolbar<T>({
                       size="icon-lg"
                       variant="ghost"
                       aria-label={labels.sort}
-                      className={cellButton}
                     />
                   }
                 />

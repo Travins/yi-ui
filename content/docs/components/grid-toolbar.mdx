@@ -39,13 +39,21 @@ import { SegmentedControl } from "@/components/ui/segmented-control/segmented-co
 </GridToolbar>
 ```
 
-`GridToolbar` 是整行，`GridToolbarItem` 是其中一格。每格高度跟随工具栏，格内控件铺满整格；`grow` 让这一格占满剩余宽度，通常给搜索框。格子之间默认是虚线；`separator="solid"` 让这一格左侧用实线，表示从这里开始是另一组（比如列设置和密度之间）。宽度、换行位置、窄屏隐藏都写在 `GridToolbarItem` 的 `className` 上，比如 `basis-full` 让一格独占一行、`hidden @min-[40rem]:flex` 在窄容器里隐藏。
+`GridToolbar` 是整行，`GridToolbarItem` 是其中一格。每格高度跟随工具栏，格内控件铺满整格；`grow` 让这一格占满剩余宽度，通常给搜索框。格子之间默认是虚线；`separator="solid"` 让这一格左侧用实线，表示从这里开始是另一组（比如列设置和密度之间）。宽度、换行位置、窄屏隐藏都写在 `GridToolbarItem` 的 `className` 上，比如 `hidden @min-[40rem]:flex` 在窄容器里隐藏。要让一格在窄容器里独占一行，用 `fullOnNarrow`（见下）。
 
 ### 放进来的控件
 
 [方条输入](/components/bar-field/)、[分段选择](/components/segmented-control/)、[方条下拉](/components/bar-select/)、[数量选择](/components/number-stepper/)放进工具栏时会自动换成无框写法：去掉自己的边框、圆角和底色，高度铺满整格，焦点环画在格子内侧。分段选择还会把每个选项拆成一格，选中项整格铺底色，不再是圆角的滑块。单独使用时保持原样，不需要额外传参数。原理是这些组件带了 `in-data-[slot=grid-toolbar]:` 样式，只在祖先是网格工具栏时生效，组件之间没有互相引用。
 
-图标按钮用官方 `Button`：`variant="ghost"`、`size="icon-lg"`（默认高度）或 `size="icon"`（`size="sm"` 时），再加 `rounded-none focus-visible:ring-inset`，就是一个方形的格子。
+### 按钮格
+
+直接放进 `GridToolbarItem` 的官方 `Button` 会自动变成方形的格子：高度铺满整格、去掉圆角、焦点环画在格子内侧，不用再写 `h-full rounded-none focus-visible:ring-inset`。图标按钮用 `variant="ghost"`、`size="icon-lg"`（默认高度）或 `size="icon"`（工具栏 `size="sm"` 时）；文字按钮同理，宽度由内容决定。格子带 `grow` 时按钮会拉伸占满。
+
+这是在 `GridToolbarItem` 上用 `*:data-[slot=button]:` 选择器实现的，不需要新组件。选它而不是新增 `GridToolbarButton`，是因为 `DropdownMenuTrigger`、`TooltipTrigger` 通过 `render` 渲染出来的也是 `Button`，自动适配对它们同样有效；而包一层新组件就得为每种触发器各写一遍。按钮不是格子的直接子元素（外面包了别的元素）时不会自动适配，需要自己加类名。
+
+### 窄容器独占一行
+
+`fullOnNarrow` 让这一格在窄于 40rem 的工具栏里独占一行（`flex-basis` 取整行）。后面的格子装不下，自动换到下一行；带 `grow` 的格子在下一行平分剩余宽度，所以通常给下拉写 `grow` 加一个基础宽度（如 `basis-24`）。宽容器里不受影响。断点是工具栏自己的宽度（容器查询），不是屏幕宽度。
 
 ### 外框与换行
 
@@ -64,6 +72,12 @@ import { SegmentedControl } from "@/components/ui/segmented-control/segmented-co
 搜索格使用 `basis-full` 独占一行，其余格通过 `grow` 与基础宽度自动换行，换行后的横线仍连续。
 
 <ComponentPreview name="grid-toolbar-wrap-demo" />
+
+### 窄屏独占一行与按钮格
+
+搜索格 `fullOnNarrow` 独占第一行；两个下拉带 `grow`，在第二行平分；最右边是直接放进格子的 `Button`，自动成为方形按钮格。
+
+<ComponentPreview name="grid-toolbar-narrow-demo" />
 
 ## API
 

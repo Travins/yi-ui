@@ -77,15 +77,70 @@ import { DataTableRowActions } from "@/components/data-table-01/data-table-row-a
 />
 ```
 
+按钮的读屏名称默认是 `"{name} 的操作"`（`{name}` 为行名称）。要改，可以传完整的 `ariaLabel`（字符串，或接收 `label` 的函数），也可以只改模板：`labels={{ rowActions: "{name} 的操作" }}`，`{name}` 会替换成 `label`。`ariaLabel` 优先于模板。
+
 每项可传 `icon`、`shortcut`；`"separator"` 插入分隔线。示例提供查看、编辑、复制编号、导出 CSV、归档与删除。删除和批量删除先确认，复制结果由读屏提示。选中行内控件后按 Shift+F10 或 ContextMenu 键打开该行菜单。
 
-窄于 40rem 时状态筛选独占一行，隐藏色点和数量以保留完整状态文字；隐藏密度选择，给搜索与筛选留出空间。虚拟滚动仅显示总行数。
+窄于 40rem 时搜索格独占一行，状态筛选在下一行与列设置、排序同排，隐藏色点和数量以保留完整状态文字；隐藏密度选择，给搜索与筛选留出空间。虚拟滚动仅显示总行数。
 
 ### 负责人筛选
 
 示例通过 `toolbar={(table) => ...}` 插槽接入方条多选：插槽里的控件包一层 `GridToolbarItem` 成为工具栏的一格，用 owner 列的 `filterFn` 匹配选中负责人，更新筛选后回到第一页。每位负责人的计数来自完整数据集；窄容器隐藏此筛选。
 
+### 外部筛选与「清除筛选」
+
+服务端分页时，筛选状态往往放在页面里（比如 `toolbar` 插槽中的下拉），表格自己的搜索和列筛选里看不到它。传 `filtered` 告诉表格「外部筛选正在生效」：没有结果时空状态显示「没有符合条件的结果」和「清除筛选」。点击时表格先清掉自己的搜索与列筛选，再调用 `onClearFilters`，由你重置外部筛选。桌面表格和手机列表的空状态都是如此。
+
+```tsx
+const [owner, setOwner] = React.useState<string | null>(null)
+
+;<DataTable
+  mode="manual"
+  columns={columns}
+  data={pageRows}
+  rowCount={total}
+  getRowId={getRowId}
+  filtered={!!owner}
+  onClearFilters={() => setOwner(null)}
+  toolbar={
+    <GridToolbarItem className="w-36">
+      <BarSelect
+        aria-label="负责人"
+        value={owner}
+        onValueChange={setOwner}
+        options={owners}
+      />
+    </GridToolbarItem>
+  }
+/>
+```
+
+### 列表的读屏名称
+
+桌面 `table` 与手机 `ul` 的 `aria-label` 默认取 `labels.dataset`（「数据列表」），不再复用搜索框的占位文案。同一页有多张表时，用 `ariaLabel="用户列表"` 给每张表各起一个名字，它优先于 `labels.dataset`。
+
+### 窄容器规则
+
+表格和分页都按**容器宽度**而不是屏幕宽度切换：
+
+| 部位                 | 宽于 44rem | 40rem – 44rem | 36rem – 40rem              | 窄于 36rem                        |
+| -------------------- | ---------- | ------------- | -------------------------- | --------------------------------- |
+| 表格主体             | 表格       | 表格          | 卡片列表                   | 卡片列表                          |
+| 工具栏：搜索格       | 固定宽度   | 固定宽度      | 有状态筛选或插槽时独占一行 | 同左                              |
+| 工具栏：密度选择     | 显示       | 显示          | 隐藏                       | 隐藏                              |
+| 工具栏：排序菜单     | 隐藏       | 隐藏          | 显示                       | 显示                              |
+| 分页：每页条数、页码 | 显示       | 显示          | 显示                       | 隐藏，页码收成「当前页 / 总页数」 |
+| 分页：跳页           | 输入框     | 隐藏          | 隐藏                       | 点「当前页 / 总页数」就地输入     |
+
+窄于 36rem 的分页里，信息格独占上一行。「当前页 / 总页数」是一个按钮，点开变成数字输入框，回车跳转、Esc 取消，细节见[网格分页](/components/grid-pagination/)。
+
 ## 示例
+
+### 外部筛选
+
+负责人和状态两个下拉放在工具栏插槽里，筛选状态在页面中。示例数据里负责人和状态一一对应，选「林小满」再选「已归档」会得到空结果，点空状态里的「清除筛选」两个下拉都会重置。
+
+<ComponentPreview name="data-table-01-external-filter-demo" />
 
 ### 服务端分页
 
@@ -115,7 +170,7 @@ import { DataTableRowActions } from "@/components/data-table-01/data-table-row-a
 
 `columns`、`data`、`getRowId` 必填。排序、分页、全局筛选、列筛选、行选择均支持受控值、对应 `default*` 初值与 `on*Change` 回调。分页默认每页 10 条。
 
-搜索框默认只显示图标，读屏名称取 `labels.searchField`；传 `searchLabel="搜索"` 可在图标前显示条内标签。`statusFilter={{ columnId, options }}` 在搜索框右侧显示状态下拉（方条下拉，选项带色点和数量，清除即全部），空字符串表示全部，它的 `label` 作为未选时的占位（如「全部状态」，不传时取 `labels.all`），`tone` 设置色点颜色（如 `"var(--flow-green)"`）。`toolbar`、`bulkActions(selected)`、`rowActions(row)` 提供操作插槽；`bulkActions` 里的按钮文字包在 `<span data-label>` 中，窄容器只显示图标，`header` 可传入头部内容。manual 模式使用 `counts` 传入状态计数。`onSelectAll` 由使用方处理跨页全选，表头只选择当前页。`labels` 覆盖文案。
+`filtered` 与 `onClearFilters` 见「外部筛选与清除筛选」，`ariaLabel` 见「列表的读屏名称」。搜索框默认只显示图标，读屏名称取 `labels.searchField`；传 `searchLabel="搜索"` 可在图标前显示条内标签。`statusFilter={{ columnId, options }}` 在搜索框右侧显示状态下拉（方条下拉，选项带色点和数量，清除即全部），空字符串表示全部，它的 `label` 作为未选时的占位（如「全部状态」，不传时取 `labels.all`），`tone` 设置色点颜色（如 `"var(--flow-green)"`）。`toolbar`、`bulkActions(selected)`、`rowActions(row)` 提供操作插槽；`bulkActions` 里的按钮文字包在 `<span data-label>` 中，窄容器只显示图标，`header` 可传入头部内容。manual 模式使用 `counts` 传入状态计数。`onSelectAll` 由使用方处理跨页全选，表头只选择当前页。`labels` 覆盖文案，其中 `dataset` 是列表名称、`rowActions` 是行操作按钮的名称模板、`jumpInput` 与 `jumpTrigger` 是跳页的读屏名称。
 
 列 meta 支持 `align`、`editable`、`validate`、`hideOnMobile`、`pinned`、`bar`（数字比例条）、`max`（服务端模式的列最大值），列宽使用原生 `size`。`detailCell(value, row)` 定制详情字段的展示，例如完整时间。首个标记 pinned 的可见数据列固定。
 

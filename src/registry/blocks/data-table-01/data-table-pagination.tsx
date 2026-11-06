@@ -44,6 +44,8 @@ function DataTablePagination<T>({
             last: labels.last,
             perPage: labels.perPage,
             jump: labels.jump,
+            jumpInput: labels.jumpInput,
+            jumpTrigger: labels.jumpTrigger,
           }}
           onPageChange={(page) => table.setPageIndex(page - 1)}
           onPageSizeChange={(size) => {
