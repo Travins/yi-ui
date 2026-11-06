@@ -88,15 +88,21 @@ See the [installation guide](https://yiui.dev/docs/installation/) for where file
 
 ## Blocks & Pages
 
-| Name | Description |
-| --- | --- |
-| [Settings `settings-01`](https://yiui.dev/blocks/settings-01/) | A full settings page built from the bar controls: section nav, live preview, modified count, reset and async save. |
-| [Theme Customizer `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | Color, radius, content width and appearance preferences with early restoration. |
-| [Split sign-in `auth-01`](https://yiui.dev/blocks/auth-01/) | Brand panel plus forms: password / one-time-code sign-in (auto-formatted phone number, inline send-code button with countdown), sign-up with a strength meter, password recovery. |
-| [Checkout `checkout-01`](https://yiui.dev/blocks/checkout-01/) | Address, shipping, invoice, payment and order completion, with a mobile store ordering demo. |
-| [Data table `data-table-01`](https://yiui.dev/blocks/data-table-01/) | Grid toolbar (search, status and owner dropdowns, column settings, density), sorting, column resizing, selection, cell editing with optimistic save, grid pagination and virtual scrolling; narrow screens switch to a card list. |
-| [AI assistant `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | Embedded and floating layouts showing reasoning summaries, tool calls, sources and charts, with a built-in streaming demo. |
-| [Console shell `app-shell-01`](https://yiui.dev/pages/app-shell-01/) | Fixed header, collapsible nav, workspace sidebar and AI assistant, with example pages full of stat cards and charts; the list page reuses the data table block. |
+Blocks are split into three groups, the same as on the website.
+
+| Group | Name | Description |
+| --- | --- | --- |
+| Application | [AI assistant `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | Embedded and floating layouts showing reasoning summaries, tool calls, sources and charts, with a built-in streaming demo. |
+| Application | [Data table `data-table-01`](https://yiui.dev/blocks/data-table-01/) | Grid toolbar (search, status and owner dropdowns, column settings, density), sorting, column resizing, selection, cell editing with optimistic save, grid pagination and virtual scrolling; narrow screens switch to a card list. |
+| Application | [Theme Customizer `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | Color, radius, content width and appearance preferences with early restoration. |
+| Navigation | [Collapsible sidebar `sidebar-01`](https://yiui.dev/blocks/sidebar-01/) | Search filtering, accordion groups and sub-items with guide lines; when collapsed to an icon rail, submenus fly out on hover or from the keyboard. |
+| Navigation | [Team & account sidebar `sidebar-02`](https://yiui.dev/blocks/sidebar-02/) | Team switcher (⌘1…⌘9), ⌘K command search, navigation with counts and group actions, and multi-account switching from the user card. |
+| Navigation | [Workspace tree sidebar `sidebar-03`](https://yiui.dev/blocks/sidebar-03/) | Module icon rail plus a tree panel with WAI-ARIA tree keyboard support, status dots, counts, filtering and a storage usage card. |
+| Navigation | [Context panel `sidebar-04`](https://yiui.dev/blocks/sidebar-04/) | A right-side data panel: project switcher, stacked progress chart, status breakdown and tasks assigned to you, with composable sections. |
+| Forms & Flows | [Split sign-in `auth-01`](https://yiui.dev/blocks/auth-01/) | Brand panel plus forms: password / one-time-code sign-in (auto-formatted phone number, inline send-code button with countdown), sign-up with a strength meter, password recovery. |
+| Forms & Flows | [Settings `settings-01`](https://yiui.dev/blocks/settings-01/) | A full settings page built from the bar controls: section nav, live preview, modified count, reset and async save. |
+| Forms & Flows | [Checkout `checkout-01`](https://yiui.dev/blocks/checkout-01/) | Address, shipping, invoice, payment and order completion, with a mobile store ordering demo. |
+| Page | [Console shell `app-shell-01`](https://yiui.dev/pages/app-shell-01/) | Fixed header, collapsible nav, workspace sidebar and AI assistant, with example pages full of stat cards and charts; the list page reuses the data table block. |
 
 ## Color themes
 

@@ -88,15 +88,21 @@ pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 
 ## 区块与页面
 
-| 名称 | 说明 |
-| --- | --- |
-| [设置页 `settings-01`](https://yiui.dev/blocks/settings-01/) | 用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。 |
-| [主题定制面板 `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | 主题色、圆角、宽度与亮暗偏好，首帧恢复。 |
-| [分屏登录页 `auth-01`](https://yiui.dev/blocks/auth-01/) | 品牌面板加表单：密码 / 验证码登录（手机号自动分隔、条内获取验证码与倒计时）、注册（带强度条）、找回密码。 |
-| [订单结算 `checkout-01`](https://yiui.dev/blocks/checkout-01/) | 地址、配送、发票、支付与订单完成页，附门店下单手机示例。 |
-| [数据表格 `data-table-01`](https://yiui.dev/blocks/data-table-01/) | 网格工具栏（搜索、状态与负责人下拉、列设置、密度）、排序、列宽、选择、单格编辑与乐观保存、网格分页、虚拟滚动，窄屏切成卡片列表。 |
-| [AI 助手面板 `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | 嵌入与浮动两种布局，展示分析摘要、工具调用、来源与图表，内置流式演示。 |
-| [企业控制台布局 `app-shell-01`](https://yiui.dev/pages/app-shell-01/) | 固定顶栏、可折叠导航、工作区侧栏与 AI 助手，带统计卡与图表的示例页面；列表页直接复用数据表格区块。 |
+区块分三组，和网站上的分组一致。
+
+| 分组 | 名称 | 说明 |
+| --- | --- | --- |
+| 应用界面 | [AI 助手面板 `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | 嵌入与浮动两种布局，展示分析摘要、工具调用、来源与图表，内置流式演示。 |
+| 应用界面 | [数据表格 `data-table-01`](https://yiui.dev/blocks/data-table-01/) | 网格工具栏（搜索、状态与负责人下拉、列设置、密度）、排序、列宽、选择、单格编辑与乐观保存、网格分页、虚拟滚动，窄屏切成卡片列表。 |
+| 应用界面 | [主题定制面板 `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | 主题色、圆角、宽度与亮暗偏好，首帧恢复。 |
+| 导航 | [可收起侧栏 `sidebar-01`](https://yiui.dev/blocks/sidebar-01/) | 搜索过滤、手风琴分组、带引导线的子项；收起成图标栏后悬停或用键盘在右侧浮出子菜单。 |
+| 导航 | [团队与账号切换侧栏 `sidebar-02`](https://yiui.dev/blocks/sidebar-02/) | 团队切换（⌘1…⌘9）、⌘K 命令搜索、带计数和分组操作的导航，底部用户卡里切换多个账号。 |
+| 导航 | [工作区树侧栏 `sidebar-03`](https://yiui.dev/blocks/sidebar-03/) | 模块图标轨加树形面板，按 WAI-ARIA Tree 模式做键盘操作，带状态点、计数、筛选和存储用量卡。 |
+| 导航 | [右侧上下文面板 `sidebar-04`](https://yiui.dev/blocks/sidebar-04/) | 放在页面右侧的数据面板：项目切换、堆叠进度图、状态分布与分给我的任务，分区可单独组合。 |
+| 表单与流程 | [分屏登录页 `auth-01`](https://yiui.dev/blocks/auth-01/) | 品牌面板加表单：密码 / 验证码登录（手机号自动分隔、条内获取验证码与倒计时）、注册（带强度条）、找回密码。 |
+| 表单与流程 | [设置页 `settings-01`](https://yiui.dev/blocks/settings-01/) | 用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。 |
+| 表单与流程 | [订单结算 `checkout-01`](https://yiui.dev/blocks/checkout-01/) | 地址、配送、发票、支付与订单完成页，附门店下单手机示例。 |
+| 页面 | [企业控制台布局 `app-shell-01`](https://yiui.dev/pages/app-shell-01/) | 固定顶栏、可折叠导航、工作区侧栏与 AI 助手，带统计卡与图表的示例页面；列表页直接复用数据表格区块。 |
 
 ## 颜色主题
 
