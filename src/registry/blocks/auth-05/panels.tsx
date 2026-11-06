@@ -5,9 +5,15 @@ import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 import { formatLabel, type Auth05Labels } from "./config"
 import { Auth05CodeInput } from "./form-parts"
-import { formatRecoveryCode, maskPhone } from "./mask"
+import {
+  formatRecoveryCode,
+  isRecoveryComplete,
+  maskPhone,
+  resolveRecoveryRule,
+} from "./mask"
 import type { Auth05Props } from "./types"
 import { useAsyncAction } from "./use-auth-form"
 
@@ -287,18 +293,26 @@ function Auth05CodePanel({
   )
 }
 
-/** 恢复码：输入时自动转大写并插入短横线，格式 XXXX-XXXX。 */
+/** 恢复码：默认输入时自动转大写并插入短横线（XXXX-XXXX），格式可通过 recoveryCode 配置，也可以完全不格式化。 */
 function Auth05RecoveryPanel({
   labels,
   onBusyChange,
   onVerify,
   onDone,
+  recoveryCode,
 }: PanelBase & {
   onVerify?: Auth05Props["onVerify"]
   onDone: () => void
+  recoveryCode?: Auth05Props["recoveryCode"]
 }) {
+  const rule = resolveRecoveryRule(recoveryCode)
+  const masked = rule.format !== false
   const id = React.useId()
   const [code, setCode] = React.useState("")
+  const complete = isRecoveryComplete(code, rule)
+  const placeholder =
+    recoveryCode?.placeholder ??
+    formatLabel(labels.recoveryPlaceholder, { format: rule.format || "" })
   const [localError, setLocalError] = React.useState("")
   const verifying = useAsyncAction(labels.failed)
   useBusy(verifying.pending, onBusyChange)
@@ -306,13 +320,18 @@ function Auth05RecoveryPanel({
 
   async function submit() {
     if (verifying.pending) return
-    if (code.length !== 9) {
-      setLocalError(labels.recoveryError)
+    if (!complete) {
+      setLocalError(
+        masked
+          ? formatLabel(labels.recoveryError, { format: rule.format as string })
+          : labels.recoveryEmpty,
+      )
       return
     }
     const ok = await verifying.run(async () => {
       if (!onVerify) throw new Error(labels.failed)
-      await onVerify({ method: "recovery", code })
+      // 不格式化时只去掉首尾空白，其余原样提交
+      await onVerify({ method: "recovery", code: code.trim() })
     })
     if (ok) onDone()
   }
@@ -341,20 +360,24 @@ function Auth05RecoveryPanel({
           id={`${id}-input`}
           value={code}
           onChange={(event) => {
-            setCode(formatRecoveryCode(event.target.value))
+            setCode(formatRecoveryCode(event.target.value, rule))
             setLocalError("")
             verifying.setError("")
           }}
-          placeholder={labels.recoveryPlaceholder}
+          placeholder={placeholder}
           autoComplete="off"
-          autoCapitalize="characters"
+          autoCapitalize={rule.uppercase ? "characters" : "off"}
           autoCorrect="off"
           spellCheck={false}
-          maxLength={9}
+          maxLength={masked ? (rule.format as string).length : rule.maxLength}
           disabled={verifying.pending}
           aria-invalid={error ? true : undefined}
           aria-describedby={`${id}-note${error ? ` ${id}-error` : ""}`}
-          className="h-9 font-mono tracking-widest uppercase focus-visible:border-foreground/25 focus-visible:bg-background focus-visible:ring-0 aria-invalid:focus-visible:ring-3 pointer-coarse:h-11"
+          className={cn(
+            "h-9 font-mono focus-visible:border-foreground/25 focus-visible:bg-background focus-visible:ring-0 aria-invalid:focus-visible:ring-3 pointer-coarse:h-11",
+            masked && "tracking-widest",
+            rule.uppercase && "uppercase",
+          )}
         />
         <p id={`${id}-note`} className="text-xs text-muted-foreground">
           {labels.recoveryNote}
@@ -373,7 +396,7 @@ function Auth05RecoveryPanel({
         type="submit"
         size="lg"
         className="w-full"
-        disabled={verifying.pending || code.length !== 9}
+        disabled={verifying.pending || !complete}
       >
         {verifying.pending ? labels.verifying : labels.verify}
       </Button>

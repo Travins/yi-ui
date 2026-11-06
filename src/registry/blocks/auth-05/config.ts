@@ -38,9 +38,10 @@ const DEFAULT_LABELS = {
   recoveryTitle: "输入恢复码",
   recoveryDescription: "输入创建账号时保存的恢复码。",
   recoveryLabel: "恢复码",
-  recoveryPlaceholder: "XXXX-XXXX",
+  recoveryPlaceholder: "{format}",
   recoveryNote: "每个恢复码只能用一次",
-  recoveryError: "请输入完整的恢复码，格式为 XXXX-XXXX",
+  recoveryError: "请输入完整的恢复码，格式为 {format}",
+  recoveryEmpty: "请输入恢复码",
 
   code: "验证码，共 {length} 位",
   verify: "验证",

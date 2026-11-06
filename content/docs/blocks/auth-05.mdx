@@ -1,5 +1,6 @@
 ---
 title: Passkey 与多因素验证
+titleEn: Passkey & MFA
 description: 登录第二步：通行密钥、验证器 App、短信验证码和恢复码四种验证方式，可互相切换，并支持记住设备。
 group: forms
 status: new
@@ -38,7 +39,7 @@ status: new
 | `passkey` 通行密钥 | 点主按钮，等待系统弹窗，完成后成功；也可能取消或出错 | `onPasskey()` |
 | `totp` 身份验证器 App | 6 位验证码，输满自动提交，错误态与 [手机号验证码登录](/blocks/auth-03/) 一致 | `onVerify({ method: "totp", code })` |
 | `sms` 短信验证码 | 显示脱敏手机号，点「发送验证码」后出现输入框和重发倒计时 | `onSendCode()`，再 `onVerify({ method: "sms", code })` |
-| `recovery` 恢复码 | 单个输入框，自动转大写并在第 4 位后插入短横线，格式 `XXXX-XXXX`，旁边提示每个恢复码只能用一次 | `onVerify({ method: "recovery", code })` |
+| `recovery` 恢复码 | 单个输入框，默认自动转大写并在第 4 位后插入短横线，格式 `XXXX-XXXX`（可用 `recoveryCode` 改格式或关闭格式化），旁边提示每个恢复码只能用一次 | `onVerify({ method: "recovery", code })` |
 
 通行密钥面板的状态：
 
@@ -51,6 +52,90 @@ status: new
 | 不支持 | 检测不到 `PublicKeyCredential` 时，显示「当前浏览器不支持通行密钥」，主按钮禁用，并给出「改用 xxx」的按钮 |
 
 验证成功后整块内容换成成功状态，并调用 `onSuccess({ method, rememberDevice })`。
+
+## 账号摘要
+
+`account` 的 `email`、`phone`、`name`、`username` 至少要有一个。类型用联合类型表达，漏传时编译期就会报错；运行时仍有兜底（摘要为空、头像显示 `?`），JS 项目也不会崩溃。
+
+显示规则：
+
+| 条件 | 摘要显示 |
+|---|---|
+| 有 `name` 和 `username` | `林清禾 @qinghe`，`username` 用小字补充，都不脱敏 |
+| 只有 `name` 或 `username` | 原样显示，不脱敏 |
+| 都没有，有 `email` | 脱敏邮箱，如 `lin***@example.com` |
+| 都没有，只有 `phone` | 脱敏手机号，如 `138 **** 8000` |
+
+头像首字取实际显示的那个名字（有 `name` 用 `name`，否则 `username`、`email`、`phone`）。读屏读到的是「当前账号：」加上摘要内容，不写死「邮箱」。`phone` 另外用于短信面板，所以只用 `name` 登录的账号如果还要短信验证，也要传 `phone`。
+
+```tsx
+<Auth05 account={{ name: "林清禾", username: "qinghe" }} />
+<Auth05 account={{ username: "qinghe" }} />
+<Auth05 account={{ email: "linwei@example.com", phone: "13800138000" }} />
+```
+
+## 备用码格式
+
+`recoveryCode` 配置备用码输入框，不传时是 `XXXX-XXXX`，和之前的行为一致。
+
+| 字段 | 说明 |
+|---|---|
+| `format` | 掩码字符串：`X`（大写）代表一个字母或数字，其他字符原样插入，只在输入写到那一位时才插入，所以退格不会卡在分隔符上。默认 `"XXXX-XXXX"`。传 `false` 不做任何格式化：原样接受输入，只去掉首尾空白再提交 |
+| `uppercase` | 是否自动转大写，默认 `true`。`format` 为 `false` 时默认不转（要“原样”），显式传 `true` 才转 |
+| `maxLength` | 最大长度，只在 `format` 为 `false` 时生效；有掩码时长度由掩码决定 |
+| `placeholder` | 占位文字，默认由 `format` 生成（`false` 时为空） |
+
+```tsx
+// 掩码：5 位一组，输入 abcde12345 显示为 ABCDE-12345
+<Auth05 account={account} recoveryCode={{ format: "XXXXX-XXXXX" }} />
+
+// 不格式化：后端的备用码格式不固定，输入什么就提交什么
+<Auth05
+  account={account}
+  recoveryCode={{ format: false, maxLength: 32, placeholder: "粘贴备用码" }}
+/>
+```
+
+有掩码时，输入未填满不能提交，错误文案是 `labels.recoveryError`（其中的 `{format}` 会替换成掩码）；`format` 为 `false` 时只要求非空，空提交显示 `labels.recoveryEmpty`。「每个恢复码只能用一次」的提示不变。
+
+## 隐藏「记住此设备」
+
+后端不支持记住设备时传 `showRememberDevice={false}`：开关不渲染，`onSuccess` 里的 `rememberDevice` 固定为 `false`，即使你传了受控的 `rememberDevice`。默认 `true`，行为和之前一致。
+
+## 嵌进已有的登录布局
+
+`Auth05` 是整页：线条网格外壳、整页的上下留白、两栏排版。如果你已经有登录页的外壳，比如 [分屏登录页](/blocks/auth-01/) 那种左边品牌面板、右边表单的分屏布局，第二步要在同一个布局里换掉右侧的表单，用 `Auth05Panel`。
+
+`Auth05Panel` 只有验证内容：标题和说明、账号摘要、当前方式的面板、其他验证方式、记住设备和帮助链接。没有页面外壳，宽度跟随父容器，也不设最小高度；「其他验证方式」一律在当前方式下方单列，因为嵌入的容器通常很窄。props 和 `Auth05` 完全相同，也支持 `brand`（不传就不显示品牌）。
+
+```tsx
+import { Auth05Panel } from "@/components/auth-05/auth-05-panel"
+
+export function VerifyStep({ username }: { username: string }) {
+  return (
+    <div className="grid min-h-svh md:grid-cols-2">
+      {/* 左侧：和第一步同一块品牌面板 */}
+      <BrandPanel className="hidden md:flex" />
+      {/* 右侧：把第一步的登录表单换成验证面板 */}
+      <div className="flex items-center justify-center p-6 sm:p-10">
+        <div className="w-full max-w-sm">
+          <Auth05Panel
+            account={{ username }}
+            methods={["totp", "recovery"]}
+            showRememberDevice={false}
+            recoveryCode={{ format: false }}
+            onVerify={async ({ method, code }) => { await verifyCode(method, code) }}
+            onSuccess={() => location.assign("/")}
+            onSwitchAccount={() => location.assign("/login")}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+```
+
+两者共用同一套状态与零件，只是排版不同，所以回调、受控属性、`labels` 的用法完全一致。
 
 ## 回调约定
 
@@ -106,22 +191,27 @@ status: new
 - 身份验证器 App：`123456` 成功，其他验证码提示「验证码错误」。
 - 短信验证码：发送有 1 秒延迟，验证码 `123456`。
 - 恢复码：`ABCD-1234` 成功，其他提示「恢复码无效或已使用」。
+- 外壳顶部的「演示布局」可切到「嵌入」：左边是品牌面板占位，右边是 `Auth05Panel`，只开身份验证器和恢复码，账号只有用户名，没有记住设备，备用码不格式化（`abc_12345` 成功）。
 
 ## API
 
 <PropsTable name="auth-05" component="Auth05" />
 
+`Auth05Panel` 的 props 与 `Auth05` 相同。
+
 - 受控与非受控：`method` / `defaultMethod` / `onMethodChange` 控制当前验证方式；`rememberDevice` / `defaultRememberDevice` / `onRememberDeviceChange` 控制「记住此设备 30 天」，默认关闭。
 - `passkeySupported` 用来覆盖浏览器能力检测，演示和测试时很有用；不传时在挂载后检测 `window.PublicKeyCredential`。
-- `account.phone` 是 11 位手机号，组件显示为 `138 **** 8000`；`account.avatar` 不传时头像显示邮箱首字母。
+- `account` 的 `email`、`phone`、`name`、`username` 至少一个，显示规则见上面的「账号摘要」；`phone` 是 11 位手机号，组件显示为 `138 **** 8000`；`avatar` 不传时头像显示摘要名字的首字。
+- `showRememberDevice` 默认 `true`；`recoveryCode` 见「备用码格式」。
+- `headingLevel` 是主标题「验证你的身份」的级别：`Auth05` 默认 `1`，`Auth05Panel` 默认 `2`。嵌进已有页面时，宿主页通常已经有 h1，按页面层级设成 2 或 3。
 - `codeLength` 默认 6 位，`resendSeconds` 默认 60 秒。
 - `helpHref` 提供「都无法使用？联系管理员」的链接，不传就不显示这个入口。
 - `labels` 覆盖 `Auth05Labels`，每种方式的名称、说明、标题分别是 `<method>Name`、`<method>Hint`、`<method>Title`。`brand` 接收 `name` 和可选 `logo`。
-- 导出类型：`Auth05Props`、`Auth05Method`、`Auth05Account`、`Auth05Labels`。
+- 导出组件：`Auth05`（整页）、`Auth05Panel`（只有验证内容）。导出类型：`Auth05Props`、`Auth05Method`、`Auth05Account`、`Auth05RecoveryCode`、`Auth05Labels`。
 
-文件结构：`auth-05.tsx` 为入口，`panels.tsx` 是三种面板，`form-parts.tsx` 封装验证码格子，`mask.ts` 负责脱敏与恢复码格式，`config.ts` 管理文案，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为安装到项目里的页面入口。
+文件结构：`auth-05.tsx` 为整页入口，`auth-05-panel.tsx` 是嵌入用的 `Auth05Panel`，`use-auth-05.ts` 放两者共用的状态，`parts.tsx` 是共用的页面零件（标题、账号摘要、其他方式列表等），`panels.tsx` 是三种验证面板，`form-parts.tsx` 封装验证码格子，`mask.ts` 负责脱敏、账号摘要与恢复码格式，`config.ts` 管理文案，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为安装到项目里的页面入口。
 
-根节点 `data-slot="auth-05"` 暴露 `data-method` 和 `data-state`；账号摘要为 `auth-05-account`，主面板为 `auth-05-panel`，其他方式列表为 `auth-05-alternatives`。
+根节点 `data-slot="auth-05"` 暴露 `data-method` 和 `data-state`（`Auth05Panel` 的根节点是 `auth-05-content`，属性相同）；账号摘要为 `auth-05-account`，主面板为 `auth-05-panel`，其他方式列表为 `auth-05-alternatives`。
 
 ## 可访问性
 
@@ -129,7 +219,7 @@ status: new
 - 「其他验证方式」是一个导航区域里的按钮列表，用 Tab 和回车或空格操作；有请求进行中时列表禁用。
 - 通行密钥的状态（等待中、已取消、不支持）放在常驻的 `aria-live="polite"` 区域里；短信已发送、验证成功同样会播报；错误用 `role="alert"`。
 - 验证码输入支持整串粘贴、退格和方向键，提供数字键盘和短信自动填充，读屏名称是「验证码，共 6 位」；错误通过 `aria-describedby` 关联，所有格子带错误态。
-- 恢复码输入框有可见标签，关闭自动填充，并提示每个码只能用一次。
+- 恢复码输入框有可见标签，关闭自动填充，并提示每个码只能用一次；不格式化时不强制大写输入。
 - 倒计时不逐秒播报；过渡动画遵守减少动态效果设置。
 
 ## 注意事项

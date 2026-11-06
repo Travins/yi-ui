@@ -642,6 +642,21 @@
           "path": "src/registry/blocks/auth-05/panels.tsx",
           "type": "registry:component",
           "target": "@components/auth-05/panels.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/auth-05-panel.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-05/auth-05-panel.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-05/parts.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/use-auth-05.ts",
+          "type": "registry:component",
+          "target": "@components/auth-05/use-auth-05.ts"
         }
       ],
       "cssVars": {

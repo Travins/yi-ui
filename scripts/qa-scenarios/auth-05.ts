@@ -33,6 +33,15 @@ async function switchTo(page: Page, name: string) {
   await alternatives(page).filter({ hasText: name }).click()
 }
 
+/** 切到演示外壳的「嵌入」布局：分屏页右侧放 Auth05Panel（只开 totp 与 recovery、用户名账号、无记住设备、备用码不格式化） */
+async function pickEmbedded(page: Page) {
+  await page
+    .getByRole("radiogroup", { name: "演示布局" })
+    .getByRole("radio", { name: "嵌入" })
+    .click()
+  await page.locator('[data-slot="auth-05-content"]').waitFor()
+}
+
 type Ctx = Pick<ScenarioContext, "page" | "role" | "visible" | "assert">
 
 async function expectSuccess({ role, visible, assert, page }: Ctx) {
@@ -336,6 +345,137 @@ export default {
         await visible(list, "手机上也应显示其他验证方式")
         const [p, l] = [await box(panel), await box(list)]
         assert(l.y >= p.y + p.height - 1, "窄屏时其他验证方式应在主面板下方")
+        const overflow = await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+        )
+        assert(overflow <= 0, `页面不应横向溢出，多出 ${overflow}px`)
+      },
+    },
+    {
+      name: "嵌入模式：没有「记住此设备」，成功回调里 rememberDevice 为 false",
+      viewport: "desktop",
+      async run({ page, assert, visible }) {
+        await pickEmbedded(page)
+        await visible(
+          page.locator('[data-slot="auth-05-content"]'),
+          "嵌入模式应渲染 Auth05Panel",
+        )
+        assert(
+          (await page.getByRole("switch", { name: /记住此设备/ }).count()) ===
+            0,
+          "showRememberDevice 为 false 时不应渲染记住设备开关",
+        )
+        assert(
+          (await page.getByText("记住此设备", { exact: false }).count()) === 0,
+          "页面上不应出现记住此设备的文字",
+        )
+        assert(
+          (await page.locator('[data-slot="auth-05"]').count()) === 0,
+          "嵌入模式不应出现整页外壳",
+        )
+        assert(
+          (await page.locator('[data-slot^="grid-"]').count()) === 0,
+          "嵌入面板里不应有线条网格外壳",
+        )
+        // 嵌进已有页面时宿主页通常已有 h1：嵌入版主标题默认降为 h2
+        await visible(
+          page.getByRole("heading", { level: 2, name: "验证你的身份" }),
+          "嵌入面板的主标题默认应为 h2",
+        )
+      },
+    },
+    {
+      name: "嵌入模式：只开 totp 与 recovery，用户名原样显示不脱敏",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        await pickEmbedded(page)
+        const account = page.locator('[data-slot="auth-05-account"]')
+        await visible(account, "应有账号摘要")
+        const text = (await account.textContent()) ?? ""
+        assert(text.includes("lin_qinghe"), "摘要应原样显示用户名 lin_qinghe")
+        assert(!text.includes("*"), "用户名不应被脱敏")
+        assert(
+          (await account.locator(".sr-only").textContent())?.includes(
+            "当前账号",
+          ),
+          "读屏文本应是「当前账号」，不写死邮箱",
+        )
+        await visible(
+          role("heading", { name: "输入身份验证器验证码", exact: true }),
+          "默认应是第一个可用方式 totp",
+        )
+        const texts = await alternatives(page).allTextContents()
+        assert(texts.length === 1, "其他验证方式应只剩 1 项")
+        assert(texts[0]?.includes("恢复码"), "其他验证方式里应是恢复码")
+      },
+    },
+    {
+      name: "嵌入模式：备用码不格式化，abc_12345 原样输入并提交成功",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        await pickEmbedded(page)
+        await switchTo(page, "恢复码")
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        await visible(input, "应显示恢复码输入")
+        assert(
+          (await input.getAttribute("placeholder")) === null ||
+            (await input.getAttribute("placeholder")) === "",
+          "format 为 false 时不应有 XXXX-XXXX 占位",
+        )
+        await input.pressSequentially("abc_12345")
+        assert(
+          (await input.inputValue()) === "abc_12345",
+          "应原样保留小写和下划线，不插入短横线",
+        )
+        await role("button", { name: "验证", exact: true }).click()
+        await visible(
+          role("heading", { name: "验证成功", exact: true }),
+          "abc_12345 应验证成功",
+        )
+        assert(
+          (await page
+            .locator('[data-slot="auth-05-content"]')
+            .getAttribute("data-state")) === "success",
+          "成功后面板根元素应标记 success",
+        )
+      },
+    },
+    {
+      name: "嵌入模式：面板在容器宽度内，其他方式在下方单列",
+      viewport: "desktop",
+      async run({ page, box, assert, visible }) {
+        await pickEmbedded(page)
+        const root = page.locator('[data-slot="auth-05-content"]')
+        await visible(root, "应有嵌入面板")
+        const parent = root.locator("xpath=..")
+        const [r, p] = [await box(root), await box(parent)]
+        assert(
+          r.x >= p.x - 1 && r.x + r.width <= p.x + p.width + 1,
+          "面板应在父容器宽度内",
+        )
+        const clipped = await root.evaluate(
+          (el) => el.scrollWidth - el.clientWidth,
+        )
+        assert(clipped <= 0, `面板内容不应横向溢出，多出 ${clipped}px`)
+        const [m, l] = [
+          await box(page.locator('[data-slot="auth-05-panel"]')),
+          await box(page.locator('[data-slot="auth-05-alternatives"]')),
+        ]
+        assert(l.y >= m.y + m.height - 1, "其他验证方式应在当前方式下方")
+      },
+    },
+    {
+      name: "嵌入模式手机宽度：不横向溢出",
+      viewport: "mobile",
+      async run({ page, box, assert, visible }) {
+        await pickEmbedded(page)
+        const root = page.locator('[data-slot="auth-05-content"]')
+        await visible(root, "手机上也应显示嵌入面板")
+        const r = await box(root)
+        const width = page.viewportSize()?.width ?? 0
+        assert(r.x >= 0 && r.x + r.width <= width + 1, "面板应在视口宽度内")
         const overflow = await page.evaluate(
           () =>
             document.documentElement.scrollWidth -
