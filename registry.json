@@ -574,6 +574,85 @@
       }
     },
     {
+      "name": "auth-05",
+      "type": "registry:block",
+      "title": "Passkey 与多因素验证",
+      "description": "登录第二步：通行密钥、验证器 App、短信验证码和恢复码四种验证方式，可互相切换，并支持记住设备。",
+      "dependencies": [
+        "motion",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "avatar",
+        "button",
+        "input",
+        "input-otp",
+        "https://yiui.dev/r/grid-layout.json",
+        "https://yiui.dev/r/toggle-switch.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-05/auth-05.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-05/auth-05.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-verify/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/types.ts",
+          "type": "registry:component",
+          "target": "@components/auth-05/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-05/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/mask.ts",
+          "type": "registry:component",
+          "target": "@components/auth-05/mask.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-05/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-05/form-parts.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/panels.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-05/panels.tsx"
+        }
+      ],
+      "meta": {
+        "iframeHeight": "800px"
+      },
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      }
+    },
+    {
       "name": "settings-01",
       "type": "registry:block",
       "title": "设置页",

@@ -1,0 +1,141 @@
+---
+title: Passkey 与多因素验证
+description: 登录第二步：通行密钥、验证器 App、短信验证码和恢复码四种验证方式，可互相切换，并支持记住设备。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-05" />
+
+## 安装
+
+<InstallCommand name="auth-05" />
+
+## 用法
+
+```tsx
+<Auth05
+  account={{ email: "linwei@example.com", phone: "13800138000" }}
+  helpHref="/support"
+  onPasskey={async () => { await verifyPasskey() }}
+  onSendCode={async () => { await sendSms() }}
+  onVerify={async ({ method, code }) => { await verifyCode(method, code) }}
+  onSuccess={({ method, rememberDevice }) => location.assign("/")}
+  onSwitchAccount={() => location.assign("/login")}
+/>
+```
+
+这是登录的第二步：账号已经通过第一步认证，这里要求用户再完成一次验证。顶部的账号摘要显示脱敏邮箱（`lin***@example.com`）和「不是你？切换账号」；下面是标题、当前验证方式的面板，以及「其他验证方式」列表。
+
+桌面宽度下，「其他验证方式」放在主面板右侧的一栏，用虚线与面板分开。这样主面板的位置和高度不随切换变化，其余方式始终一眼可见；窄屏变成单列，列表排在面板下方。列表里不包含当前方式，点一项就切换过去。
+
+## 验证方式
+
+`methods` 决定哪些方式可用，顺序就是列表顺序，默认四种全开；`defaultMethod` 指定默认方式（不在 `methods` 里时退回第一项）。
+
+| 方式 | 说明 | 回调 |
+|---|---|---|
+| `passkey` 通行密钥 | 点主按钮，等待系统弹窗，完成后成功；也可能取消或出错 | `onPasskey()` |
+| `totp` 身份验证器 App | 6 位验证码，输满自动提交，错误态与 [手机号验证码登录](/blocks/auth-03/) 一致 | `onVerify({ method: "totp", code })` |
+| `sms` 短信验证码 | 显示脱敏手机号，点「发送验证码」后出现输入框和重发倒计时 | `onSendCode()`，再 `onVerify({ method: "sms", code })` |
+| `recovery` 恢复码 | 单个输入框，自动转大写并在第 4 位后插入短横线，格式 `XXXX-XXXX`，旁边提示每个恢复码只能用一次 | `onVerify({ method: "recovery", code })` |
+
+通行密钥面板的状态：
+
+| 状态 | 表现 |
+|---|---|
+| 初始 | 主按钮「使用通行密钥验证」 |
+| 等待中 | 按钮禁用并带加载图标，提示「请在浏览器或系统弹窗中完成验证」；这期间不能切换方式 |
+| 已取消 | 回调抛出 `name` 为 `NotAllowedError` 的错误，显示「已取消，可以重试」，按钮恢复可点 |
+| 出错 | 其他错误，显示 `Error.message` |
+| 不支持 | 检测不到 `PublicKeyCredential` 时，显示「当前浏览器不支持通行密钥」，主按钮禁用，并给出「改用 xxx」的按钮 |
+
+验证成功后整块内容换成成功状态，并调用 `onSuccess({ method, rememberDevice })`。
+
+## 回调约定
+
+- `onPasskey`、`onSendCode`、`onVerify` 都是返回 `Promise<void>` 的函数；成功就正常返回，失败就抛出 `Error`，其 `message` 会显示给用户。
+- `onPasskey` 抛出 `name === "NotAllowedError"` 的错误会被当作「已取消」，而不是错误。`navigator.credentials.get` 在用户关闭弹窗、超时或拒绝时都抛这个错误，浏览器不区分这几种情况。
+- 回调进行中，同一操作不会被重复触发（自动提交和回车共用同一把锁）。
+- `onVerify` 的 `method` 只会是 `totp`、`sms`、`recovery`。
+
+### 接入通行密钥
+
+组件不直接调用 `navigator.credentials`，WebAuthn 由你在 `onPasskey` 里实现。下面只是示意：challenge 必须由服务端生成并校验，不要在客户端生成。
+
+```tsx
+<Auth05
+  account={account}
+  onPasskey={async () => {
+    // 1. 向服务端要 challenge 和允许的凭据列表（服务端要把 challenge 记下来）
+    const options = await fetch("/api/passkey/options", { method: "POST" })
+      .then((res) => res.json())
+
+    // 2. 唤起系统弹窗；用户取消时这里抛 NotAllowedError，组件会显示「已取消」
+    const credential = (await navigator.credentials.get({
+      publicKey: {
+        challenge: base64urlToBuffer(options.challenge),
+        rpId: options.rpId,
+        allowCredentials: options.allowCredentials.map((item: { id: string }) => ({
+          type: "public-key",
+          id: base64urlToBuffer(item.id),
+        })),
+        userVerification: "preferred",
+        timeout: 60_000,
+      },
+    })) as PublicKeyCredential
+
+    // 3. 把签名交给服务端校验，不通过就抛 Error
+    const res = await fetch("/api/passkey/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(serializeCredential(credential)),
+    })
+    if (!res.ok) throw new Error("通行密钥验证失败，请重试")
+  }}
+/>
+```
+
+`base64urlToBuffer` 和 `serializeCredential` 是你自己的工具函数，也可以用现成的 WebAuthn 库代替。
+
+## 示例
+
+演示规则（只在页面外壳里显示，不属于组件）：
+
+- 通行密钥：1.5 秒后按外壳里选的结果返回，可选「成功 / 取消 / 不支持 / 失败」。
+- 身份验证器 App：`123456` 成功，其他验证码提示「验证码错误」。
+- 短信验证码：发送有 1 秒延迟，验证码 `123456`。
+- 恢复码：`ABCD-1234` 成功，其他提示「恢复码无效或已使用」。
+
+## API
+
+<PropsTable name="auth-05" component="Auth05" />
+
+- 受控与非受控：`method` / `defaultMethod` / `onMethodChange` 控制当前验证方式；`rememberDevice` / `defaultRememberDevice` / `onRememberDeviceChange` 控制「记住此设备 30 天」，默认关闭。
+- `passkeySupported` 用来覆盖浏览器能力检测，演示和测试时很有用；不传时在挂载后检测 `window.PublicKeyCredential`。
+- `account.phone` 是 11 位手机号，组件显示为 `138 **** 8000`；`account.avatar` 不传时头像显示邮箱首字母。
+- `codeLength` 默认 6 位，`resendSeconds` 默认 60 秒。
+- `helpHref` 提供「都无法使用？联系管理员」的链接，不传就不显示这个入口。
+- `labels` 覆盖 `Auth05Labels`，每种方式的名称、说明、标题分别是 `<method>Name`、`<method>Hint`、`<method>Title`。`brand` 接收 `name` 和可选 `logo`。
+- 导出类型：`Auth05Props`、`Auth05Method`、`Auth05Account`、`Auth05Labels`。
+
+文件结构：`auth-05.tsx` 为入口，`panels.tsx` 是三种面板，`form-parts.tsx` 封装验证码格子，`mask.ts` 负责脱敏与恢复码格式，`config.ts` 管理文案，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为安装到项目里的页面入口。
+
+根节点 `data-slot="auth-05"` 暴露 `data-method` 和 `data-state`；账号摘要为 `auth-05-account`，主面板为 `auth-05-panel`，其他方式列表为 `auth-05-alternatives`。
+
+## 可访问性
+
+- 切换验证方式或验证成功后，焦点会落在新内容的标题上，Tab 可继续进入控件。
+- 「其他验证方式」是一个导航区域里的按钮列表，用 Tab 和回车或空格操作；有请求进行中时列表禁用。
+- 通行密钥的状态（等待中、已取消、不支持）放在常驻的 `aria-live="polite"` 区域里；短信已发送、验证成功同样会播报；错误用 `role="alert"`。
+- 验证码输入支持整串粘贴、退格和方向键，提供数字键盘和短信自动填充，读屏名称是「验证码，共 6 位」；错误通过 `aria-describedby` 关联，所有格子带错误态。
+- 恢复码输入框有可见标签，关闭自动填充，并提示每个码只能用一次。
+- 倒计时不逐秒播报；过渡动画遵守减少动态效果设置。
+
+## 注意事项
+
+只提供界面，不负责真实认证：WebAuthn 调用、验证码和恢复码校验、短信发送与限流、会话与设备信任都由服务端和你的回调完成。「记住此设备」只通过 `onSuccess` 的 `rememberDevice` 告知你，是否真的信任设备由你决定。通行密钥的支持情况在水合前是未知的，此时主按钮保持可点；确认不支持后才会禁用并给出建议。
+
+## 源码
+
+<ComponentSource name="auth-05" />

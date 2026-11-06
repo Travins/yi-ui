@@ -216,6 +216,7 @@ export const registryViews: Record<string, LazyExoticComponent<ComponentType>> =
   "auth-02": lazy(() => import("./blocks/auth-02/demo")),
   "auth-03": lazy(() => import("./blocks/auth-03/demo")),
   "auth-04": lazy(() => import("./blocks/auth-04/demo")),
+  "auth-05": lazy(() => import("./blocks/auth-05/demo")),
   "checkout-01": lazy(() => import("./blocks/checkout-01/demo")),
   "data-table-01": lazy(() => import("./blocks/data-table-01/demo")),
   "settings-01": lazy(() => import("./blocks/settings-01/demo")),
