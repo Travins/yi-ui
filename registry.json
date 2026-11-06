@@ -341,6 +341,83 @@
       }
     },
     {
+      "name": "auth-02",
+      "type": "registry:block",
+      "title": "扫码优先登录",
+      "description": "以扫码为主、短信和密码为备用入口的线条网格登录区块，包含五种扫码状态。",
+      "dependencies": [
+        "uqr",
+        "zod",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "https://yiui.dev/r/grid-layout.json",
+        "https://yiui.dev/r/segmented-control.json",
+        "https://yiui.dev/r/toggle-switch.json",
+        "https://yiui.dev/r/phone-input.json",
+        "https://yiui.dev/r/bar-field.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-02/auth-02.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-02/auth-02.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/sign-in-form.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-02/sign-in-form.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/qr-code.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-02/qr-code.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-02/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/schemas.ts",
+          "type": "registry:component",
+          "target": "@components/auth-02/schemas.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-02/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-02/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-02/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-02/form-parts.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      }
+    },
+    {
       "name": "auth-03",
       "type": "registry:block",
       "title": "手机号验证码登录",

@@ -1,0 +1,84 @@
+---
+title: 扫码优先登录
+description: 以扫码为主、短信和密码为备用入口的线条网格登录区块，包含五种扫码状态。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-02" />
+
+## 安装
+
+<InstallCommand name="auth-02" />
+
+依赖 uqr、zod 和 lucide-react；复用方条输入、手机号、开关、分段控件和线条网格。
+
+## 用法
+
+```tsx
+"use client"
+
+import { Auth02 } from "@/components/auth-02/auth-02"
+
+export default function LoginPage() {
+  return (
+    <Auth02
+      brand={{ name: "我的工作空间" }}
+      onRequestCode={async (providerId) => {
+        const response = await fetch("/api/login/code", {
+          method: "POST",
+          body: JSON.stringify({ providerId }),
+        })
+        if (!response.ok) throw new Error("暂时无法生成登录二维码")
+        return response.json()
+      }}
+    />
+  )
+}
+```
+
+### 状态机
+
+状态为 `pending`（待扫码）、`scanned`（手机确认中）、`expired`（过期）、`confirmed`（成功）、`error`（失败）。刷新或切换提供方回到待扫码。请求失败进入失败态；到达 `expiresAt`（毫秒时间戳）时，待扫码与确认中状态自动过期。
+
+通过 `status`、`onStatusChange` 接入服务端轮询或订阅；不传 `status` 时使用内部状态，`defaultStatus` 默认为 `pending`。组件不会自行轮询认证服务。
+
+### 回调约定
+
+`onRequestCode(providerId)` 返回 `Promise<{ value: string; expiresAt?: number }>`。二维码由 value 实时编码，不是装饰图。旧请求不会覆盖新提供方。切换时会清除旧码；刷新尺寸保持不变。
+
+`onConfirmed(): Promise<void>` 在进入成功态后调用，可用于跳转。`onSignIn(values): Promise<void>` 接收密码或短信的联合类型，与 auth-01 一致。`onSendCode(phone): Promise<void>` 成功后开始 60 秒倒计时。所有异步回调抛出的 `Error.message` 都会展示给用户。
+
+## 示例
+
+预览顶部的控制条仅属于演示外壳，可以切换五种状态。「模拟自动登录」在 3 秒后显示已扫码，再过 3 秒显示成功；演示链接不执行真实认证。
+
+## API
+
+<PropsTable name="auth-02" component="Auth02" />
+
+提供方通过 `providers` 传入，每项为 `{ id, label, icon?, description? }`。默认是通用「App 扫码」，不绑定第三方品牌。品牌通过 `brand` 传入，文案通过 `labels?: Partial<Auth02Labels>` 覆盖，默认值见 config.ts。
+
+导出类型：`Auth02Status`、`Auth02Provider`、`Auth02Code`、`Auth02Labels`、`SignInValues`。
+
+| data-slot                | 用途                        |
+| ------------------------ | --------------------------- |
+| auth-02                  | 根容器，data-state 暴露状态 |
+| auth-02-code-region      | 固定尺寸二维码与状态区域    |
+| auth-02-qr-code          | 可扫描 SVG                  |
+| auth-02-sign-in-code     | 短信表单                    |
+| auth-02-sign-in-password | 密码表单                    |
+
+## 可访问性
+
+状态通过 `aria-live="polite"` 播报；二维码有 `role="img"` 与可覆盖的中文说明。提供方使用单选组语义，所有按钮支持键盘操作，字段错误关联到输入框。窄屏上下排列，先展示短信入口，并提示手机通常无法扫描自身屏幕。
+
+## 注意事项
+
+本区块只提供界面，不创建会话、不验证凭据、不保证扫码认证安全。令牌签发、一次性使用、过期校验、手机确认与服务端会话建立须由认证服务完成。前端倒计时不能替代服务端校验。
+
+默认请求回调为必填；已安装页面会提示接入接口，避免把演示成功误认为真实认证。二维码主题色随亮暗与颜色主题变化，接入自定义主题后应实机验证对比度与扫码能力。
+
+## 源码
+
+<ComponentSource name="auth-02" />
