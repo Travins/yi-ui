@@ -6,12 +6,15 @@ import { spawn } from "node:child_process"
 import { existsSync } from "node:fs"
 import { createServer } from "node:net"
 
+/** 只监听本机回环地址：开发机可能没有防火墙，验收用的临时服务不能暴露到其他网卡 */
+const HOST = "127.0.0.1"
+
 /** 先用 0 号端口向系统要一个空闲端口，再交给 next start */
 function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const probe = createServer()
     probe.once("error", reject)
-    probe.listen(0, () => {
+    probe.listen(0, HOST, () => {
       const address = probe.address()
       const port = typeof address === "object" && address ? address.port : 0
       probe.close(() => resolve(port))
@@ -27,10 +30,10 @@ export async function startNextServer(): Promise<{
     throw new Error("没有找到构建产物 .next/，先运行 pnpm build")
   }
   const port = await freePort()
-  const child = spawn("pnpm", ["exec", "next", "start", "-p", String(port)], {
+  const child = spawn("pnpm", ["exec", "next", "start", "-H", HOST, "-p", String(port)], {
     stdio: ["ignore", "ignore", "inherit"],
   })
-  const base = `http://localhost:${port}`
+  const base = `http://${HOST}:${port}`
   const close = () => {
     child.kill()
   }
