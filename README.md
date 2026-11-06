@@ -102,6 +102,8 @@ pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 | 表单与流程 | [分屏登录页 `auth-01`](https://yiui.dev/blocks/auth-01/) | 品牌面板加表单：密码 / 验证码登录（手机号自动分隔、条内获取验证码与倒计时）、注册（带强度条）、找回密码。 |
 | 表单与流程 | [扫码优先登录 `auth-02`](https://yiui.dev/blocks/auth-02/) | 可扫的真实二维码，待扫码、已扫码待确认、过期刷新、成功、失败五种状态；提供方可配置，短信与密码作为备用入口。 |
 | 表单与流程 | [手机号验证码登录 `auth-03`](https://yiui.dev/blocks/auth-03/) | 两步流程：手机号加协议勾选，再输入 6 位验证码（粘贴自动提交），号码脱敏、可修改，带重发倒计时和频控提示。 |
+| 表单与流程 | [企业 SSO 登录 `auth-04`](https://yiui.dev/blocks/auth-04/) | 先输入工作邮箱，按域名识别出企业的身份提供方，跳转失败可以重试或改用密码；也支持输入组织标识，宽屏右侧是组织面板。 |
+| 表单与流程 | [Passkey 与多因素验证 `auth-05`](https://yiui.dev/blocks/auth-05/) | 登录的第二步：通行密钥（等待、取消、不支持）、身份验证器 App、短信验证码、恢复码，可以记住设备。 |
 | 表单与流程 | [设置页 `settings-01`](https://yiui.dev/blocks/settings-01/) | 用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。 |
 | 表单与流程 | [订单结算 `checkout-01`](https://yiui.dev/blocks/checkout-01/) | 地址、配送、发票、支付与订单完成页，附门店下单手机示例。 |
 | 页面 | [企业控制台布局 `app-shell-01`](https://yiui.dev/pages/app-shell-01/) | 固定顶栏、可折叠导航、工作区侧栏与 AI 助手，带统计卡与图表的示例页面；列表页直接复用数据表格区块。 |
