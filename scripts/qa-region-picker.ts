@@ -5,6 +5,7 @@
 import assert from "node:assert/strict"
 import { chromium, type Page } from "playwright-core"
 
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 
 const OPTION = "[data-slot=region-picker-list] [role=option]"
@@ -44,9 +45,7 @@ async function search(page: Page, base: string, label: string) {
 async function main() {
   const server = await startNextServer()
   const browser = await chromium.launch({
-    executablePath:
-      process.env.CHROME_PATH ??
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: chromePath(),
   })
   try {
     await search(

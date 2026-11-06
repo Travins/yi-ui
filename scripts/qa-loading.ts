@@ -2,6 +2,7 @@
 import { chromium } from "playwright-core"
 import { readdir, mkdir, writeFile } from "node:fs/promises"
 
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 
 async function main() {
@@ -9,9 +10,7 @@ async function main() {
   await mkdir(directory, { recursive: true })
   const { base, close } = await startNextServer()
   const browser = await chromium.launch({
-    executablePath:
-      process.env.CHROME_PATH ??
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: chromePath(),
   })
   const issues: string[] = []
   const measurements: unknown[] = []
@@ -243,6 +242,9 @@ async function main() {
       viewport: { width: 1280, height: 900 },
     })
     await page.goto(base + "/components/", { waitUntil: "networkidle" })
+    // 水合完成前点击会走浏览器原生跳转（没有骨架、也没有加载指示），所以先等 NavigationProgress
+    // 在 effect 里挂好点击监听后设的 data-nav-ready。
+    await page.waitForSelector("html[data-nav-ready=true]", { timeout: 15_000 })
     await page.route(/\.js(?:\?|$)/, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 2000))
       await route.continue().catch(() => {})
@@ -291,6 +293,8 @@ async function main() {
       await route.continue().catch(() => {})
     })
     await slow.goto(base + "/components/", { waitUntil: "domcontentloaded" })
+    // 同一条时序要求：点击必须由客户端路由接管，否则会变成原生跳转、没有加载指示
+    await slow.waitForSelector("html[data-nav-ready=true]", { timeout: 15_000 })
     await slow.waitForTimeout(700)
     await slow.locator('a[href="/themes/"]').first().click()
     await slow.waitForTimeout(300)

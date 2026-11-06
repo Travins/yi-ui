@@ -5,14 +5,13 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { createElement } from "react"
 import { chromium } from "playwright-core"
 import { ThemeCustomizerScript } from "../src/registry/blocks/theme-customizer-01/theme-customizer-script"
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 
 async function main() {
   const server = await startNextServer()
   const browser = await chromium.launch({
-    executablePath:
-      process.env.CHROME_PATH ??
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: chromePath(),
     headless: true,
   })
   const errors: string[] = []

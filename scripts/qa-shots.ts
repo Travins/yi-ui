@@ -6,18 +6,18 @@
  *   pnpm qa:shots orbit ripple              # 多个组件
  *   pnpm qa:shots isometric-mark --open     # 生成后用浏览器打开报告
  *
- * 输出：.qa/<时间戳>/index.html（含所有截图与检查结果）。Chrome 路径可用 CHROME_PATH 覆盖。
+ * 输出：.qa/<时间戳>/index.html（含所有截图与检查结果）。
+ * Chrome 由 scripts/lib/chrome.ts 自动查找，可用 CHROME_PATH 覆盖。
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { exec } from "node:child_process"
 import { join, resolve } from "node:path"
 import { chromium, type Browser, type Page } from "playwright-core"
 
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 
-const CHROME =
-  process.env.CHROME_PATH ??
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+const CHROME = chromePath()
 const THEMES = ["blue", "orange", "violet"]
 type Shot = { group: string; label: string; file: string }
 type Issue = { component: string; where: string; message: string }

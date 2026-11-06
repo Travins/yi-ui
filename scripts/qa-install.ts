@@ -17,6 +17,7 @@ import { tmpdir } from "node:os"
 import { dirname, join, resolve, relative } from "node:path"
 import { chromium } from "playwright-core"
 
+import { chromePath } from "./lib/chrome"
 import { runMonorepoInstall } from "./qa-install-monorepo"
 
 type Item = {
@@ -503,9 +504,7 @@ async function main() {
       }
       if (!ready) throw Error("next start 未就绪")
       const browser = await chromium.launch({
-        executablePath:
-          env.CHROME_PATH ??
-          "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        executablePath: chromePath(),
         env,
       })
       try {

@@ -48,8 +48,12 @@ function NavigationProgress() {
       }, SHOW_AFTER)
     }
     document.addEventListener("click", click, true)
+    // 给验收脚本留一个「点击监听已就绪」的信号：水合前点击会退回浏览器原生跳转，骨架就测不到。
+    // 只在 effect 里设，不进服务端 HTML，避免 hydration 不匹配。
+    document.documentElement.dataset.navReady = "true"
     return () => {
       document.removeEventListener("click", click, true)
+      delete document.documentElement.dataset.navReady
       clearTimeout(timer.current)
     }
   }, [])

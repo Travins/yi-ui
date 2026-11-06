@@ -10,7 +10,7 @@
  *
  * 默认连已经在跑的开发服务器 http://localhost:3002（脚本不会自己起 dev server）。
  * 输出：.qa/interaction-<时间戳>/index.html + report.json；有问题时退出码为 1。
- * Chrome 路径可用 CHROME_PATH 覆盖。
+ * Chrome 由 scripts/lib/chrome.ts 自动查找，可用 CHROME_PATH 覆盖。
  * 条目场景放在 scripts/qa-scenarios/<name>.ts；通用检查之外逐步执行，记录结果与截图。
  * 场景失败后重新加载再继续，控制台错误同样计入问题。
  */
@@ -33,11 +33,10 @@ import {
   type Page,
 } from "playwright-core"
 
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 
-const CHROME =
-  process.env.CHROME_PATH ??
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+const CHROME = chromePath()
 const DEFAULT_BASE = "http://localhost:3002"
 const DESKTOP = { width: 1280, height: 1000 }
 const MOBILE = { width: 390, height: 844 }

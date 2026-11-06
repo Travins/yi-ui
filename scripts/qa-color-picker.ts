@@ -1,12 +1,12 @@
 import { checkColorLock } from "./lib/qa-color-lock"
 import { chromium } from "playwright-core"
 import assert from "node:assert/strict"
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 async function main() {
   const server = await startNextServer()
   const browser = await chromium.launch({
-    executablePath:
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: chromePath(),
     headless: true,
   })
   try {

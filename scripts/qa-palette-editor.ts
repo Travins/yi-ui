@@ -8,12 +8,12 @@ import {
   rgbToHsv,
 } from "../src/registry/lib/color"
 import { findColorConflicts } from "../src/registry/lib/color-vision"
+import { chromePath } from "./lib/chrome"
 import { startNextServer } from "./lib/next-server"
 async function main() {
   const server = await startNextServer()
   const browser = await chromium.launch({
-    executablePath:
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: chromePath(),
     headless: true,
   })
   try {
