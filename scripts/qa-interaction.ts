@@ -90,6 +90,8 @@ const CHECKS = {
 } as const
 
 const CHECK_IDS: Record<string, string> = {
+  // 交互场景的步骤截图：不论通过与否都会拍，不能落到默认的 issue 命名
+  交互场景: "scenario",
   [CHECKS.pointerRing]: "pointer-ring",
   [CHECKS.keyboardRing]: "keyboard-ring",
   [CHECKS.pressedBorder]: "pressed-border",
