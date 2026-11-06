@@ -1,0 +1,254 @@
+---
+title: 团队与账号切换侧栏
+titleEn: Team & Account Sidebar
+description: 基于 shadcn 官方 Sidebar：团队切换（⌘1…⌘9）、⌘K 搜索、分组导航、用户卡与多账号切换，可收起成图标，移动端为抽屉。
+status: new
+---
+
+<BlockViewer name="sidebar-02" />
+
+`Sidebar02` 是在 shadcn 官方 `Sidebar` 上组合出来的协作后台侧栏。底座原样使用，没有改动官方文件，所以收起成图标、移动端抽屉、`⌘B` 收起这些行为都和官方一致。
+
+- **团队切换**：顶部显示方形团队标识、团队名和套餐，点开是单选列表，当前团队打勾，每项右侧写着 `⌘1`、`⌘2`，这些快捷键真的可用，不必先打开菜单。底部是「新建团队」。
+- **搜索入口**：外观像输入框的按钮，右侧是 `⌘K` 提示。点击或按 `⌘K`（Windows、Linux 上是 `Ctrl K`）打开搜索弹窗，可以搜全部导航项和快捷操作，回车跳转。收起成图标后只剩放大镜，悬停有提示。
+- **分组导航**：第一组带计数；后面的分组有标题，标题右侧有「更多」菜单（管理分组、隐藏分组），点选只触发回调。当前项带 `aria-current="page"`，左侧有一条细竖线，不只靠底色区分。
+- **底部**：次要入口（设置、API 文档、外链）和用户卡。外链带图标，在新窗口打开，读屏会读出「在新窗口打开」。
+- **用户卡菜单**：当前账号信息、个人资料 / 账号设置 / 设备管理、账号单选列表、添加账号、退出登录。菜单在展开时向上弹出，收起成图标时向右弹出。
+- **收起与移动端**：`collapsible="icon"`（默认）下团队切换和用户卡收成头像，导航项用 Tooltip 显示名称；窄于 768px 时变成官方的 Sheet 抽屉。
+- **预渲染友好**：`SidebarProvider` 使用 `defaultOpen`，不读 cookie，不使用请求期 API。
+
+用到的组件：
+
+| 组件 | 用途 |
+| --- | --- |
+| sidebar | 侧栏底座、抽屉、收起 |
+| dropdown-menu | 团队菜单、用户菜单、分组「更多」 |
+| command | 搜索弹窗 |
+| avatar | 用户与账号头像 |
+| kbd | `⌘K` 提示 |
+| breadcrumb、separator | 示例页顶栏 |
+
+## 安装
+
+<InstallCommand name="sidebar-02" />
+
+会安装 `app/sidebar-02/page.tsx` 页面和 `components/sidebar-02/` 下的组件，以及 `use-controllable-state` 钩子；shadcn 依赖为 `sidebar`、`dropdown-menu`、`avatar`、`command`、`kbd`、`breadcrumb`、`separator`，另带上本站的 `grid-layout`（示例页主区的线条网格），npm 依赖为 `lucide-react`（`command` 会带上 `cmdk`）。
+
+## 用法
+
+最简单的用法是放进 `SidebarProvider`，不传任何属性，数据是内置的中文示例：
+
+```tsx title="app/layout.tsx"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Sidebar02 } from "@/components/sidebar-02/sidebar-02"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider defaultOpen>
+      <Sidebar02 />
+      <SidebarInset>{children}</SidebarInset>
+    </SidebarProvider>
+  )
+}
+```
+
+### 换成自己的数据
+
+团队、账号、导航都走 props，类型见下方：
+
+```tsx
+import { BoxesIcon, HomeIcon } from "lucide-react"
+
+<Sidebar02
+  teams={[{ id: "a", name: "我的团队", plan: "专业版" }]}
+  accounts={[
+    { id: "me", name: "王小明", username: "xiaoming", email: "me@example.com" },
+  ]}
+  groups={[
+    {
+      id: "main",
+      items: [
+        { id: "home", label: "首页", href: "/", icon: HomeIcon },
+        { id: "boxes", label: "仓库", href: "/boxes", icon: BoxesIcon, badge: 3 },
+      ],
+    },
+  ]}
+  footerItems={[]}
+/>
+```
+
+### 接入路由
+
+默认用 `<a>`，点击就是整页跳转。用 Next.js 时传入 `linkComponent={Link}`，并根据当前路径算出 `activeItemId`：
+
+```tsx title="components/app-sidebar.tsx"
+"use client"
+
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+
+import { DEFAULT_NAV_GROUPS } from "@/components/sidebar-02/nav-data"
+import { Sidebar02 } from "@/components/sidebar-02/sidebar-02"
+
+export function AppSidebar() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const items = DEFAULT_NAV_GROUPS.flatMap((group) => group.items)
+  const active = items.find((item) => pathname.startsWith(item.href))
+  return (
+    <Sidebar02
+      linkComponent={Link}
+      activeItemId={active?.id}
+      // 在搜索里回车选中时没有链接点击，需要自己跳转
+      interceptNavigation
+      onNavigate={({ href }) => router.push(href)}
+    />
+  )
+}
+```
+
+`interceptNavigation` 为 `true` 时，菜单里的点击会被 `preventDefault`，所有跳转交给 `onNavigate`；为 `false` 时菜单点击由链接自己处理，搜索里选中则用 `window.location.assign`。Cmd / Ctrl 点击、中键点击始终保留浏览器原生行为。
+
+### 受控与非受控
+
+团队、账号、当前项和搜索弹窗都成对提供受控与非受控属性：
+
+```tsx
+// 受控：把当前团队放进自己的状态
+const [teamId, setTeamId] = useState("xinghe")
+<Sidebar02 activeTeamId={teamId} onTeamChange={setTeamId} />
+
+// 非受控：只指定初始值，变化时通知
+<Sidebar02 defaultActiveTeamId="qinghe" onTeamChange={(id) => track(id)} />
+```
+
+### 换成英文
+
+`labels` 覆盖任意文案，含 `{name}`、`{plan}`、`{group}` 的占位符要保留：
+
+```tsx
+<Sidebar02
+  labels={{
+    searchButton: "Search…",
+    searchTooltip: "Search",
+    newTeam: "New team",
+    signOut: "Sign out",
+    switchTeam: "Switch team, current: {name} ({plan})",
+  }}
+/>
+```
+
+## API
+
+### Sidebar02
+
+除下列属性外，其余属性（`side`、`variant`、`className` 等）透传给官方 `Sidebar`。
+
+<TypeTable
+  type={{
+    teams: { type: "Sidebar02Team[]", description: "团队列表；前 9 个团队依次绑定 ⌘1…⌘9" },
+    activeTeamId: { type: "string", description: "受控的当前团队 id" },
+    defaultActiveTeamId: { type: "string", description: "非受控时的初始团队，默认第一个" },
+    onTeamChange: { type: "(teamId: string) => void", description: "点选或按快捷键切换团队时回调" },
+    onCreateTeam: { type: "() => void", description: "点击「新建团队」" },
+    accounts: { type: "Sidebar02Account[]", description: "账号列表" },
+    activeAccountId: { type: "string", description: "受控的当前账号 id" },
+    defaultActiveAccountId: { type: "string", description: "非受控时的初始账号，默认第一个" },
+    onAccountChange: { type: "(accountId: string) => void", description: "切换账号时回调" },
+    onAccountAction: { type: '(payload: { action: "profile" | "settings" | "devices" }) => void', description: "点击个人资料、账号设置、设备管理" },
+    onAddAccount: { type: "() => void", description: "点击「添加账号」" },
+    onSignOut: { type: "() => void", description: "点击「退出登录」" },
+    groups: { type: "Sidebar02NavGroup[]", description: "主导航分组" },
+    footerItems: { type: "Sidebar02NavItem[]", description: "底部的次要入口，可含外链" },
+    activeItemId: { type: "string", description: "受控的当前导航项 id" },
+    defaultActiveItemId: { type: "string", description: "非受控时的初始项，默认第一项" },
+    onActiveItemChange: { type: "(itemId: string) => void", description: "当前项变化时回调" },
+    linkComponent: { type: "React.ElementType", description: "渲染链接的组件，用 Next.js 时传 Link", default: '"a"' },
+    onNavigate: { type: '(payload: { href: string; itemId: string; source: "menu" | "search" }) => void', description: "点击导航项或在搜索里回车选中时回调" },
+    interceptNavigation: { type: "boolean", description: "拦截浏览器跳转，交给 onNavigate 处理", default: "false" },
+    onGroupAction: { type: '(payload: { groupId: string; action: "manage" | "hide" }) => void', description: "分组「更多」菜单的回调" },
+    quickActions: { type: "Sidebar02QuickAction[]", description: "搜索弹窗里的快捷操作" },
+    onQuickAction: { type: "(payload: { actionId: string }) => void", description: "选中快捷操作" },
+    searchOpen: { type: "boolean", description: "受控的搜索弹窗开关" },
+    defaultSearchOpen: { type: "boolean", description: "非受控时的初始开关", default: "false" },
+    onSearchOpenChange: { type: "(open: boolean) => void", description: "搜索弹窗开关变化" },
+    collapsible: { type: '"icon" | "offcanvas" | "none"', description: "收起方式", default: '"icon"' },
+    labels: { type: "Partial<Sidebar02Labels>", description: "覆盖默认文案，键与默认值见 config.ts 的 DEFAULT_LABELS" },
+  }}
+/>
+
+### 数据类型
+
+```ts
+type Sidebar02Team = { id: string; name: string; plan: string; icon?: LucideIcon }
+
+type Sidebar02Account = {
+  id: string
+  name: string
+  username: string
+  email: string
+  avatar?: string
+}
+
+type Sidebar02NavItem = {
+  id: string
+  label: string
+  href: string
+  icon: LucideIcon
+  badge?: string | number
+  external?: boolean // 外链：新窗口打开，不会成为当前项
+}
+
+type Sidebar02NavGroup = {
+  id: string
+  label?: string // 不写则不显示标题
+  items: Sidebar02NavItem[]
+  actionable?: boolean // 标题右侧显示「更多」菜单
+}
+
+type Sidebar02QuickAction = { id: string; label: string; icon: LucideIcon }
+```
+
+## 键盘快捷键
+
+| 按键 | 作用 |
+| --- | --- |
+| `⌘K` / `Ctrl K` | 打开或关闭搜索弹窗 |
+| `⌘1`…`⌘9` / `Ctrl 1`…`Ctrl 9` | 切换到第 N 个团队（搜索弹窗打开时不响应） |
+| `⌘B` / `Ctrl B` | 收起或展开侧栏（官方 `SidebarProvider` 自带） |
+| `↑` `↓` `Enter` | 在搜索结果、团队菜单、用户菜单里移动与确认 |
+| `Esc` | 关闭弹窗或菜单 |
+
+快捷键在 `keydown` 里监听，只响应单独的 `⌘` 或 `Ctrl` 加按键；带 Shift、Alt 的组合不处理，按住不放不会重复触发，命中后会阻止浏览器默认行为。
+
+## 可访问性
+
+- 主导航和底部入口是两个带 `aria-label` 的 `nav`；分组是 `role="group"`，由标题 `aria-labelledby` 命名。
+- 当前项带 `aria-current="page"`，并有色块和左侧竖线两种提示。
+- 外链带 `target="_blank" rel="noreferrer"`，名称里追加了不可见的「（在新窗口打开）」。
+- 团队和账号都是菜单里的单选项（`role="menuitemradio"`），当前项 `aria-checked`；触发器的 `aria-label` 写明当前团队或账号。
+- 分组「更多」是图标按钮，名称为「项目的更多操作」这样带分组名的句子；搜索按钮声明了 `aria-keyshortcuts`。
+- 搜索弹窗有标题和说明（读屏可读，不显示），列表可用方向键选择、回车确认、`Esc` 关闭。
+- 收起成图标后导航项用 Tooltip 显示名称，团队切换和用户卡仍保留完整的 `aria-label`。
+
+## 注意事项
+
+### 文件结构
+
+```text
+app/sidebar-02/page.tsx                  # 页面入口：SidebarProvider + Sidebar02 + SidebarInset
+components/sidebar-02/
+├── sidebar-02.tsx                       # 入口：受控状态、快捷键、搜索、分组导航
+├── team-switcher.tsx                    # 团队切换
+├── account-menu.tsx                     # 用户卡与账号菜单
+├── search-command.tsx                   # 搜索弹窗
+├── navigation.tsx                       # 导航项、链接行为、触屏行高
+├── shortcuts.ts                         # 快捷键 hook 与平台显示
+├── config.ts                            # ★ DEFAULT_LABELS 文案
+├── nav-data.ts                          # 示例数据：团队、账号、导航
+└── types.ts                             # 类型
+```
+
+- **快捷键冲突**：浏览器本身占用 `Ctrl 1…9`（切换标签页），Windows、Linux 的 Chrome 不允许页面拦截，所以这些平台上团队快捷键可能失效；macOS 上的 `⌘1…⌘9` 可以正常拦截。如果与你的应用冲突，把 `teams` 控制在需要的数量，或自行改 `sidebar-02.tsx` 里 `useModifierHotkey` 的匹配条件。
+- **移动端抽屉标题**：官方 `Sidebar` 里抽屉的屏幕阅读器标题是英文的 “Sidebar”，它写在 `components/ui/sidebar.tsx` 里，区块不改官方文件；需要中文请自行修改那里的 `SheetTitle`。
+- **预渲染**：不读 cookie，不使用请求期 API，可以用于静态导出。注意官方 `SidebarProvider` 会在收起、展开时写一个 `sidebar_state` cookie，仅此而已，不影响渲染。

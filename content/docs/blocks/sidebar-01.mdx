@@ -1,0 +1,197 @@
+---
+title: 可收起侧栏
+titleEn: Collapsible Sidebar
+description: 基于官方 Sidebar 的可收起侧栏：搜索过滤、手风琴分组、带引导线的子项，收起成图标栏后悬停浮出子菜单，手机端沿用抽屉。
+status: new
+---
+
+<BlockViewer name="sidebar-01" />
+
+`Sidebar01` 建在 shadcn 官方 `Sidebar`（`collapsible="icon"`）之上，没有改动官方文件，只在区块里组合。官方的侧栏收起成图标栏后，带子项的条目就点不开了；这个区块用一个浮层补上这个空白。
+
+- **展开态**（16rem）：顶部是品牌、收起按钮和搜索框；中间按分组排列条目；底部是「帮助中心」「设置」这类次要入口。
+- **搜索**：只过滤导航项。命中父项名称时保留它的全部子项，只命中子项时只保留那几项，并自动展开；没有结果时显示空状态。
+- **手风琴**：默认同一时间只展开一个父项（`accordion`），当前页面所在的父项初始就是展开的，地址切换到别的父项时跟着展开。
+- **引导线**：子项左侧有一条 1px 竖线，每个子项有一小段横线接到竖线上，颜色用 `border-sidebar-border`。
+- **当前项**：`bg-sidebar-accent`、`font-medium`、`aria-current="page"`；条目可带计数，数字等宽对齐。
+- **收起态**：没有子项的条目悬停或聚焦时用 Tooltip 显示名称；有子项的条目在右侧浮出子菜单，顶部是父项标题，下面是同样带引导线的子项，当前子项高亮。
+- **移动端**（< 768px）：沿用官方 Sheet 抽屉，抽屉里是展开态，点链接后自动关闭。
+
+## 安装
+
+<InstallCommand name="sidebar-01" />
+
+会安装 `app/sidebar-01/page.tsx` 页面（拦截跳转、用本地状态模拟当前页，不依赖真实路由）和 `components/sidebar-01/` 下的组件，并带上官方的 `sidebar`、`dropdown-menu`、`tooltip`、`collapsible`、`button`、`breadcrumb`、`separator`，以及本站的线条网格 `grid-layout`。npm 依赖为 `lucide-react`。
+
+## 用法
+
+`Sidebar01` 必须放在官方的 `SidebarProvider` 里，主区用 `SidebarInset`。导航数据通过 `groups` 传入，不传则使用 `nav-data.ts` 里的中文示例：
+
+```tsx title="app/layout.tsx"
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Sidebar01 } from "@/components/sidebar-01/sidebar-01"
+import { FileTextIcon, HomeIcon } from "lucide-react"
+
+const groups = [
+  {
+    id: "main",
+    label: "内容",
+    items: [
+      { id: "home", label: "首页", icon: HomeIcon, href: "/" },
+      {
+        id: "posts",
+        label: "文章",
+        icon: FileTextIcon,
+        badge: 8,
+        items: [
+          { id: "all", label: "全部文章", href: "/posts" },
+          { id: "drafts", label: "草稿箱", href: "/posts/drafts", badge: 5 },
+        ],
+      },
+    ],
+  },
+]
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  return (
+    <SidebarProvider defaultOpen>
+      <Sidebar01
+        groups={groups}
+        currentHref={pathname}
+        linkComponent={Link}
+        brand={{ name: "我的后台" }}
+      />
+      <SidebarInset>{children}</SidebarInset>
+    </SidebarProvider>
+  )
+}
+```
+
+`SidebarProvider` 请使用 `defaultOpen`，不要读取 cookie，这样页面可以保持预渲染。想让侧栏记住展开状态时，在客户端自己读写 `localStorage`，再通过 `open` / `onOpenChange` 传入。
+
+### 链接行为
+
+默认渲染 `<a>`。换成 Next 的客户端路由，传 `linkComponent={Link}`；想自己处理跳转（单页应用、预览），用 `navigation`，写法和 `app-shell-01` 的 `NavLinkBehavior` 一致：
+
+```tsx
+<Sidebar01
+  currentHref={href}
+  navigation={{
+    intercept: true, // 拦截浏览器默认跳转
+    onNavigate: ({ href }) => setHref(href),
+  }}
+/>
+```
+
+Cmd / Ctrl / Shift 点击等原生行为会被保留，不会触发 `onNavigate`。
+
+### 触屏上的尺寸
+
+菜单行默认 32px，触屏设备（`pointer: coarse`）自动加高到 40px，二级行从 28px 加高到 36px。收起后的图标按钮也跟着变成 40px，但官方图标栏只有 3rem 宽，放不下，所以需要在 `SidebarProvider` 上把图标栏加宽：
+
+```tsx
+<SidebarProvider className="pointer-coarse:[--sidebar-width-icon:3.5rem]!">
+```
+
+页面里的 `Sidebar01Shell` 已经带上了这一行。
+
+### 换成英文
+
+```tsx
+<Sidebar01
+  labels={{
+    navLabel: "Main navigation",
+    footerLabel: "Secondary links",
+    collapse: "Collapse sidebar",
+    expand: "Expand sidebar",
+    search: "Search navigation",
+    searchPlaceholder: "Search…",
+    empty: "No results for “{query}”",
+  }}
+/>
+```
+
+## API
+
+### Sidebar01
+
+继承官方 `Sidebar` 的其余属性（`side`、`variant` 等），`collapsible` 固定为 `"icon"`。
+
+<TypeTable
+  type={{
+    groups: { type: "Sidebar01Group[]", description: "导航分组，每组有标题和条目；不传则使用 nav-data.ts 的示例数据" },
+    footerItems: { type: "Sidebar01Item[]", description: "固定在底部的次要入口，只放链接，不参与搜索", default: "帮助中心、设置" },
+    brand: { type: "{ name: string; logo?: ReactNode; href?: string }", description: "品牌：方形 logo 加名称；传 href 后变成链接" },
+    currentHref: { type: "string", description: "当前地址，用来高亮当前项、默认展开所在父项和生成面包屑；与 href 取最长匹配，忽略查询串、哈希和末尾斜杠" },
+    accordion: { type: "boolean", description: "同一时间只展开一个父项", default: "true" },
+    navigation: { type: "{ onNavigate?: ({ href }) => void; intercept?: boolean }", description: "链接行为：点击回调与拦截跳转" },
+    linkComponent: { type: "React.ElementType", description: "链接组件，可换成 Next 的 Link", default: '"a"' },
+    labels: { type: "Partial<Sidebar01Labels>", description: "覆盖默认文案，见下表" },
+    className: { type: "string", description: "追加到侧栏容器" },
+  }}
+/>
+
+### 数据类型
+
+```ts
+type Sidebar01SubItem = { id: string; label: string; href: string; badge?: string | number }
+
+type Sidebar01Item = {
+  id: string
+  label: string
+  icon: LucideIcon
+  href?: string // 没有 items 时是直接跳转的链接
+  badge?: string | number
+  items?: Sidebar01SubItem[] // 有 items 时是可展开的父项，本身不跳转
+}
+
+type Sidebar01Group = { id: string; label: string; items: Sidebar01Item[] }
+```
+
+### labels
+
+| 键 | 默认值 | 说明 |
+|---|---|---|
+| `navLabel` | `主导航` | 主导航 `nav` 的 `aria-label` |
+| `footerLabel` | `辅助入口` | 底部入口 `nav` 的 `aria-label` |
+| `collapse` / `expand` | `收起侧栏` / `展开侧栏` | 两个按钮的名称 |
+| `search` | `搜索导航` | 搜索框的 `aria-label` |
+| `searchPlaceholder` | `搜索导航…` | 搜索框占位文字 |
+| `empty` | `没有找到「{query}」相关的导航项` | 无结果时的提示，`{query}` 会填入关键字 |
+
+### 其他导出
+
+| 导出 | 说明 |
+|---|---|
+| `Sidebar01Shell` | 演示用外壳：`SidebarProvider` + `Sidebar01` + `SidebarInset`，含顶栏、面包屑和线条网格主区；`page.tsx` 与文档预览共用 |
+| `NavAnchor` | 导航链接，处理 `navigation` 与手机抽屉关闭，用 `render={<NavAnchor href="…" />}` 交给其他按钮使用 |
+
+### data-slot
+
+| data-slot | 位置 |
+|---|---|
+| `sidebar-01-logo` | 品牌方块 |
+| `sidebar-01-content` | 滚动区 |
+| `sidebar-01-link` | 所有导航链接 |
+| `sidebar-01-sub-badge` | 子项右侧计数 |
+
+## 可访问性
+
+- 主导航和底部入口各是一个带 `aria-label` 的 `nav`；当前项带 `aria-current="page"`，不只靠底色区分，还有加粗。
+- 父项按钮带 `aria-expanded` 和 `aria-controls`，Enter / Space 切换。
+- 收起后，没有子项的图标悬停或聚焦时显示 Tooltip；有子项的图标是菜单按钮：悬停、点击、Enter、Space、→ 打开浮层，↑ ↓ 在子项间移动，Home / End 跳到首尾，Esc 关闭并把焦点还给图标，点子项跳转并关闭。鼠标从图标移向浮层时不会闪退。
+- 搜索框是 `type="search"`，结果区是 `role="status"`，没有结果时会朗读空状态。
+- 收起后品牌方块就是展开按钮，有名称；图标栏的按钮名称来自条目文字，不会因为文字被裁掉而丢失。
+- 展开和收起的动画遵循 `prefers-reduced-motion`。
+
+## 注意事项
+
+- **官方文件保持原样**：区块不修改 `components/ui/sidebar.tsx`。官方抽屉里的标题和说明（读屏用）是英文的，需要中文时在自己项目里改。
+- **预渲染**：不使用 `cookies()`、`headers()` 和 `searchParams`。官方 `SidebarProvider` 会在切换时写一个 `sidebar_state` cookie，只写不读，不影响静态页面。
+- **收起浮层用 Menu 而不是 Popover**：Base UI 的 Menu 自带悬停打开（含安全三角）、键盘导航和焦点管理，比自己拼 Popover 少很多边界情况。
+- **文件结构**：`sidebar-01.tsx` 是入口；`nav-parts.tsx` 是条目（叶子、展开父项、收起浮层）；`context.tsx` 在它们之间共享状态；`shell.tsx` 是演示外壳；`nav-data.ts` 是示例数据；`config.ts` 放文案和行高常量；`utils.ts` 放地址匹配与过滤。
