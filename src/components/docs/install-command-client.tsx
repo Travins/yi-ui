@@ -157,11 +157,14 @@ export function InstallCommandClient({
   npm,
   shadcn,
   entries,
+  pageRoutes,
   source,
   css,
 }: {
   name: string
   bare: boolean
+  /** 安装时会创建的示例页面（app/ 下的 page.tsx） */
+  pageRoutes: string[]
   /** 本条目及依赖条目用到的 npm 包 */
   npm: string[]
   /** 本条目及依赖条目用到的 shadcn 官方组件 */
@@ -309,7 +312,21 @@ export function InstallCommandClient({
                   ))}
                 </>
               )}
-              。已存在的文件会询问是否覆盖。
+              。已存在的文件会询问是否覆盖；本地改过的组件先加{" "}
+              <code className="font-mono text-xs">--dry-run</code> 或{" "}
+              <code className="font-mono text-xs">--diff</code> 看清差异再装。
+            </div>
+          )}
+          {pageRoutes.length > 0 && (
+            <div className="text-[13px] leading-6 text-muted-foreground">
+              还会创建示例页面{" "}
+              {pageRoutes.map((route, index) => (
+                <span key={route}>
+                  {index > 0 && "、"}
+                  <code className="font-mono text-xs">{route}</code>
+                </span>
+              ))}
+              ，安装后就是一个可以访问的路由。生产项目里请按需删除，或改成自己的路径。
             </div>
           )}
         </TabsContent>
