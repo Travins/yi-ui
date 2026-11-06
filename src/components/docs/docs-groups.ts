@@ -25,6 +25,12 @@ export const sectionGroups: Partial<Record<NavSectionId, GroupDef[]>> = {
     { id: "layout", title: "布局", titleEn: "Layout" },
     { id: "utils", title: "工具函数", titleEn: "Utilities" },
   ],
+  // 区块同样按「特色程度」排：AI 对话、主题定制这类自研的完整界面在前，侧栏系列其次，常见的表单流程放最后
+  blocks: [
+    { id: "app", title: "应用界面", titleEn: "Application" },
+    { id: "navigation", title: "导航", titleEn: "Navigation" },
+    { id: "forms", title: "表单与流程", titleEn: "Forms & Flows" },
+  ],
 }
 
 export type EntryGroup<T> = {

@@ -56,3 +56,8 @@ export function entryTitleEn(section: string, name: string) {
   return source.getPage([section, name], siteConfig.defaultLanguage)?.data
     .titleEn
 }
+
+/** 区块 / 页面条目在 MDX frontmatter 里登记的分组 id（见 docs-groups.ts） */
+export function entryGroup(section: string, name: string) {
+  return source.getPage([section, name], siteConfig.defaultLanguage)?.data.group
+}
