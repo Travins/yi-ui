@@ -91,6 +91,30 @@ pnpm qa:shots <组件名> [更多组件名] [--open]
 - 键盘可达；装饰性图形 `aria-hidden`，有意义的图形给 `label`。
 - 无 JS 时内容完整可见（入场动画用 CSS，不靠 JS 把透明度从 0 拉起）。
 
+### 条目交互场景
+
+菜单、快捷键、树导航、抽屉等核心行为无法由通用检查覆盖时，在 `scripts/qa-scenarios/<name>.ts` 默认导出场景。运行 `pnpm qa:interaction <name> --build` 会在通用检查之外执行它；每步结果与截图写入 HTML 和 JSON 报告，失败计入问题。每步从重新加载的页面开始，请自行准备所需状态，不依赖上一阶段。
+
+```ts
+import type { Scenario } from "./types"
+
+export default {
+  name: "示例场景",
+  path: "/view/example/", // 省略时使用 /view/<条目名>/
+  viewports: ["desktop"], // 也可加入 mobile
+  steps: [{
+    name: "打开菜单",
+    async run({ role, visible, shot }) {
+      await role("button", { name: "打开菜单" }).click()
+      await visible(role("menu"), "菜单应打开")
+      await shot("菜单打开")
+    },
+  }],
+} satisfies Scenario
+```
+
+上下文还提供 `page`、`assert`、`name`、`box`、`settle` 与 `press`；快捷键统一写 `press("Mod+b")`，按平台发送 Control 或 Meta。步骤可通过 `viewport` 限定桌面或移动端。失败截图自动保留，`shot` 可记录中间状态。优先使用 role、可访问名称和 data-slot 定位。
+
 ### 表单与可交互组件的必查项（`pnpm qa:interaction <name…>` 自动跑）
 
 这些都是真实踩过、而且会在多个组件里重复出现的问题，交付前必须逐条过：

@@ -11,9 +11,18 @@
  * 默认连已经在跑的开发服务器 http://localhost:3002（脚本不会自己起 dev server）。
  * 输出：.qa/interaction-<时间戳>/index.html + report.json；有问题时退出码为 1。
  * Chrome 路径可用 CHROME_PATH 覆盖。
+ * 条目场景放在 scripts/qa-scenarios/<name>.ts；通用检查之外逐步执行，记录结果与截图。
+ * 场景失败后重新加载再继续，控制台错误同样计入问题。
  */
 import { exec } from "node:child_process"
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
+import { pathToFileURL } from "node:url"
+import type {
+  Scenario,
+  ScenarioContext,
+  ScenarioResult,
+} from "./qa-scenarios/types"
+import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
 import {
   chromium,
@@ -1572,6 +1581,115 @@ async function runMobile(
 /* 入口                                                                 */
 /* ------------------------------------------------------------------ */
 
+/** 每步独立导航，失败不会污染后续步骤；监听沿用通用运行时错误收集。 */
+async function runScenario(
+  ctx: Ctx,
+  browser: Browser,
+  base: string,
+  results: ScenarioResult[],
+) {
+  const file = resolve("scripts/qa-scenarios", `${ctx.component}.ts`)
+  if (!existsSync(file)) return
+  const scenario = (
+    (await import(pathToFileURL(file).href)) as { default: Scenario }
+  ).default
+  for (const viewport of scenario.viewports) {
+    const url = new URL(scenario.path ?? `/view/${ctx.component}/`, base).href
+    const page = await openPage(ctx, browser, url, {
+      mobile: viewport === "mobile",
+    })
+    if (!page) continue
+    try {
+      for (const step of scenario.steps) {
+        if (step.viewport && step.viewport !== viewport) continue
+        const result: ScenarioResult = {
+          component: ctx.component,
+          scenario: scenario.name,
+          viewport,
+          step: step.name,
+          passed: false,
+          screenshots: [],
+        }
+        const shot = async (name: string) => {
+          const file = await screenshot(
+            ctx,
+            page,
+            "交互场景",
+            null,
+            `${viewport}|${step.name}|${name}`,
+          )
+          result.screenshots.push(file)
+          return file
+        }
+        const assert: ScenarioContext["assert"] = (condition, message) => {
+          if (!condition) throw new Error(message)
+        }
+        const context: ScenarioContext = {
+          page,
+          role: page.getByRole.bind(page),
+          name: (name) => page.getByText(name, { exact: true }),
+          assert,
+          shot,
+          visible: async (target, message) => {
+            try {
+              await target.waitFor({ state: "visible" })
+            } catch {
+              throw new Error(message)
+            }
+          },
+          box: async (target) => {
+            const box = await target.boundingBox()
+            if (!box) throw new Error("元素应有可见的边界框")
+            return box
+          },
+          settle: async () => {
+            await page.waitForTimeout(350)
+            await page.evaluate(async () => {
+              await Promise.all(
+                document
+                  .getAnimations()
+                  .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+                  .map((a) => a.finished.catch(() => {})),
+              )
+            })
+          },
+          press: (keys) =>
+            page.keyboard.press(
+              keys.replaceAll(
+                "Mod",
+                process.platform === "darwin" ? "Meta" : "Control",
+              ),
+            ),
+        }
+        try {
+          await page.goto(url, { waitUntil: "networkidle" })
+          await context.settle()
+          await step.run(context)
+          result.passed = true
+        } catch (error) {
+          result.message = `场景「${step.name}」失败：${error instanceof Error ? error.message : String(error)}`
+          add(
+            ctx,
+            "交互场景",
+            `${viewport} · ${step.name}`,
+            result.message,
+            "error",
+            await shot("失败"),
+          )
+        } finally {
+          await shot("结果")
+          results.push(result)
+          console.log(
+            `    ${result.passed ? "✓" : "✗"} ${viewport} · ${step.name}`,
+          )
+        }
+      }
+    } finally {
+      await page.context().close()
+    }
+  }
+}
+
 /** registry.json 里 registry:block / registry:page 的条目有 /view/<name>/ 独立预览页 */
 function viewItemNames(): Set<string> {
   try {
@@ -1666,6 +1784,7 @@ async function main() {
   })
   const views = viewItemNames()
   const issues: Issue[] = []
+  const scenarios: ScenarioResult[] = []
   const counter = { value: 0 }
   const started = Date.now()
 
@@ -1698,6 +1817,7 @@ async function main() {
     try {
       await runDesktop(ctx, browser, url, isView)
       await runMobile(ctx, browser, url, isView)
+      await runScenario(ctx, browser, base, scenarios)
     } catch (error) {
       add(
         ctx,
@@ -1722,12 +1842,14 @@ async function main() {
     names,
     summary: { error: errors.length, warn: warnings.length },
     issues,
+    scenarios,
   }
   writeFileSync(join(dir, "report.json"), JSON.stringify(report, null, 2))
   const html = renderReport({
     names,
     base,
     stamp,
+    scenarios,
     issues,
     seconds: Math.round((Date.now() - started) / 1000),
   })
@@ -1761,12 +1883,14 @@ function renderReport({
   stamp,
   issues,
   seconds,
+  scenarios,
 }: {
   names: string[]
   base: string
   stamp: string
   issues: Issue[]
   seconds: number
+  scenarios: ScenarioResult[]
 }) {
   const errors = issues.filter((issue) => issue.level === "error").length
   const warnings = issues.length - errors
@@ -1827,6 +1951,16 @@ ${issues
         .join("")
     : `<p class="ok">全部通过。</p>`
 }
+<h2>条目交互场景</h2>
+${scenarios
+  .map(
+    (r) =>
+      `<article class="issue"><b>${escapeHtml(r.component)} · ${escapeHtml(r.viewport)} · ${escapeHtml(r.step)}：${r.passed ? "通过" : "失败"}</b><p>${escapeHtml(r.message ?? "")}</p>${r.screenshots
+        .filter(Boolean)
+        .map((file) => `<figure><img src="${file}" alt="场景截图"></figure>`)
+        .join("")}</article>`,
+  )
+  .join("")}
 <p class="meta">检查项：${escapeHtml(Object.values(CHECKS).join("、"))}</p>`
 }
 
