@@ -1,0 +1,89 @@
+---
+title: 右侧上下文面板
+titleEn: Right Context Panel
+description: 右侧上下文面板，组合项目进度、状态分布与分给我的任务。
+status: new
+---
+
+<BlockViewer name="sidebar-04" />
+
+把侧栏用作项目数据面板：切换项目，查看堆叠进度趋势、状态分布，以及分给我的任务。顶部横带与主区顶栏同为 56px，底部保留帮助和套餐入口。
+
+## 安装
+
+<InstallCommand name="sidebar-04" />
+
+安装 `app/sidebar-04/page.tsx` 与 `components/sidebar-04/`，以及官方侧栏、菜单、头像、徽标、按钮、面包屑和本站的网格布局、受控状态钩子。
+
+## 用法
+
+右侧面板放在 `SidebarInset` 后面，使用 `defaultOpen`，不读取 cookie。
+
+```tsx
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Sidebar04 } from "@/components/sidebar-04/sidebar-04"
+
+export default function Page() {
+  return (
+    <SidebarProvider defaultOpen>
+      <SidebarInset>项目内容</SidebarInset>
+      <Sidebar04 />
+    </SidebarProvider>
+  )
+}
+```
+
+### 组合式 API
+
+传入 `children` 会替换默认「进度 → 状态 → 任务」内容，保留项目切换横带和底部入口。分区也能独立使用；在侧栏之外使用时，容器应设置 `bg-sidebar text-sidebar-foreground`。
+
+```tsx
+import { Sidebar04, ContextSection, ProgressSection, StatusSection, TaskSection } from "@/components/sidebar-04/sidebar-04"
+import { SAMPLE_PROJECTS } from "@/components/sidebar-04/sample-data"
+
+const project = SAMPLE_PROJECTS[0]
+
+<Sidebar04 projects={[project]}>
+  <StatusSection data={project.statuses} />
+  <ProgressSection data={project.progress} range={project.range} />
+  <TaskSection tasks={project.tasks} onTaskSelect={(task) => console.log(task.id)} />
+  <ContextSection title="交付说明" subtitle="本轮计划">先完成回归验证，再安排发布。</ContextSection>
+</Sidebar04>
+```
+
+## 示例
+
+预览中可切换研发平台和开发者文档两个项目。任务点击结果显示在主区，帮助按钮显示快捷键说明。接入业务时用 `projects` 替换数据，用 `onTaskSelect` 打开任务详情。
+
+## API
+
+| 组件            | 属性                          | 说明                                                   |
+| --------------- | ----------------------------- | ------------------------------------------------------ |
+| Sidebar04       | projects                      | `ContextProject[]`，默认中文示例数据                   |
+| Sidebar04       | projectId / defaultProjectId  | 当前项目的受控值／初始值，默认第一项                   |
+| Sidebar04       | onProjectChange               | `({ projectId: string }) => void`                      |
+| Sidebar04       | onTaskSelect                  | `(task: ContextTask) => void`                          |
+| Sidebar04       | onHelp                        | 点击帮助的回调                                         |
+| Sidebar04       | labels                        | `Partial<Sidebar04Labels>`，覆盖文案（包括免费版标签） |
+| Sidebar04       | children                      | 替换默认分区内容                                       |
+| ContextSection  | title / subtitle / children   | 标题、副标题、内容；分区底部虚线                       |
+| ProgressSection | data / range / labels         | `ContextPoint[]`、日期范围、文案                       |
+| StatusSection   | data / labels                 | `ContextStatus[]`、文案                                |
+| TaskSection     | tasks / onTaskSelect / labels | 任务数组、选择回调、文案                               |
+
+分区透传原生 `section` 属性，支持 `className`；Sidebar04 透传官方 Sidebar 属性，固定 `side="right"` 和 `collapsible="offcanvas"`。导出类型包括 `Sidebar04Props`、`Sidebar04Labels`、`ContextProject`、`ContextPoint`、`ContextStatus`、`ContextTask`。
+
+文件结构：`sidebar-04.tsx` 为入口；`sections.tsx` 为可组合分区；`config.ts` 为文案；`types.ts` 为数据类型；`sample-data.ts` 为中文数据；`page.tsx` 为可安装演示页。
+
+`data-slot`：`sidebar-04`、`sidebar-04-header`、`context-section`、`context-progress-chart`；演示提供 `sidebar-04-toggle` 和 `sidebar-04-main-header`。
+
+## 可访问性
+
+- 官方 Provider 保留 `⌘B`（Windows / Linux 为 `Ctrl B`）；移动端小于 768px 时使用右侧 Sheet，Esc 关闭并管理焦点。
+- 项目菜单使用单选语义；图表切换按钮带 `aria-pressed`，关闭按钮有中文名称。
+- 图表提供图例、逐点悬停文字和可展开的数据表，状态行同时写明名称、数量、百分比，不只依赖颜色。
+- 任务标题与描述是键盘可达的按钮，示例用 `role="status"` 通知选择结果。
+
+## 注意事项
+
+`mini-chart` 只支持单系列，此处用不依赖尺寸测量的 SVG 实现堆叠面积／柱图，首屏可预渲染。完成量选项仅显示已完成系列；数据须按时间排序且非负，颜色序号对应 `chart-1` 至 `chart-5`。空数据不会产生无效坐标，状态总数为零时显示 0%。

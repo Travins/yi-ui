@@ -629,6 +629,73 @@
       }
     },
     {
+      "name": "sidebar-04",
+      "type": "registry:block",
+      "title": "右侧上下文面板",
+      "description": "右侧上下文面板，组合项目进度、状态分布与分给我的任务。",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "sidebar",
+        "button",
+        "badge",
+        "avatar",
+        "dropdown-menu",
+        "breadcrumb",
+        "https://yiui.dev/r/grid-layout.json",
+        "select"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/sidebar-04/sidebar-04.tsx",
+          "type": "registry:component",
+          "target": "@components/sidebar-04/sidebar-04.tsx"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-04/config.ts",
+          "type": "registry:component",
+          "target": "@components/sidebar-04/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-04/types.ts",
+          "type": "registry:component",
+          "target": "@components/sidebar-04/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-04/sample-data.ts",
+          "type": "registry:component",
+          "target": "@components/sidebar-04/sample-data.ts"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-04/sections.tsx",
+          "type": "registry:component",
+          "target": "@components/sidebar-04/sections.tsx"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-04/page.tsx",
+          "type": "registry:page",
+          "target": "app/sidebar-04/page.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      }
+    },
+    {
       "name": "agent-chat-01",
       "type": "registry:block",
       "title": "AI 助手面板",

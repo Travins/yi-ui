@@ -217,5 +217,6 @@ export const registryViews: Record<string, LazyExoticComponent<ComponentType>> =
   "settings-01": lazy(() => import("./blocks/settings-01/demo")),
   "sidebar-01": lazy(() => import("./blocks/sidebar-01/demo")),
   "sidebar-02": lazy(() => import("./blocks/sidebar-02/demo")),
+  "sidebar-04": lazy(() => import("./blocks/sidebar-04/demo")),
   "theme-customizer-01": lazy(() => import("./blocks/theme-customizer-01/demo")),
 }
