@@ -582,9 +582,9 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-      "name": "auth-05",
-      "title": "Passkey 与多因素验证",
-      "description": "登录第二步：通行密钥、验证器 App、短信验证码和恢复码四种验证方式，可互相切换，并支持记住设备。",
+      "name": "auth-05-panel",
+      "title": "Passkey 与多因素验证（面板）",
+      "description": "auth-05 的验证内容部分（Auth05Panel）：没有页面外壳和示例页，可嵌进已有的登录布局。",
       "dependencies": [
         "motion",
         "lucide-react"
@@ -594,24 +594,18 @@
         "button",
         "input",
         "input-otp",
-        "https://yiui.dev/r/grid-layout.json",
         "https://yiui.dev/r/toggle-switch.json"
       ],
       "files": [
         {
-          "path": "src/registry/blocks/auth-05/auth-05.tsx",
+          "path": "src/registry/blocks/auth-05/auth-05-panel.tsx",
           "type": "registry:component",
-          "target": "@components/auth-05/auth-05.tsx"
+          "target": "@components/auth-05/auth-05-panel.tsx"
         },
         {
           "path": "src/registry/hooks/use-controllable-state.ts",
           "type": "registry:hook",
           "target": "hooks/use-controllable-state.ts"
-        },
-        {
-          "path": "src/registry/blocks/auth-05/page.tsx",
-          "type": "registry:page",
-          "target": "app/login-verify/page.tsx"
         },
         {
           "path": "src/registry/blocks/auth-05/types.ts",
@@ -644,11 +638,6 @@
           "target": "@components/auth-05/panels.tsx"
         },
         {
-          "path": "src/registry/blocks/auth-05/auth-05-panel.tsx",
-          "type": "registry:component",
-          "target": "@components/auth-05/auth-05-panel.tsx"
-        },
-        {
           "path": "src/registry/blocks/auth-05/parts.tsx",
           "type": "registry:component",
           "target": "@components/auth-05/parts.tsx"
@@ -657,6 +646,40 @@
           "path": "src/registry/blocks/auth-05/use-auth-05.ts",
           "type": "registry:component",
           "target": "@components/auth-05/use-auth-05.ts"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "type": "registry:component"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "auth-05",
+      "title": "Passkey 与多因素验证",
+      "description": "登录第二步：通行密钥、验证器 App、短信验证码和恢复码四种验证方式，可互相切换，并支持记住设备。",
+      "registryDependencies": [
+        "https://yiui.dev/r/auth-05-panel.json",
+        "https://yiui.dev/r/grid-layout.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-05/auth-05.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-05/auth-05.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-05/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-verify/page.tsx"
         }
       ],
       "cssVars": {

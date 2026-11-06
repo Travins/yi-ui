@@ -80,10 +80,21 @@ status: new
 
 | 字段 | 说明 |
 |---|---|
-| `format` | 掩码字符串：`X`（大写）代表一个字母或数字，其他字符原样插入，只在输入写到那一位时才插入，所以退格不会卡在分隔符上。默认 `"XXXX-XXXX"`。传 `false` 不做任何格式化：原样接受输入，只去掉首尾空白再提交 |
-| `uppercase` | 是否自动转大写，默认 `true`。`format` 为 `false` 时默认不转（要“原样”），显式传 `true` 才转 |
-| `maxLength` | 最大长度，只在 `format` 为 `false` 时生效；有掩码时长度由掩码决定 |
+| `format` | 掩码字符串：`X`（大写）代表一个字母或数字，其他字符原样插入，只在输入写到那一位时才插入，所以退格不会卡在分隔符上。默认 `"XXXX-XXXX"`。传 `false` 不做格式化：输入框里是什么就是什么，提交时只去掉首尾空白 |
+| `uppercase` | **输入时**就把输入框里的值转成大写（不是只靠 CSS 的 `text-transform`），提交的值也是大写。有掩码时默认 `true`，`format` 为 `false` 时默认 `false`（原样输入），显式传 `true` 才转 |
+| `maxLength` | 最大字符数，只在 `format` 为 `false` 时生效；有掩码时长度由掩码决定。按输入框里的**原始字符**计数，连字符和空格都算；提交前会去掉首尾空白，长度判断用去空白之后的值 |
 | `placeholder` | 占位文字，默认由 `format` 生成（`false` 时为空） |
+
+`onVerify` 收到的 `code`：
+
+- 有掩码：输入框里的值，如 `ABCD-1234`（含掩码里的分隔符）。
+- `format: false`：去掉首尾空白、按 `uppercase` 处理过的原值。**不会**自动去掉连字符：用户输入 `ABCD-1234` 就收到 `ABCD-1234`，输入 `ABCD1234` 就收到 `ABCD1234`，后端需要自己兼容带或不带连字符两种写法。
+
+### 超长不会被悄悄截断
+
+`format: false` 时，组件不给输入框设原生 `maxLength`，也不在代码里截断。粘贴超过 `maxLength` 的内容会原样保留，输入框下方出现错误（`labels.recoveryTooLong`，默认「备用码最多 9 个字符，当前 12 个，请检查是否多粘贴了内容」，支持 `{max}`、`{length}`），输入框标记 `aria-invalid` 并通过 `aria-describedby` 关联这条 `role="alert"` 的提示，读屏会播报。超长期间提交按钮禁用，回车也提交不了，焦点留在输入框；删回长度以内，错误立即消失。用禁用按钮而不是“点了再报错”，是因为错误文字已经说明了原因，和“未填完不能提交”的现有表现一致。
+
+有掩码时多出的字符本来就无处可放，所以按掩码只取需要的位数，多余的部分不进入；这时会在输入框下方给一条不带警告语气的提示（`labels.recoveryTrimmed`，默认「已按格式保留前 8 位」，`{count}` 是掩码能放的位数），放在 `role="status"` 的播报区里，读屏会播报，下一次输入时重新计算并清除。
 
 ```tsx
 // 掩码：5 位一组，输入 abcde12345 显示为 ABCDE-12345
@@ -95,6 +106,31 @@ status: new
   recoveryCode={{ format: false, maxLength: 32, placeholder: "粘贴备用码" }}
 />
 ```
+
+### 后端生成的 8 位码
+
+备用码由后端生成，8 位 A–Z/0–9，形如 `XXXX-XXXX`，用户也可能输入不带连字符的写法。不想让组件替你补或去连字符，就关掉格式化，只做大写和长度限制：
+
+```tsx
+<Auth05Panel
+  account={{ username }}
+  methods={["totp", "recovery"]}
+  showRememberDevice={false}
+  recoveryCode={{
+    format: false,
+    uppercase: true, // 输入框里的值就是大写
+    maxLength: 9, // "XXXX-XXXX" 含连字符共 9 个字符
+    placeholder: "XXXX-XXXX",
+  }}
+  onVerify={async ({ method, code }) => {
+    // code 是 "ABCD-1234" 或 "ABCD1234"，组件不会替你去掉连字符
+    const normalized = method === "recovery" ? code.replaceAll("-", "") : code
+    await verifyCode(method, normalized)
+  }}
+/>
+```
+
+输入 `abcd-1234` 时输入框里立刻是 `ABCD-1234`，输入 `abcd1234` 是 `ABCD1234`，粘贴 12 个字符会看到超长错误而不是被截成 9 个。
 
 有掩码时，输入未填满不能提交，错误文案是 `labels.recoveryError`（其中的 `{format}` 会替换成掩码）；`format` 为 `false` 时只要求非空，空提交显示 `labels.recoveryEmpty`。「每个恢复码只能用一次」的提示不变。
 
@@ -136,6 +172,32 @@ export function VerifyStep({ username }: { username: string }) {
 ```
 
 两者共用同一套状态与零件，只是排版不同，所以回调、受控属性、`labels` 的用法完全一致。
+
+## 只用面板
+
+只用 `Auth05Panel`、已经有自己的登录页外壳时，装 `auth-05-panel` 就够了，不必装整页版：
+
+<InstallCommand name="auth-05-panel" />
+
+最小依赖清单：
+
+| 类别 | 内容 |
+|---|---|
+| 文件（共 11 个） | `auth-05-panel.tsx`、`parts.tsx`、`panels.tsx`、`use-auth-05.ts`、`form-parts.tsx`、`use-auth-form.ts`、`mask.ts`、`config.ts`、`types.ts`（都在 `components/auth-05/` 下），`hooks/use-controllable-state.ts`，以及方条开关用到的 `lib/flow-tone.ts` |
+| shadcn 组件 | `avatar`、`button`、`input`、`input-otp` |
+| 本站组件 | [方条开关](/components/toggle-switch/)（`toggle-switch`，「记住此设备」用它） |
+| npm 包 | `motion`、`lucide-react`、`@base-ui/react`、`class-variance-authority`、`input-otp`（后三个随 shadcn 组件和方条开关带入） |
+| 样式变量 | `--edge`（线条颜色，亮暗各一份）和 `border-edge` 对应的 `color-edge` 映射，安装时自动写进 `globals.css` |
+
+和完整安装的区别：
+
+- **不会创建示例页**：整页版会在 `app/login-verify/page.tsx` 放一个示例页，`auth-05-panel` 不创建任何 `app/` 下的文件。
+- **不含整页外壳**：没有 `auth-05.tsx`，也不依赖线条网格（`grid-layout`）。
+- 完整版 `auth-05` 本身就依赖 `auth-05-panel`，所以先装了面板再装整页版，只会补上整页外壳、示例页和线条网格。
+
+关于「记住此设备」：使用方即使传 `showRememberDevice={false}` 把开关关掉，`toggle-switch` 和 `flow-tone` 仍会被装进来，因为 `parts.tsx` 里引用了它。没有换成官方 `switch`，因为方条开关整行可点、手柄和高度与站内其他方条控件同一套，换掉会让整页版和面板的外观与其他控件不一致；这部分只多出 2 个文件，没有额外的 npm 包。
+
+线条颜色 `--edge` 由 `auth-05-panel` 自己声明，不靠 `grid-layout` 带入，所以只装面板也有正确的边框颜色，并跟随亮暗模式。
 
 ## 回调约定
 
@@ -192,6 +254,7 @@ export function VerifyStep({ username }: { username: string }) {
 - 短信验证码：发送有 1 秒延迟，验证码 `123456`。
 - 恢复码：`ABCD-1234` 成功，其他提示「恢复码无效或已使用」。
 - 外壳顶部的「演示布局」可切到「嵌入」：左边是品牌面板占位，右边是 `Auth05Panel`，只开身份验证器和恢复码，账号只有用户名，没有记住设备，备用码不格式化（`abc_12345` 成功）。
+- 「嵌入·定长码」用后端生成 8 位码的配置：`recoveryCode={{ format: false, uppercase: true, maxLength: 9, placeholder: "XXXX-XXXX" }}`。演示后端自己去掉连字符再比较，所以 `ABCD-1234` 和 `ABCD1234` 都成功；粘贴超过 9 个字符会出现超长错误。
 
 ## API
 
@@ -202,14 +265,14 @@ export function VerifyStep({ username }: { username: string }) {
 - 受控与非受控：`method` / `defaultMethod` / `onMethodChange` 控制当前验证方式；`rememberDevice` / `defaultRememberDevice` / `onRememberDeviceChange` 控制「记住此设备 30 天」，默认关闭。
 - `passkeySupported` 用来覆盖浏览器能力检测，演示和测试时很有用；不传时在挂载后检测 `window.PublicKeyCredential`。
 - `account` 的 `email`、`phone`、`name`、`username` 至少一个，显示规则见上面的「账号摘要」；`phone` 是 11 位手机号，组件显示为 `138 **** 8000`；`avatar` 不传时头像显示摘要名字的首字。
-- `showRememberDevice` 默认 `true`；`recoveryCode` 见「备用码格式」。
+- `showRememberDevice` 默认 `true`；`recoveryCode` 见「备用码格式」，超长与丢弃提示的文案是 `labels.recoveryTooLong`、`labels.recoveryTrimmed`。
 - `headingLevel` 是主标题「验证你的身份」的级别：`Auth05` 默认 `1`，`Auth05Panel` 默认 `2`。嵌进已有页面时，宿主页通常已经有 h1，按页面层级设成 2 或 3。
 - `codeLength` 默认 6 位，`resendSeconds` 默认 60 秒。
 - `helpHref` 提供「都无法使用？联系管理员」的链接，不传就不显示这个入口。
 - `labels` 覆盖 `Auth05Labels`，每种方式的名称、说明、标题分别是 `<method>Name`、`<method>Hint`、`<method>Title`。`brand` 接收 `name` 和可选 `logo`。
 - 导出组件：`Auth05`（整页）、`Auth05Panel`（只有验证内容）。导出类型：`Auth05Props`、`Auth05Method`、`Auth05Account`、`Auth05RecoveryCode`、`Auth05Labels`。
 
-文件结构：`auth-05.tsx` 为整页入口，`auth-05-panel.tsx` 是嵌入用的 `Auth05Panel`，`use-auth-05.ts` 放两者共用的状态，`parts.tsx` 是共用的页面零件（标题、账号摘要、其他方式列表等），`panels.tsx` 是三种验证面板，`form-parts.tsx` 封装验证码格子，`mask.ts` 负责脱敏、账号摘要与恢复码格式，`config.ts` 管理文案，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为安装到项目里的页面入口。
+文件结构：`auth-05.tsx` 为整页入口，`auth-05-panel.tsx` 是嵌入用的 `Auth05Panel`，`use-auth-05.ts` 放两者共用的状态，`parts.tsx` 是共用的页面零件（标题、账号摘要、其他方式列表等），`panels.tsx` 是三种验证面板，`form-parts.tsx` 封装验证码格子，`mask.ts` 负责脱敏、账号摘要与恢复码格式，`config.ts` 管理文案，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为安装到项目里的页面入口。`auth-05` 条目只含 `auth-05.tsx` 和 `page.tsx`，其余文件属于 `auth-05-panel` 条目（`auth-05` 依赖它）。
 
 根节点 `data-slot="auth-05"` 暴露 `data-method` 和 `data-state`（`Auth05Panel` 的根节点是 `auth-05-content`，属性相同）；账号摘要为 `auth-05-account`，主面板为 `auth-05-panel`，其他方式列表为 `auth-05-alternatives`。
 
@@ -219,7 +282,7 @@ export function VerifyStep({ username }: { username: string }) {
 - 「其他验证方式」是一个导航区域里的按钮列表，用 Tab 和回车或空格操作；有请求进行中时列表禁用。
 - 通行密钥的状态（等待中、已取消、不支持）放在常驻的 `aria-live="polite"` 区域里；短信已发送、验证成功同样会播报；错误用 `role="alert"`。
 - 验证码输入支持整串粘贴、退格和方向键，提供数字键盘和短信自动填充，读屏名称是「验证码，共 6 位」；错误通过 `aria-describedby` 关联，所有格子带错误态。
-- 恢复码输入框有可见标签，关闭自动填充，并提示每个码只能用一次；不格式化时不强制大写输入。
+- 恢复码输入框有可见标签，关闭自动填充，并提示每个码只能用一次；超长错误用 `role="alert"` 并通过 `aria-describedby` 关联，有掩码时丢掉多余字符的提示放在 `role="status"` 里。
 - 倒计时不逐秒播报；过渡动画遵守减少动态效果设置。
 
 ## 注意事项

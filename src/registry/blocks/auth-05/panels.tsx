@@ -12,6 +12,9 @@ import {
   formatRecoveryCode,
   isRecoveryComplete,
   maskPhone,
+  recoveryCapacity,
+  recoveryDropped,
+  recoveryOverflow,
   resolveRecoveryRule,
 } from "./mask"
 import type { Auth05Props } from "./types"
@@ -293,7 +296,11 @@ function Auth05CodePanel({
   )
 }
 
-/** 恢复码：默认输入时自动转大写并插入短横线（XXXX-XXXX），格式可通过 recoveryCode 配置，也可以完全不格式化。 */
+/**
+ * 恢复码：默认输入时自动转大写并插入短横线（XXXX-XXXX），格式可通过 recoveryCode 配置，也可以完全不格式化。
+ * 内容不会被悄悄改掉：不格式化时超过 maxLength 保留原样并报错、禁止提交；
+ * 有掩码时多出的字符会被丢掉，并给出一条会被读屏播报的提示。
+ */
 function Auth05RecoveryPanel({
   labels,
   onBusyChange,
@@ -310,16 +317,28 @@ function Auth05RecoveryPanel({
   const id = React.useId()
   const [code, setCode] = React.useState("")
   const complete = isRecoveryComplete(code, rule)
+  // 超长是从当前值直接算出来的：删回范围内错误自然消失，不用另外清除
+  const overflow = recoveryOverflow(code, rule)
+  const [notice, setNotice] = React.useState("")
   const placeholder =
     recoveryCode?.placeholder ??
     formatLabel(labels.recoveryPlaceholder, { format: rule.format || "" })
   const [localError, setLocalError] = React.useState("")
   const verifying = useAsyncAction(labels.failed)
   useBusy(verifying.pending, onBusyChange)
-  const error = localError || verifying.error
+  const overflowError = overflow
+    ? formatLabel(labels.recoveryTooLong, overflow)
+    : ""
+  const error = overflowError || localError || verifying.error
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
   async function submit() {
     if (verifying.pending) return
+    if (overflow) {
+      // 回车提交时按钮虽然禁用也可能走到这里：拦下并把焦点还给输入框
+      inputRef.current?.focus()
+      return
+    }
     if (!complete) {
       setLocalError(
         masked
@@ -357,10 +376,21 @@ function Auth05RecoveryPanel({
           {labels.recoveryLabel}
         </label>
         <Input
+          ref={inputRef}
           id={`${id}-input`}
           value={code}
           onChange={(event) => {
-            setCode(formatRecoveryCode(event.target.value, rule))
+            const raw = event.target.value
+            setCode(formatRecoveryCode(raw, rule))
+            // 有掩码时多出来的字符不会进入输入框，要让用户知道；下一次输入重新计算，没有多出就清除
+            const dropped = recoveryDropped(raw, rule)
+            setNotice(
+              dropped > 0 && rule.format !== false
+                ? formatLabel(labels.recoveryTrimmed, {
+                    count: recoveryCapacity(rule.format),
+                  })
+                : "",
+            )
             setLocalError("")
             verifying.setError("")
           }}
@@ -369,18 +399,25 @@ function Auth05RecoveryPanel({
           autoCapitalize={rule.uppercase ? "characters" : "off"}
           autoCorrect="off"
           spellCheck={false}
-          maxLength={masked ? (rule.format as string).length : rule.maxLength}
           disabled={verifying.pending}
           aria-invalid={error ? true : undefined}
-          aria-describedby={`${id}-note${error ? ` ${id}-error` : ""}`}
+          aria-describedby={`${id}-note${notice ? ` ${id}-notice` : ""}${error ? ` ${id}-error` : ""}`}
           className={cn(
             "h-9 font-mono focus-visible:border-foreground/25 focus-visible:bg-background focus-visible:ring-0 aria-invalid:focus-visible:ring-3 pointer-coarse:h-11",
             masked && "tracking-widest",
-            rule.uppercase && "uppercase",
           )}
         />
         <p id={`${id}-note`} className="text-xs text-muted-foreground">
           {labels.recoveryNote}
+        </p>
+        {/* 常驻的播报区：内容变化时读屏才会播报；没有内容时不占位 */}
+        <p
+          id={`${id}-notice`}
+          role="status"
+          data-slot="auth-05-recovery-notice"
+          className="text-xs text-muted-foreground empty:hidden"
+        >
+          {notice}
         </p>
         {error && (
           <p

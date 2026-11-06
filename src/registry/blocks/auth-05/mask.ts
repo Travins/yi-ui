@@ -76,13 +76,11 @@ function resolveRecoveryRule(options?: Auth05RecoveryCode): RecoveryRule {
 
 /**
  * 恢复码整理。有掩码：去掉非字母数字，按掩码逐位填入（`X` 取一个字符，其他字符原样插入，
- * 输入没写到那一位时不提前插入分隔符，所以退格不会卡在分隔符上）。无掩码：原样返回，只受 maxLength 限制。
+ * 输入没写到那一位时不提前插入分隔符，所以退格不会卡在分隔符上），多出的字符不进入。
+ * 无掩码：只按 uppercase 转大写，其余原样返回；超过 maxLength 也不截断，由 recoveryOverflow 报告。
  */
 function formatRecoveryCode(raw: string, rule: RecoveryRule) {
-  if (rule.format === false) {
-    const text = rule.uppercase ? raw.toUpperCase() : raw
-    return rule.maxLength ? text.slice(0, rule.maxLength) : text
-  }
+  if (rule.format === false) return rule.uppercase ? raw.toUpperCase() : raw
   let clean = raw.replace(/[^a-zA-Z0-9]/g, "")
   if (rule.uppercase) clean = clean.toUpperCase()
   let output = ""
@@ -95,10 +93,32 @@ function formatRecoveryCode(raw: string, rule: RecoveryRule) {
   return output
 }
 
-/** 恢复码是否可以提交：有掩码要填满，无掩码只要求非空。 */
+/** 掩码里能填的字符数（`X` 的个数）。 */
+function recoveryCapacity(format: string) {
+  return Array.from(format).filter((char) => char === "X").length
+}
+
+/** 有掩码时，输入里被丢掉的字符数（字母数字比掩码容量多出来的部分）；无掩码或没有多出时为 0。 */
+function recoveryDropped(raw: string, rule: RecoveryRule) {
+  if (rule.format === false) return 0
+  const length = raw.replace(/[^a-zA-Z0-9]/g, "").length
+  return Math.max(0, length - recoveryCapacity(rule.format))
+}
+
+/**
+ * 无掩码且设了 maxLength 时，输入是否超长：长度按去掉首尾空白后的原始字符数计（连字符、空格都算）。
+ * 超长返回 `{ max, length }`，否则返回 null。
+ */
+function recoveryOverflow(code: string, rule: RecoveryRule) {
+  if (rule.format !== false || !rule.maxLength) return null
+  const length = code.trim().length
+  return length > rule.maxLength ? { max: rule.maxLength, length } : null
+}
+
+/** 恢复码是否可以提交：有掩码要填满；无掩码要求非空，且设了 maxLength 时不能超长。 */
 function isRecoveryComplete(code: string, rule: RecoveryRule) {
   return rule.format === false
-    ? code.trim().length > 0
+    ? code.trim().length > 0 && !recoveryOverflow(code, rule)
     : code.length === rule.format.length
 }
 
@@ -108,6 +128,9 @@ export {
   isRecoveryComplete,
   maskEmail,
   maskPhone,
+  recoveryCapacity,
+  recoveryDropped,
+  recoveryOverflow,
   resolveRecoveryRule,
 }
 export type { RecoveryRule }

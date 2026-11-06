@@ -4,9 +4,18 @@
  */
 import { createHash } from "node:crypto"
 import { existsSync } from "node:fs"
-import { cp, readFile, readdir, rm, writeFile } from "node:fs/promises"
+import {
+  cp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+
+import { componentMountPage } from "./lib/qa-component-mounts"
 
 type Item = { name: string; type: string }
 type Run = (
@@ -144,8 +153,11 @@ export async function runMonorepoInstall(options: {
     await readFile(join(ui, "package.json"), "utf8"),
   ).name.split("/")[0] as string
   const url = (item: Item) => `${base}/r/${item.name}.json`
+  // registry:component 是区块的部件，和区块一样从应用目录安装，并在应用里挂一个页面渲染它
   const isApp = (item: Item) =>
-    item.type === "registry:block" || item.type === "registry:page"
+    item.type === "registry:block" ||
+    item.type === "registry:page" ||
+    item.type === "registry:component"
   const components = items.filter(
     (item) =>
       !isApp(item) &&
@@ -239,6 +251,15 @@ export async function runMonorepoInstall(options: {
       web,
     )
     step("从应用目录安装区块和页面", !added.code, added.code ? "见日志" : "")
+    for (const item of apps) {
+      const mount = componentMountPage(item.name, "@/components")
+      if (!mount) continue
+      const base = existsSync(join(web, "src/app"))
+        ? join(web, "src/app")
+        : join(web, "app")
+      await mkdir(join(base, "qa", item.name), { recursive: true })
+      await writeFile(join(base, "qa", item.name, "page.tsx"), mount)
+    }
     const first = await run(
       "tsc-apps-1",
       ["pnpm", "exec", "tsc", "--noEmit"],

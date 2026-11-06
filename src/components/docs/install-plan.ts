@@ -16,6 +16,32 @@ function parseDependency(ref: string): { entry: string } | { shadcn: string } {
   return own ? { entry: own } : { shadcn: ref }
 }
 
+/**
+ * 内部部件：类型为 `registry:component` 的条目是某个区块的一部分（例如 auth-05-panel 是 auth-05 的面板），
+ * 没有独立的文档页，也不进列表。依赖它的条目在文档里连它的源码一起展示，依赖列表里不单独列出。
+ */
+export function isInternalPart(item: { type: string }) {
+  return item.type === "registry:component"
+}
+
+/** 条目依赖的内部部件（沿 registryDependencies 递归，被依赖的排在前面）。 */
+export function getInternalParts(name: string): RegistryItem[] {
+  const parts: RegistryItem[] = []
+  const seen = new Set<string>()
+  function visit(itemName: string) {
+    if (seen.has(itemName)) return
+    seen.add(itemName)
+    const item = getRegistryItem(itemName)
+    for (const ref of item.registryDependencies ?? []) {
+      const dep = parseDependency(ref)
+      if ("entry" in dep) visit(dep.entry)
+    }
+    if (itemName !== name && isInternalPart(item)) parts.push(item)
+  }
+  visit(name)
+  return parts
+}
+
 export type InstallPlan = {
   /** 先于本条目安装的本站条目，按依赖顺序（被依赖的排在前面） */
   entries: { name: string; title: string; type: string }[]
@@ -55,7 +81,7 @@ export function getInstallPlan(name: string): InstallPlan {
 
   return {
     entries: ordered
-      .filter((item) => item.name !== name)
+      .filter((item) => item.name !== name && !isInternalPart(item))
       .map(({ name, title, type }) => ({ name, title, type })),
     shadcn: [...shadcn],
     npm: [...npm],

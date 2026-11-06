@@ -42,6 +42,9 @@ const DEFAULT_LABELS = {
   recoveryNote: "每个恢复码只能用一次",
   recoveryError: "请输入完整的恢复码，格式为 {format}",
   recoveryEmpty: "请输入恢复码",
+  recoveryTooLong:
+    "备用码最多 {max} 个字符，当前 {length} 个，请检查是否多粘贴了内容",
+  recoveryTrimmed: "已按格式保留前 {count} 位",
 
   code: "验证码，共 {length} 位",
   verify: "验证",

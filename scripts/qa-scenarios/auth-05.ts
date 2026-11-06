@@ -37,10 +37,27 @@ async function switchTo(page: Page, name: string) {
 async function pickEmbedded(page: Page) {
   await page
     .getByRole("radiogroup", { name: "演示布局" })
-    .getByRole("radio", { name: "嵌入" })
+    .getByRole("radio", { name: "嵌入", exact: true })
     .click()
   await page.locator('[data-slot="auth-05-content"]').waitFor()
 }
+
+/**
+ * 切到「嵌入·定长码」：和嵌入同一个分屏外壳，备用码配置为
+ * `{ format: false, uppercase: true, maxLength: 9, placeholder: "XXXX-XXXX" }`，
+ * 演示后端接受 ABCD-1234 与 ABCD1234（自己去掉连字符再比）。
+ */
+async function pickFixed(page: Page) {
+  await page
+    .getByRole("radiogroup", { name: "演示布局" })
+    .getByRole("radio", { name: "嵌入·定长码", exact: true })
+    .click()
+  await page.locator('[data-slot="auth-05-content"]').waitFor()
+  await alternatives(page).filter({ hasText: "恢复码" }).click()
+}
+
+const contentAlerts = (page: Page) =>
+  page.locator('[data-slot="auth-05-content"] [role="alert"]')
 
 type Ctx = Pick<ScenarioContext, "page" | "role" | "visible" | "assert">
 
@@ -312,6 +329,154 @@ export default {
         assert((await input.inputValue()) === "ABCD-1234", "应整理为 ABCD-1234")
         await page.keyboard.press("Enter")
         await expectSuccess({ page, role, visible, assert })
+      },
+    },
+    {
+      name: "定长码：粘贴 12 个字符不被截断，显示超长错误且不能提交",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        await pickFixed(page)
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        assert(
+          (await input.getAttribute("placeholder")) === "XXXX-XXXX",
+          "应使用配置的占位文字",
+        )
+        assert(
+          (await input.getAttribute("maxlength")) === null,
+          "format 为 false 时不应给 input 设原生 maxLength（会悄悄截断）",
+        )
+        // fill 一次性写入 12 个字符，等同粘贴
+        await input.fill("ABCD-1234-XY")
+        assert(
+          (await input.inputValue()) === "ABCD-1234-XY",
+          "超长内容应原样保留，不能被截断",
+        )
+        const error = contentAlerts(page)
+        await visible(error, "超长时应出现错误提示")
+        assert(
+          (await error.textContent())?.trim() ===
+            "备用码最多 9 个字符，当前 12 个，请检查是否多粘贴了内容",
+          "错误应说明上限和当前长度",
+        )
+        assert(
+          (await input.getAttribute("aria-invalid")) === "true",
+          "输入框应标记错误态",
+        )
+        const errorId = await error.getAttribute("id")
+        assert(
+          !!errorId &&
+            ((await input.getAttribute("aria-describedby")) ?? "").includes(
+              errorId,
+            ),
+          "输入框应通过 aria-describedby 关联错误",
+        )
+        assert(
+          await role("button", { name: "验证", exact: true }).isDisabled(),
+          "超长时提交按钮应禁用",
+        )
+        await input.press("Enter")
+        await page.waitForTimeout(300)
+        assert(
+          (await page.getByRole("heading", { name: "验证成功" }).count()) === 0,
+          "超长时回车也不能提交",
+        )
+        assert(await isFocused(input), "回车被拦下后焦点应留在输入框")
+      },
+    },
+    {
+      name: "定长码：删到 9 个字符以内，错误消失",
+      viewport: "desktop",
+      async run({ page, role, assert, settle }) {
+        await pickFixed(page)
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        await input.fill("ABCD-1234-XY")
+        assert((await contentAlerts(page).count()) === 1, "先应出现超长错误")
+        await input.press("Backspace")
+        await input.press("Backspace")
+        await input.press("Backspace")
+        await settle()
+        assert((await input.inputValue()) === "ABCD-1234", "应剩下 9 个字符")
+        assert(
+          (await contentAlerts(page).count()) === 0,
+          "回到长度内错误应消失",
+        )
+        assert(
+          (await input.getAttribute("aria-invalid")) === null,
+          "错误态应一并清除",
+        )
+        assert(
+          await role("button", { name: "验证", exact: true }).isEnabled(),
+          "回到长度内提交按钮应恢复可点",
+        )
+      },
+    },
+    {
+      name: "定长码：输入小写 abcd-1234，输入框里的值变大写并提交成功",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        await pickFixed(page)
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        await input.pressSequentially("abcd-1234")
+        assert(
+          (await input.inputValue()) === "ABCD-1234",
+          "输入框里实际的值应是大写 ABCD-1234，而不只是看起来大写",
+        )
+        await role("button", { name: "验证", exact: true }).click()
+        await visible(
+          role("heading", { name: "验证成功", exact: true }),
+          "ABCD-1234 应验证成功",
+        )
+      },
+    },
+    {
+      name: "定长码：不带连字符的 ABCD1234 原样提交，演示后端也接受",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        await pickFixed(page)
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        await input.pressSequentially("abcd1234")
+        assert(
+          (await input.inputValue()) === "ABCD1234",
+          "不应替用户补连字符，原样（转大写后）保留",
+        )
+        assert((await contentAlerts(page).count()) === 0, "8 个字符不应报超长")
+        await role("button", { name: "验证", exact: true }).click()
+        await visible(
+          role("heading", { name: "验证成功", exact: true }),
+          "演示后端同时接受不带连字符的写法",
+        )
+      },
+    },
+    {
+      name: "有掩码：多粘贴的部分被丢掉时给出可见提示，下次输入清除",
+      viewport: "desktop",
+      async run({ page, assert, visible, settle }) {
+        await switchTo(page, "恢复码")
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        const notice = page.locator('[data-slot="auth-05-recovery-notice"]')
+        assert(
+          (await notice.getAttribute("role")) === "status",
+          "提示应放在 role=status 的播报区里",
+        )
+        assert((await notice.textContent()) === "", "没有多出内容时不应有提示")
+        await input.fill("abcd1234wxyz")
+        assert(
+          (await input.inputValue()) === "ABCD-1234",
+          "有掩码时只取需要的 8 位",
+        )
+        await visible(
+          notice.filter({ hasText: "已按格式保留前 8 位" }),
+          "丢掉了多余内容应提示",
+        )
+        assert(
+          ((await input.getAttribute("aria-describedby")) ?? "").includes(
+            (await notice.getAttribute("id")) ?? "-",
+          ),
+          "提示应关联到输入框",
+        )
+        await input.fill("abcd")
+        await settle()
+        assert((await notice.textContent()) === "", "下次输入应清除提示")
       },
     },
     {

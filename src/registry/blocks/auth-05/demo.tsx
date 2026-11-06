@@ -7,7 +7,7 @@ import { SegmentedControl } from "@/registry/ui/segmented-control/segmented-cont
 import { Auth05, Auth05Panel } from "./auth-05"
 
 type PasskeyMode = "success" | "cancel" | "unsupported" | "error"
-type Layout = "page" | "embedded"
+type Layout = "page" | "embedded" | "fixed"
 
 const modes = [
   { value: "success", label: "成功" },
@@ -19,6 +19,7 @@ const modes = [
 const layouts = [
   { value: "page", label: "整页" },
   { value: "embedded", label: "嵌入" },
+  { value: "fixed", label: "嵌入·定长码" },
 ]
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -29,7 +30,9 @@ export default function Auth05Demo() {
   const [layout, setLayout] = React.useState<Layout>("page")
   const [round, setRound] = React.useState(0)
   const [notice, setNotice] = React.useState("")
-  const embedded = layout === "embedded"
+  // 两种嵌入布局共用同一个分屏外壳，只是备用码的配置不同
+  const embedded = layout !== "page"
+  const fixed = layout === "fixed"
 
   const passkey = async () => {
     await wait(1500)
@@ -46,6 +49,13 @@ export default function Auth05Demo() {
   const verify = async ({ method, code }: { method: string; code: string }) => {
     await wait(350)
     if (method === "recovery") {
+      if (fixed) {
+        // 定长码：后端同时接受带连字符和不带连字符的写法，所以先去掉连字符再比；
+        // 组件不会替后端去掉连字符，onVerify 拿到的就是输入框里的值（已转大写）
+        if (code.replaceAll("-", "") !== "ABCD1234")
+          throw new Error("恢复码无效或已使用")
+        return
+      }
       // 嵌入模式的备用码不做格式化，演示用 abc_12345；整页模式仍是 ABCD-1234
       const expected = embedded ? "abc_12345" : "ABCD-1234"
       if (code !== expected) throw new Error("恢复码无效或已使用")
@@ -63,7 +73,7 @@ export default function Auth05Demo() {
       <div className="mx-auto mb-4 flex w-full max-w-3xl flex-wrap items-center gap-3 px-4">
         <span className="text-xs text-muted-foreground">演示布局</span>
         <SegmentedControl
-          className="w-40"
+          className="w-72"
           aria-label="演示布局"
           options={layouts}
           value={layout}
@@ -112,11 +122,20 @@ export default function Auth05Demo() {
           </div>
           <div className="min-w-0 p-6 sm:p-8">
             <Auth05Panel
-              key={`embedded-${round}`}
+              key={`${layout}-${round}`}
               account={{ username: "lin_qinghe" }}
               methods={["totp", "recovery"]}
               showRememberDevice={false}
-              recoveryCode={{ format: false, maxLength: 32 }}
+              recoveryCode={
+                fixed
+                  ? {
+                      format: false,
+                      uppercase: true,
+                      maxLength: 9,
+                      placeholder: "XXXX-XXXX",
+                    }
+                  : { format: false, maxLength: 32 }
+              }
               helpHref="#"
               onSendCode={sendCode}
               onVerify={verify}
@@ -139,9 +158,11 @@ export default function Auth05Demo() {
       )}
       <div className="mx-auto mt-4 w-full max-w-3xl space-y-1 px-4 text-xs text-muted-foreground">
         <p>
-          {embedded
-            ? "演示规则：嵌入模式只开身份验证器与恢复码；验证器为 123456；恢复码不做格式化，输入 abc_12345 成功。"
-            : "演示规则：身份验证器与短信验证码为 123456；恢复码为 ABCD-1234；通行密钥 1.5 秒后按上方选择的结果返回。"}
+          {fixed
+            ? "演示规则：只开身份验证器与恢复码；验证器为 123456；恢复码由后端生成（8 位字母数字），不做格式化、输入时转大写、最多 9 个字符；ABCD-1234 与 ABCD1234 都成功（演示后端自己去掉连字符再比）。"
+            : embedded
+              ? "演示规则：嵌入模式只开身份验证器与恢复码；验证器为 123456；恢复码不做格式化，输入 abc_12345 成功。"
+              : "演示规则：身份验证器与短信验证码为 123456；恢复码为 ABCD-1234；通行密钥 1.5 秒后按上方选择的结果返回。"}
         </p>
         <p role="status">{notice}</p>
       </div>

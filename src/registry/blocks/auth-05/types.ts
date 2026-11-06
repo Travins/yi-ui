@@ -31,16 +31,20 @@ type Auth05Account = Auth05AccountFields &
 type Auth05RecoveryCode = {
   /**
    * 掩码，`X` 代表一个字母或数字，其他字符原样插入，如 `"XXXX-XXXX"`、`"XXXXX-XXXXX"`。
-   * 传 `false` 不做任何格式化：原样接受输入，只去掉首尾空白再提交。
+   * 传 `false` 不做格式化：输入框里是什么就是什么，提交时只去掉首尾空白。
    * @default "XXXX-XXXX"
    */
   format?: string | false
   /**
-   * 是否自动转大写。`format` 为 `false` 时默认不转（原样输入），显式传 `true` 才转。
-   * @default true
+   * 输入时就把输入框里的值转成大写（不是只靠 CSS 显示），提交的值也是大写。
+   * 有掩码时默认 `true`，`format` 为 `false` 时默认 `false`（原样输入）。
    */
   uppercase?: boolean
-  /** 最大长度，仅在 `format` 为 `false` 时生效；有掩码时长度由掩码决定。 */
+  /**
+   * 最大字符数，仅在 `format` 为 `false` 时生效；有掩码时长度由掩码决定。
+   * 按输入框里的原始字符计数，连字符和空格都算；长度判断用去掉首尾空白之后的值。
+   * 超过时不截断，输入框下方显示错误并禁止提交，删回范围内错误就消失。
+   */
   maxLength?: number
   /** 输入框占位文字。@default 根据 format 生成 */
   placeholder?: string

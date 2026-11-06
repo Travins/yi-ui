@@ -18,6 +18,7 @@ import { dirname, join, resolve, relative } from "node:path"
 import { chromium } from "playwright-core"
 
 import { chromePath } from "./lib/chrome"
+import { componentMountPage } from "./lib/qa-component-mounts"
 import { runMonorepoInstall } from "./qa-install-monorepo"
 
 type Item = {
@@ -354,6 +355,15 @@ async function main() {
           ))
             if (!existsSync(join(app, appRoot, f.target!)))
               throw Error(`未安装 ${f.target}`)
+        } else if (componentMountPage(item.name, "@/components")) {
+          // 区块的部件（registry:component）没有示例页：写一个挂载页把安装后的组件真正渲染出来
+          const dest = join(app, appRoot, "app/qa", item.name)
+          await mkdir(dest, { recursive: true })
+          await writeFile(
+            join(dest, "page.tsx"),
+            componentMountPage(item.name, "@/components")!,
+          )
+          row.routes = [`/qa/${item.name}`]
         } else {
           const index = await readFile(
             join(root, "src/registry/__index__.tsx"),
