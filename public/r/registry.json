@@ -346,6 +346,80 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "auth-03",
+      "title": "手机号验证码登录",
+      "description": "窄单列短信登录：输入手机号、验证短信两步完成，支持协议确认、重发倒计时与异步错误。",
+      "dependencies": [
+        "motion",
+        "zod"
+      ],
+      "registryDependencies": [
+        "button",
+        "checkbox",
+        "input-otp",
+        "https://yiui.dev/r/phone-input.json",
+        "https://yiui.dev/r/grid-layout.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-03/auth-03.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-03/auth-03.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-03/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-sms/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-03/schemas.ts",
+          "type": "registry:component",
+          "target": "@components/auth-03/schemas.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-03/types.ts",
+          "type": "registry:component",
+          "target": "@components/auth-03/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-03/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-03/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-03/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-03/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-03/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-03/form-parts.tsx"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "meta": {
+        "iframeHeight": "800px"
+      },
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "settings-01",
       "title": "设置页",
       "description": "用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。",

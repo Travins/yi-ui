@@ -1,0 +1,58 @@
+---
+title: 手机号验证码登录
+description: 窄单列短信登录：输入手机号、验证短信两步完成，支持协议确认、重发倒计时与异步错误。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-03" />
+
+## 安装
+
+<InstallCommand name="auth-03" />
+
+## 用法
+
+```tsx
+<Auth03
+  brand={{ name: "我的工作台" }}
+  onSendCode={async (phone) => { await sendSms(phone) }}
+  onVerify={async ({ phone, code }) => { await verifySms(phone, code) }}
+  onSuccess={() => location.assign("/")}
+  onAlternative={() => location.assign("/password-login")}
+/>
+```
+
+先输入中国大陆手机号并确认协议，发送成功后才进入验证码步骤。第二步显示脱敏号码，输入完整验证码自动提交；修改号码返回第一步并保留手机号。`onSendCode` 与 `onVerify` 返回 `Promise<void>`，抛出的 `Error.message` 会显示在对应字段下。重发失败显示服务端错误，并提示达到每日上限时改用其他登录方式。
+
+## 示例
+
+演示验证码为 `123456`。手机号以 `0000` 结尾时模拟「发送太频繁」；验证码 `000000`（以及其他不匹配的验证码）模拟「验证码错误」。演示提示仅在页面外壳中显示。
+
+## API
+
+<PropsTable name="auth-03" component="Auth03" />
+
+受控步骤：`step="phone" | "code"` 搭配 `onStepChange`；非受控使用 `defaultStep`，默认 `phone`。直接从 `code` 开始而没有发送记录时，提交会返回手机号步骤。验证码默认 6 位，可用 `codeLength` 设置 1–12 位；`resendSeconds` 默认 60 秒。`requireAgreement` 默认 `true`，`agreementLinks` 接收 `terms`、`privacy` 链接。
+
+`brand` 接收 `name` 和可选 `logo`；`labels` 覆盖 `Auth03Labels`。`onAlternative("password")` 只通知接入方。导出类型为 `Auth03Props`、`Auth03Step`、`Auth03Labels`。
+
+文件结构：`auth-03.tsx` 为入口，`config.ts` 管理文案，`schemas.ts` 校验手机号，`form-parts.tsx` 封装验证码格子，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为演示页面。
+
+根节点 `data-slot="auth-03"` 暴露 `data-step` 和 `data-state`；步骤容器为 `auth-03-step`，验证码容器为 `auth-03-code-input`。
+
+## 可访问性
+
+- 协议未勾选时显示文字错误并聚焦复选框；按空格切换勾选。
+- 切换步骤或成功状态时聚焦标题，Tab 可进入表单。
+- 官方验证码输入支持整串粘贴、退格和方向键，提供数字键盘、短信自动填充与「验证码，共 6 位」读屏名称。
+- 验证错误通过 `aria-describedby` 关联，所有格子带错误态；重新输入立即清除。
+- 倒计时不逐秒播报；动效遵守减少动态效果设置。
+
+## 注意事项
+
+只提供界面，不负责真实认证、短信发送、限流、会话或跳转。服务端必须校验验证码、有效期和发送次数。手机号组件目前只支持中国大陆固定 +86 区号。
+
+## 源码
+
+<ComponentSource name="auth-03" />
