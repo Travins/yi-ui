@@ -98,6 +98,7 @@
 | [settings-01](https://yiui.dev/md/blocks/settings-01.md) | 设置页 | 用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。 |
 | [sidebar-01](https://yiui.dev/md/blocks/sidebar-01.md) | 可收起侧栏 | 基于官方 Sidebar 的可收起侧栏：搜索过滤、手风琴分组、带引导线的子项，收起成图标栏后悬停浮出子菜单，手机端沿用抽屉。 |
 | [sidebar-02](https://yiui.dev/md/blocks/sidebar-02.md) | 团队与账号切换侧栏 | 基于 shadcn 官方 Sidebar：团队切换（⌘1…⌘9）、⌘K 搜索、分组导航、用户卡与多账号切换，可收起成图标，移动端为抽屉。 |
+| [sidebar-03](https://yiui.dev/md/blocks/sidebar-03.md) | 工作区树侧栏 | 图标轨与工作区树双栏侧栏，支持树键盘导航、模块切换、筛选和移动端抽屉。 |
 | [sidebar-04](https://yiui.dev/md/blocks/sidebar-04.md) | 右侧上下文面板 | 右侧上下文面板，组合项目进度、状态分布与分给我的任务。 |
 | [agent-chat-01](https://yiui.dev/md/blocks/agent-chat-01.md) | AI 助手面板 | 从企业监控平台提炼的 AI 助手：嵌入与浮动布局切换，紧凑的 Trace 展示分析摘要、工具调用与来源，回答里可带迷你图与进度环，内置流式演示。 |
 | [checkout-01](https://yiui.dev/md/blocks/checkout-01.md) | 订单结算 | 地址、配送、发票与支付方式组成的订单结算区块。 |

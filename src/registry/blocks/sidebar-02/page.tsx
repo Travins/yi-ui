@@ -89,7 +89,7 @@ export default function Sidebar02Page() {
               {current?.label}
             </h1>
             <p className="mt-1 text-sm leading-7 text-muted-foreground">
-              这是 {team?.name} 的工作区，下面是一些占位内容。
+              这是{team?.name}的工作区，下面是一些占位内容。
             </p>
           </GridSection>
           <GridSection>
@@ -110,10 +110,7 @@ export default function Sidebar02Page() {
           <GridSection>
             <ul className="divide-y divide-dashed divide-edge">
               {RECENT.map((entry) => (
-                <li
-                  key={entry}
-                  className="px-4 py-3 text-sm leading-7 sm:px-6"
-                >
+                <li key={entry} className="px-4 py-3 text-sm leading-7 sm:px-6">
                   {entry}
                 </li>
               ))}

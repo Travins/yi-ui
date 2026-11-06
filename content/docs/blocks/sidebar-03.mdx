@@ -1,0 +1,96 @@
+---
+title: 工作区树侧栏
+titleEn: Workspace Tree Sidebar
+description: 图标轨与工作区树双栏侧栏，支持树键盘导航、模块切换、筛选和移动端抽屉。
+status: new
+---
+
+<BlockViewer name="sidebar-03" />
+
+图标轨负责切换模块，右侧树用于客户管理和项目协作。顶部两条横带与主区顶栏均为 56px；搜索单独占一条横带，底部显示存储用量。
+
+## 安装
+
+<InstallCommand name="sidebar-03" />
+
+安装 `app/sidebar-03/page.tsx`、`components/sidebar-03/` 与 `use-controllable-state`。官方依赖包含 sidebar、button、tooltip、dropdown-menu、breadcrumb、separator；示例主区依赖 grid-layout。
+
+## 用法
+
+```tsx
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { Sidebar03 } from "@/components/sidebar-03/sidebar-03"
+
+export default function Page() {
+  return (
+    <SidebarProvider defaultOpen>
+      <Sidebar03 activeNodeId="all" />
+      <SidebarInset>客户管理</SidebarInset>
+    </SidebarProvider>
+  )
+}
+```
+
+### 数据与路由
+
+通过 `modules` 传入模块，每个模块包含 `id`、`label`、`icon`、`tree` 和可选 `actions`（`id`、`label`、`onSelect`）。节点类型为 `{ id, label, href?, icon?, status?, badge?, children? }`；`status` 为 `active`、`paused`、`archived`。各模块的节点 id 必须唯一，建议最多三层。
+
+默认链接为原生 `a`。Next.js 客户端入口可以传 `linkComponent={Link}`；`navigation={{ onNavigate, intercept }}` 可拦截普通点击，回调参数为 `{ href, nodeId? }`。Cmd/Ctrl 点击、中键点击保留浏览器行为。移动端正常导航后关闭抽屉。
+
+### 展开与筛选
+
+`expandedIds`、`defaultExpandedIds`、`onExpandedChange` 支持受控和非受控展开。非受控初始化时会合并当前节点的祖先；受控时由调用方提供完整展开列表。筛选只作用于当前模块，临时展开匹配祖先，清空搜索后恢复原来的展开状态。
+
+## 示例
+
+页首演示拦截跳转，在主区面包屑显示模块和节点路径。手机通过顶栏按钮打开抽屉，图标轨始终保留；桌面收起后仅保留图标轨，点击模块重新展开。
+
+## API
+
+<PropsTable name="sidebar-03" component="Sidebar03" />
+
+- `modules`：模块列表，默认中文客户协作示例。
+- `moduleId` / `defaultModuleId` / `onModuleChange`：当前模块，默认第一个。
+- `activeNodeId`：当前页面节点，由路由或外部状态决定。
+- `expandedIds` / `defaultExpandedIds` / `onExpandedChange`：展开节点列表。
+- `usage`：`{ label, used, total, unit, href? }`，默认存储空间 9.2 GB / 10 GB。
+- `onCreate({ moduleId })`：新建动作；`onUtilityAction({ action })`：帮助、设置、退出动作。
+- `labels`：覆盖 `config.ts` 中的默认文案。
+- 其他 Sidebar 属性与 `className`、`style` 透传；收起方式固定为 icon。
+
+类型导出位于 `types.ts`：`Sidebar03Module`、`Sidebar03TreeNode`、`Sidebar03Usage`、`Sidebar03Navigation`、`Sidebar03Link`。入口另导出 `Sidebar03Props`，文案类型为 `Sidebar03Labels`。
+
+| data-slot               | 用途           |
+| ----------------------- | -------------- |
+| sidebar-03              | 外层侧栏       |
+| sidebar-03-brand        | 品牌横带       |
+| sidebar-03-panel-header | 模块标题横带   |
+| sidebar-03-tree         | 树和空状态容器 |
+
+## 可访问性
+
+树使用 `tree`、`treeitem`、`group`，显式声明层级、同级位置和展开状态。采用 roving tabindex，整棵树只有一个 Tab 入口。焦点与当前页面独立，当前节点带 `aria-current="page"`。状态点同时提供读屏文本。
+
+| 按键        | 作用                               |
+| ----------- | ---------------------------------- |
+| ↑ / ↓       | 上一个 / 下一个可见节点            |
+| →           | 展开节点，已展开则进入第一个子节点 |
+| ←           | 折叠节点，已折叠则返回父节点       |
+| Home / End  | 第一个 / 最后一个可见节点          |
+| Enter       | 打开链接，无链接的分支切换展开     |
+| Tab         | 离开树，前往下一个控件             |
+| ⌘B / Ctrl B | 收起或展开侧栏                     |
+| Esc         | 关闭移动端抽屉或菜单               |
+
+模块按钮使用 `aria-pressed`，因为它们切换同一区域的内容，不代表页面链接。图标按钮均有名称和 Tooltip。用量条有 progressbar 角色、名称和值。
+
+## 注意事项
+
+- `page.tsx` 使用 `SidebarProvider defaultOpen`，不读取请求期 API，可预渲染。
+- 不传动作回调时，新建、帮助和退出不执行业务逻辑；接入业务时提供相应回调。
+- 官方移动抽屉保留底座的英文读屏标题，区块没有修改官方源码。
+- 文件：`sidebar-03.tsx` 为入口，`tree.tsx` 管理树行为，`types.ts` 为数据类型，`config.ts` 为文案，`nav-data.ts` 为示例数据，`page.tsx` 为安装页面，`demo.tsx` 仅供站点预览。
+
+## 源码
+
+<ComponentSource name="sidebar-03" />

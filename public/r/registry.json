@@ -637,6 +637,73 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "sidebar-03",
+      "title": "工作区树侧栏",
+      "description": "图标轨与工作区树双栏侧栏，支持树键盘导航、模块切换、筛选和移动端抽屉。",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "sidebar",
+        "button",
+        "tooltip",
+        "dropdown-menu",
+        "breadcrumb",
+        "separator",
+        "https://yiui.dev/r/grid-layout.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/sidebar-03/nav-data.ts",
+          "type": "registry:component",
+          "target": "@components/sidebar-03/nav-data.ts"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-03/page.tsx",
+          "type": "registry:page",
+          "target": "app/sidebar-03/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-03/types.ts",
+          "type": "registry:component",
+          "target": "@components/sidebar-03/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-03/config.ts",
+          "type": "registry:component",
+          "target": "@components/sidebar-03/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-03/sidebar-03.tsx",
+          "type": "registry:component",
+          "target": "@components/sidebar-03/sidebar-03.tsx"
+        },
+        {
+          "path": "src/registry/blocks/sidebar-03/tree.tsx",
+          "type": "registry:component",
+          "target": "@components/sidebar-03/tree.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "sidebar-04",
       "title": "右侧上下文面板",
       "description": "右侧上下文面板，组合项目进度、状态分布与分给我的任务。",
