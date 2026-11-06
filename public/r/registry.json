@@ -498,6 +498,90 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "auth-04",
+      "title": "企业 SSO 登录",
+      "description": "先识别工作邮箱所属组织的两栏登录：企业身份（SAML / OIDC）单点登录或账号密码，带组织面板、组织标识入口与异步错误。",
+      "dependencies": [
+        "lucide-react",
+        "motion",
+        "zod"
+      ],
+      "registryDependencies": [
+        "button",
+        "input",
+        "label",
+        "https://yiui.dev/r/grid-layout.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-04/auth-04.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-04/auth-04.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-sso/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/schemas.ts",
+          "type": "registry:component",
+          "target": "@components/auth-04/schemas.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/types.ts",
+          "type": "registry:component",
+          "target": "@components/auth-04/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-04/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-04/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-04/form-parts.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/steps.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-04/steps.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-04/org-panel.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-04/org-panel.tsx"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "meta": {
+        "iframeHeight": "820px"
+      },
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "settings-01",
       "title": "设置页",
       "description": "用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。",

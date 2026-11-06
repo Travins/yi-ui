@@ -1,0 +1,89 @@
+---
+title: 企业 SSO 登录
+description: 先识别工作邮箱所属组织的两栏登录：企业身份（SAML / OIDC）单点登录或账号密码，带组织面板、组织标识入口与异步错误。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-04" />
+
+## 安装
+
+<InstallCommand name="auth-04" />
+
+## 用法
+
+```tsx
+<Auth04
+  brand={{ name: "我的工作台" }}
+  supportHref="mailto:it@example.com"
+  onResolveDomain={async (email) => resolveByDomain(email)}
+  onResolveOrg={async (slug) => resolveByOrg(slug)}
+  onSsoSignIn={async ({ email, providerId }) => startSso(email, providerId)}
+  onPasswordSignIn={async ({ email, password }) => signIn(email, password)}
+  onSuccess={() => location.assign("/")}
+  onAlternative={() => location.assign("/login")}
+/>
+```
+
+## 流程和状态
+
+登录分三步，当前步骤取值为 `"email" | "sso" | "password"`：
+
+1. **email**：输入工作邮箱，点「继续」调用 `onResolveDomain(email)`。邮箱格式不对时在输入框下给出文字提示（`aria-describedby` 关联）；识别期间按钮显示加载态。
+2. **sso**：识别为企业账号后显示组织信息卡和提供方按钮。只有一个提供方时是一个主按钮「通过企业身份（SAML）继续」，多个提供方并列为描边按钮。点击调用 `onSsoSignIn({ email, providerId })`，进行中显示「正在跳转到企业身份提供方…」，所有按钮禁用。失败显示错误，提供「重试」和「改用账号密码登录」；「不是这个组织？更换邮箱」回到第一步，已输入的邮箱保留。
+3. **password**：普通账号在同一个流程里展开密码输入（可显示密码），顶部显示正在登录的邮箱，旁边有「更换」。调用 `onPasswordSignIn({ email, password })`，成功后显示「登录成功」。
+
+第一步下方的「使用组织标识登录」展开后输入组织标识（小写字母、数字、连字符），调用 `onResolveOrg(slug)`。不传 `onResolveOrg` 则隐藏这个入口。组织标识没有邮箱，此时 `onSsoSignIn` 收到的 `email` 是空字符串；如果组织标识识别为普通账号，会提示改用工作邮箱。
+
+## 回调约定
+
+四个回调都返回 `Promise`，抛出的 `Error.message` 直接显示给用户，没有 message 时用 `labels.failed`。
+
+`onResolveDomain` 和 `onResolveOrg` 返回两种结果之一：
+
+```ts
+{ kind: "sso", org: { name, domain, logo? }, providers: Auth04Provider[] }
+{ kind: "password" }
+```
+
+`Auth04Provider` 为 `{ id, label, protocol?, icon? }`。`label` 直接显示在按钮上，请用「企业身份（SAML）」「组织目录」这类通用叫法；`protocol` 取 `"saml" | "oidc" | "directory"`，决定默认图标，`icon` 可整体替换。`providers` 为空时按普通账号处理。
+
+## 示例
+
+演示规则（提示只放在演示外壳里，不在组件本身）：
+
+- 以 `@yunjian.example` 结尾的邮箱识别为「云间科技」，一个 SAML 提供方。
+- 以 `@multi.example` 结尾识别为企业，有 SAML 和 OIDC 两个提供方。
+- 以 `@fail.example` 结尾时 SSO 跳转失败，提示「无法连接到企业身份提供方，请稍后重试」。
+- 其他邮箱走账号密码登录，演示密码是 `demo1234`。
+- 组织标识 `yunjian` 能识别出企业，其他标识提示「未找到该组织」。
+
+## API
+
+<PropsTable name="auth-04" component="Auth04" />
+
+受控步骤：`step` 搭配 `onStepChange`；非受控使用 `defaultStep`，默认 `email`。受控为 `sso` 但还没有识别结果时，界面退回第一步。`onAlternative("personal")` 只通知接入方，不做导航。`supportHref` 是「无法登录？联系管理员」的链接，默认 `#`。`brand` 接收 `name` 和可选 `logo`，`labels` 覆盖 `Auth04Labels`。
+
+布局：窗口宽于 768px 时左栏是流程表单，右栏是组织面板。第一步面板介绍识别规则和支持的登录方式；识别出组织后显示组织、所选提供方和安全提示「你将跳转到组织的身份提供方完成验证」。窄屏变成单列：组织面板缩成表单上方的紧凑卡片，第一步时隐藏。
+
+文件结构：`auth-04.tsx` 为入口，`steps.tsx` 是三个步骤的界面，`org-panel.tsx` 是组织面板，`form-parts.tsx` 是输入框与提供方按钮，`config.ts` 管理文案，`schemas.ts` 校验邮箱和组织标识，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为演示页面。
+
+根节点 `data-slot="auth-04"` 暴露 `data-step` 和 `data-state`；步骤容器为 `auth-04-step`，组织面板为 `auth-04-panel`，组织卡为 `auth-04-org-card`，提供方按钮为 `auth-04-provider`。
+
+## 可访问性
+
+- 步骤切换时焦点落在新步骤的标题上；SSO 失败后焦点移到「重试」。
+- 邮箱使用 `type="email"` 和 `autocomplete="username"`，密码使用 `current-password`，密码管理器可以直接填充。
+- 邮箱和组织标识的错误文字通过 `aria-describedby` 关联到输入框，同时标记 `aria-invalid`；失败信息以 `role="alert"` 播报，进行中的跳转提示用 `role="status"`。
+- 「使用组织标识登录」带 `aria-expanded` 和 `aria-controls`；显示密码按钮带 `aria-pressed`。
+- 全程可用键盘：Tab 顺序与视觉一致，Enter 提交当前表单，空格或 Enter 触发按钮。
+- 动效遵守减少动态效果设置，错误信息不只靠颜色表达。
+
+## 注意事项
+
+只提供界面，不负责真实的 SSO 跳转、SAML / OIDC 协议、域名所有权验证、会话或限流。`onSsoSignIn` 里通常是请求后端拿到跳转地址再 `location.assign`；回调 resolve 之后界面保持「正在跳转」状态，直到页面离开。识别结果必须由服务端给出，不要在前端判断域名。
+
+## 源码
+
+<ComponentSource name="auth-04" />
