@@ -84,7 +84,7 @@ export default function GridToolbarDemo() {
         </span>
       </header>
       <GridToolbar bordered={false} aria-label="日志筛选">
-        <GridToolbarItem grow className="basis-full @min-[36rem]:basis-auto">
+        <GridToolbarItem grow fullOnNarrow>
           <BarField
             aria-label="搜索日志"
             icon={<Search />}
@@ -94,7 +94,7 @@ export default function GridToolbarDemo() {
             onValueChange={setQuery}
           />
         </GridToolbarItem>
-        <GridToolbarItem className="basis-full @min-[36rem]:basis-auto">
+        <GridToolbarItem fullOnNarrow>
           <SegmentedControl
             aria-label="级别"
             value={level}
@@ -117,7 +117,6 @@ export default function GridToolbarDemo() {
             variant="ghost"
             size="icon-lg"
             aria-label="刷新"
-            className="rounded-none focus-visible:ring-inset"
             onClick={() => setRevision((value) => value + 1)}
           >
             <RefreshCw />

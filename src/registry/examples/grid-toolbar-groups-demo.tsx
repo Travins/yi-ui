@@ -37,7 +37,6 @@ export default function GridToolbarGroupsDemo() {
           <Button
             size="lg"
             variant="ghost"
-            className="rounded-none focus-visible:ring-inset"
             onClick={() => {
               const link = document.createElement("a")
               link.href =

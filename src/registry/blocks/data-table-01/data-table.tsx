@@ -282,10 +282,11 @@ function DataTable<T>({
   const hasFilter = !!(globalFilter || columnFilters.length || filtered)
   const listLabel = ariaLabel ?? labels.dataset
   function clearFilters() {
-    onClearFilters?.()
+    // 先重置表格自己的搜索、列筛选和页码，再通知外部：回调里触发的副作用不会和旧的内部状态交错
     setGlobalFilter("")
     setColumnFilters([])
     table.setPageIndex(0)
+    onClearFilters?.()
   }
   return (
     <div

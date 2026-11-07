@@ -69,7 +69,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control/segmented-co
 
 ### 窄容器换行
 
-搜索格使用 `basis-full` 独占一行，其余格通过 `grow` 与基础宽度自动换行，换行后的横线仍连续。
+搜索格用 `basis-full` 在任何宽度下都独占一行，其余格通过 `grow` 与基础宽度自动换行，换行后的横线仍连续。只想在窄容器里独占一行时，用 `fullOnNarrow`，不要手写 `basis-full`。
 
 <ComponentPreview name="grid-toolbar-wrap-demo" />
 
