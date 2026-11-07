@@ -1,5 +1,6 @@
 import type { ChatTransport, UIMessage, UIMessageChunk } from "ai"
 import { scripts, fallback } from "./scripts"
+import type { ToolRetryEvent, ToolRetryResult } from "./types"
 
 function createMockTransport(): ChatTransport<UIMessage> {
   return {
@@ -16,14 +17,16 @@ function createMockTransport(): ChatTransport<UIMessage> {
       const queue: { chunk: UIMessageChunk; delay: number }[] = []
       const push = (chunk: UIMessageChunk, delay = 80) =>
         queue.push({ chunk, delay })
-      push({ type: "start", messageId: crypto.randomUUID() }, 0)
+      const messageId = crypto.randomUUID()
+      push({ type: "start", messageId }, 0)
       push({ type: "start-step" }, 0)
       push({ type: "reasoning-start", id: "reasoning" })
       for (const delta of script.reasoning.match(/.{1,8}/gu) ?? [])
         push({ type: "reasoning-delta", id: "reasoning", delta }, 130)
       push({ type: "reasoning-end", id: "reasoning" })
       for (const [index, tool] of script.tools.entries()) {
-        const toolCallId = `tool-${index}`
+        // 每条消息里的 toolCallId 都不同，重试和计时才能准确对应到具体的一次调用
+        const toolCallId = `${messageId}-tool-${index}`
         push({
           type: "tool-input-available",
           toolCallId,
@@ -45,7 +48,7 @@ function createMockTransport(): ChatTransport<UIMessage> {
                 output: tool.output,
                 dynamic: true,
               },
-          800,
+          tool.duration ?? 800,
         )
       }
       if (script.chart) push({ type: "data-chart", data: script.chart }, 400)
@@ -54,6 +57,8 @@ function createMockTransport(): ChatTransport<UIMessage> {
       for (const delta of script.answer.match(/.{1,6}|\n/gu) ?? [])
         push({ type: "text-delta", id: "answer", delta }, 35)
       push({ type: "text-end", id: "answer" })
+      if (script.changes)
+        push({ type: "data-changes", data: script.changes }, 300)
       push({ type: "finish-step" }, 0)
       push({ type: "finish", finishReason: "stop" }, 0)
       let timer: ReturnType<typeof setTimeout> | undefined
@@ -102,4 +107,19 @@ function createMockTransport(): ChatTransport<UIMessage> {
   }
 }
 
-export { createMockTransport }
+/**
+ * 演示用的重试：模拟再调用一次。剧本里写了 `retryOutput` 的工具这次成功，其余的仍然失败，
+ * 这样既能看到「重试成功」，也能看到「重试后仍失败」。
+ */
+async function retryMockTool({
+  toolName,
+}: ToolRetryEvent): Promise<ToolRetryResult> {
+  await new Promise((resolve) => setTimeout(resolve, 1400))
+  const output = [...scripts, fallback]
+    .flatMap((script) => script.tools)
+    .find((tool) => tool.name === toolName)?.retryOutput
+  if (output === undefined) throw new Error("重试后仍然失败（模拟失败）")
+  return { output }
+}
+
+export { createMockTransport, retryMockTool }

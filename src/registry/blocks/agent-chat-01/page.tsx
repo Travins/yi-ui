@@ -15,6 +15,7 @@ import {
   useAgentChat,
   type AgentChatMode,
 } from "@/registry/blocks/agent-chat-01/agent-chat"
+import { retryMockTool } from "@/registry/blocks/agent-chat-01/mock-transport"
 import {
   initialMessages,
   scenarios,
@@ -130,6 +131,7 @@ export default function AgentPage() {
       defaultMode="embedded"
       defaultOpen
       initialMessages={initialMessages}
+      onRetryTool={retryMockTool}
     >
       <AgentChatWorkspace />
     </AgentChatProvider>

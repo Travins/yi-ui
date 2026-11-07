@@ -92,7 +92,7 @@ pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 
 | 分组 | 名称 | 说明 |
 | --- | --- | --- |
-| 应用界面 | [AI 助手面板 `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | 嵌入与浮动两种布局，展示分析摘要、工具调用、来源与图表，内置流式演示。 |
+| 应用界面 | [AI 助手面板 `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | 嵌入与浮动两种布局，展示分析摘要、工具调用（耗时、多工具折叠、失败自动展开与重试）、来源、图表与改动摘要，内置流式演示。 |
 | 应用界面 | [数据表格 `data-table-01`](https://yiui.dev/blocks/data-table-01/) | 网格工具栏（搜索、状态与负责人下拉、列设置、密度）、排序、列宽、选择、单格编辑与乐观保存、网格分页、虚拟滚动，窄屏切成卡片列表。 |
 | 应用界面 | [主题定制面板 `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | 主题色、圆角、宽度与亮暗偏好，首帧恢复。 |
 | 导航 | [可收起侧栏 `sidebar-01`](https://yiui.dev/blocks/sidebar-01/) | 搜索过滤、手风琴分组、带引导线的子项；收起成图标栏后悬停或用键盘在右侧浮出子菜单。 |

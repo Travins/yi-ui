@@ -1,7 +1,7 @@
 ---
 title: AI 助手面板
 titleEn: AI Assistant Panel
-description: 从企业监控平台提炼的 AI 助手：嵌入与浮动布局切换，紧凑的 Trace 展示分析摘要、工具调用与来源，回答里可带迷你图与进度环，内置流式演示。
+description: 从企业监控平台提炼的 AI 助手：嵌入与浮动布局切换，紧凑的 Trace 展示分析摘要、工具调用（带耗时、多工具折叠、失败自动展开与重试）与来源，回答里可带迷你图、进度环与改动摘要，内置流式演示。
 group: app
 ---
 
@@ -11,8 +11,13 @@ group: app
 
 - **两种布局**：右侧嵌入面板、右下角浮动窗口；聊天记录、输入草稿和滚动位置在切换时保留。
 - **可检查的过程**：分析摘要、运行中的工具、成功与失败结果，以及可打开的参考来源，按顺序排成紧凑的 `Trace`（shadcn 的 `trace`），一行一步；每一步的输入与输出可折叠查看。
+- **工具调用的耗时**：一行写成「已完成 · 查询核心指标 · 1.2 秒」，运行中每秒刷新一次实时计时。历史消息拿不到耗时就不显示，不会编造。
+- **多工具折叠**：同一条消息里连续调用 3 个及以上工具，合成一行「调用了 4 个工具 · 5.3 秒」，点开是逐个工具的明细；运行时显示「正在调用工具 · 第 2/4 个」。阈值由 `toolGroupThreshold` 设置。
+- **失败自动展开与重试**：工具失败时自动展开它和外层的折叠行，直接看到错误；手动收起后不再自动展开。传入 `onRetryTool` 后，失败的工具里会出现「重试」按钮。
+- **长输入输出截断**：工具的输入与输出超过 220px 时截断并渐隐，按钮「展开全部」「收起」切换；复制按钮复制的始终是全文。
 - **回答里的图表**：工具返回后，回答上方会出现一张紧凑的图表卡片：可用率走势（`MiniChart` 面积图加指标行）、GPU 占用（三个 `MiniRing` 进度环）、CI 各步骤耗时（`MiniChart` 柱图）。图表以 `data-chart` 数据块的形式在消息里流式出现，宽度跟随面板，高度只有 96px 左右，不会把消息撑长。
-- **流式演示**：应用监控、vLLM 显存、CI 安装失败三个剧本，其他问题使用通用剧本。所有 reasoning 均为预写的演示摘要，不是真实模型的隐藏思维。
+- **回答里的改动摘要**：回答文字之后可以附一张 `ChangeSummary` 卡片，逐行列出指标的变化，好坏用颜色、涨跌用箭头分开表达。以 `data-changes` 数据块下发。
+- **流式演示**：应用监控、vLLM 显存、CI 安装失败、本周数据变化（多工具折叠 + 改动摘要）、慢查询排查（工具失败 + 重试）五个剧本，其他问题使用通用剧本。所有 reasoning 均为预写的演示摘要，不是真实模型的隐藏思维。
 - **对话操作**：复制、点赞/点踩、重新生成、新建对话、停止生成。反馈仅保存在当前页面，不会上报。
 - **窄屏适配**：小于 768px 时，两种模式都使用底部 Sheet，带焦点管理和 Escape 关闭；嵌入面板支持用鼠标或触摸拖动、用方向键调整宽度。
 
@@ -23,6 +28,7 @@ group: app
 | 位置 | 组件 | 说明 |
 | --- | --- | --- |
 | 回答里的图表 | [`chart-card`](/components/chart-card)、[`mini-chart`](/components/mini-chart) | `ChartCard` 外壳 + `ChartMetrics` 指标行，图形用 `MiniChart`（面积、柱）与 `MiniRing`（进度环） |
+| 回答里的改动摘要 | [`change-summary`](/components/change-summary) | `data-changes` 数据块直接渲染成 `ChangeSummary` |
 | 空状态的背景与标题 | [`glyph-field`](/components/glyph-field)、[`text-animate`](/components/text-animate) | 四周淡淡的字符矩阵，欢迎语用 `TextReveal` 逐词显现 |
 | 示例工作区的布局切换 | [`segmented-control`](/components/segmented-control) | 嵌入布局 / 浮动窗口，选中项就是当前布局 |
 
@@ -30,7 +36,7 @@ group: app
 
 <InstallCommand name="agent-chat-01" />
 
-会安装 `app/agent/page.tsx` 页面，以及 `components/agent-chat/` 下的组件与数据文件。共享 hook 安装到 `hooks/use-controllable-state.ts`。shadcn 依赖来自官方 registry，本站组件 `chart-card`、`mini-chart`（图表及其 `recharts` 依赖）、`glyph-field`、`text-animate`、`segmented-control`（及它们依赖的 `flow-diagram` 色调）一并安装；npm 依赖为 `ai`、`@ai-sdk/react`、`motion`、`lucide-react`、`class-variance-authority`。实现基于 AI SDK 7 与 React SDK 4。
+会安装 `app/agent/page.tsx` 页面，以及 `components/agent-chat/` 下的组件与数据文件。共享 hook 安装到 `hooks/use-controllable-state.ts`。shadcn 依赖来自官方 registry，本站组件 `chart-card`、`mini-chart`（图表及其 `recharts` 依赖）、`change-summary`（改动摘要）、`glyph-field`、`text-animate`、`segmented-control`（及它们依赖的 `flow-diagram` 色调）一并安装；npm 依赖为 `ai`、`@ai-sdk/react`、`motion`、`lucide-react`、`class-variance-authority`。实现基于 AI SDK 7 与 React SDK 4。
 
 ## 用法
 
@@ -118,6 +124,8 @@ export function Workspace() {
     suggestions: { type: "string[]", description: "建议问题；不传时显示三个示例问题，传 `[]` 隐藏" },
     title: { type: "string", description: "面板标题", default: '"AI 助手"' },
     initialMessages: { type: "UIMessage[]", description: "可选的初始记录，演示页用它预填一轮对话" },
+    onRetryTool: { type: "(event: ToolRetryEvent) => Promise<ToolRetryResult>", description: "用户点失败工具上的「重试」时调用；不传则不显示重试按钮。详见下方「重试失败的工具」" },
+    toolGroupThreshold: { type: "number", description: "同一条消息里连续调用多少个工具后折叠成一行；小于 2 按 2 处理，传 `Infinity` 不折叠", default: "3" },
     children: { type: "ReactNode", description: "工作区内容", required: true },
   }}
 />
@@ -128,7 +136,51 @@ export function Workspace() {
 
 ### labels
 
-`labels` 接收 `Partial<AgentChatLabels>`，覆盖 `config.ts` 中 `DEFAULT_LABELS` 的任意几项（面板标题、输入框占位、按钮名称、状态文案等），例如 `labels={{ title: "工程助手", welcome: "今天要解决什么问题？" }}`。`thought` 支持 `{seconds}` 占位符；`moveWindow`（默认 `"移动助手窗口"`）用作浮动窗口拖动手柄的可访问名称；完整键列表见 `config.ts`。
+`labels` 接收 `Partial<AgentChatLabels>`，覆盖 `config.ts` 中 `DEFAULT_LABELS` 的任意几项（面板标题、输入框占位、按钮名称、状态文案等），例如 `labels={{ title: "工程助手", welcome: "今天要解决什么问题？" }}`。`thought` 支持 `{seconds}` 占位符；工具相关文案同样用占位符：`retryTool`、`toolStarted`、`toolDone`、`toolFailed`、`toolRetrying` 用 `{name}`，`toolGroup` 用 `{count}`，`toolGroupRunning` 用 `{current}` 与 `{total}`，`toolGroupFailed` 用 `{failed}`，`toolDurationSeconds` 用 `{seconds}`，`toolDurationMinutes` 用 `{minutes}` 与 `{seconds}`；`moveWindow`（默认 `"移动助手窗口"`）用作浮动窗口拖动手柄的可访问名称；完整键列表见 `config.ts`。
+
+工具调用相关的 labels：`retrying`（重试中）、`retryTool`（重试按钮的可访问名称，`重试 {name}`）、`toolDurationSeconds`、`toolDurationMinutes`、`toolGroup`、`toolGroupRunning`、`toolGroupFailed`、`toolStarted`、`toolDone`、`toolFailed`、`toolRetrying`（读屏播报）、`codeExpand`（展开全部）、`codeCollapse`（收起）、`copyInput`、`copyOutput`。
+
+### 重试失败的工具
+
+```tsx
+<AgentChatProvider
+  onRetryTool={async ({ messageId, toolCallId, toolName, input }) => {
+    const output = await callMyTool(toolName, input) // 你自己的调用
+    return { output }
+  }}
+>
+```
+
+- 返回 `{ output }`：区块把这次调用改成「已完成」并显示 `output`。
+- 抛出 `Error`：这次调用保持「失败」，并显示 `Error.message`。
+- 返回 `undefined`：区块不改消息，由你自己通过 transport 或 `setMessages` 更新。
+- 重试期间这一行显示「重试中」并重新计时，按钮在生成回答期间禁用。
+- 演示页接了 `retryMockTool`：「读取慢查询日志」第一次失败，重试后成功；其他失败的工具（如 CI 安装日志）重试后仍然失败，用来演示重试失败的样子。
+
+### 工具耗时的来源
+
+AI SDK 的工具 part 没有时间字段，所以默认由客户端计时：Provider 在第一次看到某次调用（还没有结果）时记下开始时间，第一次看到结果时记下结束时间。计时只在浏览器挂载之后开始，服务端渲染不会输出时间，不会引起 hydration 不匹配；运行中的计时每秒刷新一次，同一条消息里的多个工具共用一个定时器。
+
+- 后端想给历史消息也带上耗时：在工具 part 的 `callProviderMetadata.timing` 里写 `{ durationMs }`，或 `{ startedAt, endedAt }`（毫秒时间戳），优先于客户端计时。
+- 页面加载时就已经是完成状态的历史调用，既没有计时记录也没有元数据，就不显示耗时。
+- 折叠行的总耗时：每个工具都有起止时间时取首尾跨度，只有时长时取总和；任何一个工具拿不到耗时就不显示。
+
+### data-changes 数据块
+
+```ts
+type ChatChanges = {
+  title?: string // 默认「改动摘要」
+  period?: string // 右上角周期，如「本周 vs 上周」
+  changes: {
+    label: string // 指标名
+    change: string // 一句话描述变化
+    tone: "good" | "bad" | "neutral" // 好坏
+    direction?: "up" | "down" | "flat" // 涨跌，不传按 tone 推断
+  }[]
+}
+```
+
+数据块只含字符串，可以来自流式接口，也能随历史消息保存。消息里写成 `{ type: "data-changes", data: ChatChanges }`；渲染在回答文字之后。真实后端用 AI SDK 的 `writer.write({ type: "data-changes", data })` 下发即可。
 
 ### AgentChatPanel
 
@@ -152,6 +204,8 @@ export function Workspace() {
 
 - 标题栏与反馈按钮均有中文可访问名称，输入框有标签。
 - 分析过程里每一步的状态写在标题文字里（运行中 / 已完成 / 失败 / 已停止），图标仅装饰；展开按钮暴露 `aria-expanded`。
+- 面板里有一个共用的 `aria-live="polite"` 区域（`data-slot="agent-chat-tool-status"`），工具开始、完成、失败、重试时读出一句话，整个消息列表只有这一个，不会每个工具各播一遍；打开面板时已有的历史调用不播报。
+- 「展开全部 / 收起」「重试」的可访问名称带上了对象（如「展开全部 输入」「重试 读取慢查询日志」）。复制按钮来自 `code-block` 原语，视觉反馈是图标变成对勾，但原语里写死的「Copied」读屏提示是英文，没有走 labels。
 - 图表卡片里的图是 `role="img"`，名称来自剧本里的 `label`；进度环是 `role="meter"`；关键数字同时写在指标行或环中央的文字里，不只靠图形。
 - 聊天记录通过 `aria-live="polite"` 播报新增内容；按钮暴露 `aria-expanded`、`aria-pressed`，面板通过 `data-mode`、`data-state` 暴露状态。
 - `Enter` 发送，`Shift + Enter` 换行；输入法组合期间不会误发。调整面板宽度可用左右方向键。
@@ -173,10 +227,13 @@ components/agent-chat/
 ├── use-agent-chat-position.ts # 指针/键盘移动、视口约束与位置持久化
 ├── agent-chat-body.tsx       # 标题栏、滚动区、输入框
 ├── chat-message.tsx          # 消息气泡、分析过程 Trace、回复正文与反馈
-├── chat-charts.tsx           # 回答里的图表卡片（迷你图、进度环）
+├── chat-tools.tsx            # 工具行、多工具折叠、长输入输出截断、耗时与展开状态
+├── tool-clock.ts             # 工具计时器与耗时格式化
+├── tool-announcement.ts      # 工具状态的读屏播报
+├── chat-charts.tsx           # 回答里的图表卡片（迷你图、进度环）与改动摘要
 ├── chat-markdown.tsx         # 安全的简单 Markdown
 ├── config.ts                 # DEFAULT_LABELS 与建议问题
-├── types.ts                  # 模式类型与图表块类型 ChatChart
+├── types.ts                  # 模式类型、图表块 ChatChart、改动摘要块 ChatChanges、重试事件
 ├── mock-transport.ts         # 可取消的流
 ├── scripts.ts                # 预置剧本
 └── demo-data.ts              # 页面默认记录与场景
@@ -186,7 +243,7 @@ app/agent/page.tsx
 
 ### Mock transport 设计
 
-`mock-transport.ts` 按最后一条用户消息匹配正则，构造标准 `UIMessageChunk` 队列。每次 `pull` 只输出一个片段：reasoning → 多个 dynamic tool → data-chart（图表）→ source-url → text → finish。延迟定时器受 `AbortSignal` 和流取消控制，不会执行真实命令或请求业务服务；`reconnectToStream` 返回 `null`。
+`mock-transport.ts` 按最后一条用户消息匹配正则，构造标准 `UIMessageChunk` 队列。每次 `pull` 只输出一个片段：reasoning → 多个 dynamic tool（每个可配置「运行」多久）→ data-chart（图表）→ source-url → text → data-changes（改动摘要）→ finish。延迟定时器受 `AbortSignal` 和流取消控制，不会执行真实命令或请求业务服务；`reconnectToStream` 返回 `null`。
 
 `chat-message.tsx` 同时接受动态工具与 `tool-*` 静态工具消息。图表块的结构见 `types.ts` 的 `ChatChart`（`series` 走势 / 柱图、`rings` 进度环），必须可被 JSON 序列化，真实后端用 `type: "data-chart"` 的数据块下发即可。Markdown 仅支持段落、列表与行内代码，不执行 HTML；来源 URL 仅允许 HTTP(S)。
 

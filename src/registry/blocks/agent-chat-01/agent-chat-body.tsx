@@ -43,6 +43,7 @@ function AgentChatBody({
     suggestions,
     scroll,
     updateScroll,
+    toolAnnouncement,
   } = useAgentContext()
   const viewport = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLTextAreaElement>(null)
@@ -261,6 +262,15 @@ function AgentChatBody({
           : chat.messages.length
             ? labels.updated
             : labels.ready}
+      </p>
+      {/* 整个消息列表共用一个播报区：工具开始、完成、失败时读出一句 */}
+      <p
+        data-slot="agent-chat-tool-status"
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {toolAnnouncement}
       </p>
       <form
         className="flex shrink-0 flex-col gap-2 border-t border-edge p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"

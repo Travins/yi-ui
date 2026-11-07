@@ -92,7 +92,7 @@ Blocks are split into three groups, the same as on the website.
 
 | Group | Name | Description |
 | --- | --- | --- |
-| Application | [AI assistant `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | Embedded and floating layouts showing reasoning summaries, tool calls, sources and charts, with a built-in streaming demo. |
+| Application | [AI assistant `agent-chat-01`](https://yiui.dev/blocks/agent-chat-01/) | Embedded and floating layouts showing reasoning summaries, tool calls (timing, grouping, auto-expand on failure with retry), sources, charts and change summaries, with a built-in streaming demo. |
 | Application | [Data table `data-table-01`](https://yiui.dev/blocks/data-table-01/) | Grid toolbar (search, status and owner dropdowns, column settings, density), sorting, column resizing, selection, cell editing with optimistic save, grid pagination and virtual scrolling; narrow screens switch to a card list. |
 | Application | [Theme Customizer `theme-customizer-01`](https://yiui.dev/blocks/theme-customizer-01/) | Color, radius, content width and appearance preferences with early restoration. |
 | Navigation | [Collapsible sidebar `sidebar-01`](https://yiui.dev/blocks/sidebar-01/) | Search filtering, accordion groups and sub-items with guide lines; when collapsed to an icon rail, submenus fly out on hover or from the keyboard. |

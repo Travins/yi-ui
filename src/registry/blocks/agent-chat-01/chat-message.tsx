@@ -1,11 +1,19 @@
 "use client"
 
-import { AgentChatChart } from "./chat-charts"
+import { AgentChatChanges, AgentChatChart } from "./chat-charts"
+import {
+  AgentChatToolGroup,
+  AgentChatToolLine,
+  buildTraceItems,
+  failedKeys,
+  useDisclosure,
+  useToolViews,
+} from "./chat-tools"
 import { AgentChatMarkdown } from "./chat-markdown"
 import { useAgentContext } from "./agent-chat-context"
-import type { ChatChart } from "./types"
+import type { ChatChanges, ChatChart } from "./types"
 import { useEffect, useState } from "react"
-import { isToolUIPart, getToolName, type UIMessage } from "ai"
+import { isToolUIPart, type UIMessage } from "ai"
 import {
   Brain,
   Check,
@@ -15,11 +23,9 @@ import {
   RotateCcw,
   ThumbsDown,
   ThumbsUp,
-  X,
 } from "lucide-react"
 import { Bubble, BubbleContent } from "@/components/ui/bubble"
 import { Button } from "@/components/ui/button"
-import { CodeBlock, CodeBlockContent } from "@/components/ui/code-block"
 import { Message, MessageContent, MessageFooter } from "@/components/ui/message"
 import {
   Trace,
@@ -119,6 +125,15 @@ function messageCharts(message: UIMessage) {
   )
 }
 
+/** 回答末尾的改动摘要块：流式接口以 `data-changes` 数据块下发。 */
+function messageChanges(message: UIMessage) {
+  return message.parts.flatMap((part, index) =>
+    part.type === "data-changes"
+      ? [{ id: part.id ?? String(index), data: part.data as ChatChanges }]
+      : [],
+  )
+}
+
 function AgentChatMessage({
   message,
   live,
@@ -130,11 +145,16 @@ function AgentChatMessage({
   busy: boolean
   regenerate: () => void
 }) {
-  const { labels } = useAgentContext()
+  const { labels, toolGroupThreshold } = useAgentContext()
+  const toolView = useToolViews(message, live)
+  const disclosure = useDisclosure()
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null)
   const [notice, setNotice] = useState("")
+  const items = buildTraceItems(message.parts, toolGroupThreshold, toolView)
+  disclosure.openFailed(failedKeys(items))
   const text = messageText(message)
   const charts = messageCharts(message)
+  const changes = messageChanges(message)
   if (message.role === "user")
     return (
       <Message data-slot="agent-chat-message" data-role="user" align="end">
@@ -154,7 +174,28 @@ function AgentChatMessage({
       <MessageContent className="gap-4">
         {message.parts.some(isTracePart) ? (
           <Trace>
-            {message.parts.map((part, index) => {
+            {items.map((item) => {
+              if (item.kind === "tools")
+                return (
+                  <AgentChatToolGroup
+                    key={`group-${item.views[0]?.key}`}
+                    views={item.views}
+                    messageId={message.id}
+                    busy={busy}
+                    disclosure={disclosure}
+                  />
+                )
+              if (item.kind === "tool")
+                return (
+                  <AgentChatToolLine
+                    key={item.view.part.toolCallId}
+                    view={item.view}
+                    messageId={message.id}
+                    busy={busy}
+                    disclosure={disclosure}
+                  />
+                )
+              const { part, index } = item
               if (part.type === "reasoning")
                 return (
                   <AgentChatReasoning
@@ -164,63 +205,6 @@ function AgentChatMessage({
                     interrupted={!live && part.state === "streaming"}
                   />
                 )
-              if (isToolUIPart(part)) {
-                const done = part.state === "output-available"
-                const failed =
-                  part.state === "output-error" ||
-                  part.state === "output-denied"
-                const running = live && !done && !failed
-                const label = `${running ? labels.running : done ? labels.completed : failed ? labels.failed : labels.stopped} · ${getToolName(part)}`
-                return (
-                  <TraceCollapsible key={part.toolCallId}>
-                    <TraceCollapsibleTrigger>
-                      <TraceLine
-                        status={
-                          running ? "running" : failed ? "error" : undefined
-                        }
-                      >
-                        <TraceIcon>
-                          {running ? (
-                            <LoaderCircle className="animate-spin motion-reduce:animate-none" />
-                          ) : done ? (
-                            <Check />
-                          ) : (
-                            <X />
-                          )}
-                        </TraceIcon>
-                        <TraceTitle>{label}</TraceTitle>
-                      </TraceLine>
-                    </TraceCollapsibleTrigger>
-                    <TraceCollapsibleContent>
-                      <div className="flex flex-col gap-2">
-                        <p className="text-xs">{labels.toolInput}</p>
-                        <CodeBlock size="sm">
-                          <CodeBlockContent wrap>
-                            {JSON.stringify(part.input ?? {}, null, 2)}
-                          </CodeBlockContent>
-                        </CodeBlock>
-                        <p className="text-xs">{labels.toolOutput}</p>
-                        <CodeBlock
-                          size="sm"
-                          variant={failed ? "destructive" : "default"}
-                        >
-                          <CodeBlockContent wrap>
-                            {part.state === "output-error"
-                              ? part.errorText
-                              : done
-                                ? JSON.stringify(part.output, null, 2)
-                                : part.state === "output-denied"
-                                  ? labels.denied
-                                  : running
-                                    ? labels.waiting
-                                    : labels.incomplete}
-                          </CodeBlockContent>
-                        </CodeBlock>
-                      </div>
-                    </TraceCollapsibleContent>
-                  </TraceCollapsible>
-                )
-              }
               if (part.type === "source-url") {
                 const href = safeSource(part.url)
                 return href ? (
@@ -256,6 +240,9 @@ function AgentChatMessage({
             </BubbleContent>
           </Bubble>
         ) : null}
+        {changes.map(({ id, data }) => (
+          <AgentChatChanges key={id} data={data} />
+        ))}
         {!live ? (
           <MessageFooter className="flex-wrap gap-1">
             <Button

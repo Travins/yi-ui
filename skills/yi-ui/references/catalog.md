@@ -105,7 +105,7 @@
 | [sidebar-02](https://yiui.dev/md/blocks/sidebar-02.md) | 团队与账号切换侧栏 | 基于 shadcn 官方 Sidebar：团队切换（⌘1…⌘9）、⌘K 搜索、分组导航、用户卡与多账号切换，可收起成图标，移动端为抽屉。 |
 | [sidebar-03](https://yiui.dev/md/blocks/sidebar-03.md) | 工作区树侧栏 | 图标轨与工作区树双栏侧栏，支持树键盘导航、模块切换、筛选和移动端抽屉。 |
 | [sidebar-04](https://yiui.dev/md/blocks/sidebar-04.md) | 右侧上下文面板 | 右侧上下文面板，组合项目进度、状态分布与分给我的任务。 |
-| [agent-chat-01](https://yiui.dev/md/blocks/agent-chat-01.md) | AI 助手面板 | 从企业监控平台提炼的 AI 助手：嵌入与浮动布局切换，紧凑的 Trace 展示分析摘要、工具调用与来源，回答里可带迷你图与进度环，内置流式演示。 |
+| [agent-chat-01](https://yiui.dev/md/blocks/agent-chat-01.md) | AI 助手面板 | 从企业监控平台提炼的 AI 助手：嵌入与浮动布局切换，紧凑的 Trace 展示分析摘要、工具调用（带耗时、多工具折叠、失败自动展开与重试）与来源，回答里可带迷你图、进度环与改动摘要，内置流式演示。 |
 | [checkout-01](https://yiui.dev/md/blocks/checkout-01.md) | 订单结算 | 地址、配送、发票与支付方式组成的订单结算区块。 |
 | [data-table-01](https://yiui.dev/md/blocks/data-table-01.md) | 数据表格 | 支持排序、筛选、选择、编辑与虚拟滚动的原生数据表格。 |
 | [theme-customizer-01](https://yiui.dev/md/blocks/theme-customizer-01.md) | 主题定制面板 | 即时调整主题色、圆角、内容宽度与亮暗，支持首帧恢复。 |

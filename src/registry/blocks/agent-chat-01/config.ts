@@ -43,6 +43,21 @@ const DEFAULT_LABELS = {
   denied: "调用被拒绝",
   waiting: "等待工具返回…",
   incomplete: "调用未完成",
+  retrying: "重试中",
+  retryTool: "重试 {name}",
+  toolDurationSeconds: "{seconds} 秒",
+  toolDurationMinutes: "{minutes} 分 {seconds} 秒",
+  toolGroup: "调用了 {count} 个工具",
+  toolGroupRunning: "正在调用工具 · 第 {current}/{total} 个",
+  toolGroupFailed: "{failed} 个失败",
+  toolStarted: "开始调用 {name}",
+  toolDone: "{name} 已完成",
+  toolFailed: "{name} 调用失败",
+  toolRetrying: "正在重试 {name}",
+  codeExpand: "展开全部",
+  codeCollapse: "收起",
+  copyInput: "复制输入",
+  copyOutput: "复制输出",
   newTab: "（在新标签页打开）",
   thought: "已思考 {seconds} 秒",
   workspace: "工作台",
@@ -65,7 +80,12 @@ const agentSuggestions = [
   "为什么 API 可用率下降了？",
   "帮我检查 vLLM 推理服务的显存占用",
   "pnpm install 在 CI 里失败",
+  "这周数据有什么变化？",
+  "排查 orders 服务的慢查询",
 ]
 
-export { DEFAULT_LABELS, agentSuggestions }
+/** 同一条消息里连续调用达到这个数量的工具，会折叠成一行；传 `Infinity` 不折叠。 */
+const DEFAULT_TOOL_GROUP_THRESHOLD = 3
+
+export { DEFAULT_LABELS, DEFAULT_TOOL_GROUP_THRESHOLD, agentSuggestions }
 export type { AgentChatLabels }

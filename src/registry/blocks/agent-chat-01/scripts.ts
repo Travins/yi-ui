@@ -1,22 +1,138 @@
-import type { ChatChart } from "./types"
+import type { ChatChanges, ChatChart } from "./types"
 
 type Script = {
   match: RegExp
   reasoning: string
   tools: {
     name: string
-    input: Record<string, string>
+    input: Record<string, unknown>
     output?: unknown
     error?: string
+    /** 这次调用在演示里「运行」多久（毫秒），默认 800 */
+    duration?: number
+    /** 用户点「重试」后返回的结果；没写的工具重试后仍然失败 */
+    retryOutput?: unknown
   }[]
   source: { title: string; url: string }
   /** 工具返回后出现在分析过程与回答之间的图表，尺寸克制，保持消息紧凑 */
   chart?: ChatChart
   answer: string
+  /** 回答文字之后附上的改动摘要，以 `data-changes` 数据块下发 */
+  changes?: ChatChanges
 }
 
 // 所有数据均为演示数据，不会查询或操作真实服务。reasoning 是预写的分析摘要。
 const scripts: Script[] = [
+  {
+    match: /这周|本周|周报/,
+    reasoning:
+      "先拉取本周核心指标，再和上周对比错误率与延迟，最后核对变更记录，找出真正有变化的几项。",
+    tools: [
+      {
+        name: "查询核心指标",
+        input: { period: "本周", compareWith: "上周" },
+        output: { requests: "1,284 万", availability: "99.93%", status: "演示数据" },
+      },
+      {
+        name: "对比错误率与延迟",
+        input: { service: "api-gateway", metrics: "error_rate,p95" },
+        output: { error_rate: "1.2%（上周 1.5%）", p95: "412 ms（上周 356 ms）" },
+        duration: 1000,
+      },
+      {
+        name: "拉取变更记录",
+        input: { scope: "all", since: "7d", limit: 14 },
+        output: {
+          total: 14,
+          items: [
+            "周一 10:20 orders v2.8.0 发布",
+            "周一 15:42 调整 gateway 限流阈值",
+            "周二 09:05 payments 扩容至 6 副本",
+            "周二 14:18 orders v2.8.1 发布（修复连接池）",
+            "周三 11:30 关闭旧版 /v1/legacy 接口",
+            "周三 16:47 search 索引重建",
+            "周四 08:55 数据库只读副本切换",
+            "周四 13:12 gateway 超时由 5s 调整为 8s",
+            "周四 20:03 CDN 缓存规则更新",
+            "周五 10:41 payments v3.1.0 发布",
+            "周五 14:26 告警规则：新增延迟 P95 告警",
+            "周五 17:09 search 查询超时调整",
+            "周六 02:30 定时备份窗口调整",
+            "周日 23:10 日志保留期调整为 30 天",
+          ],
+        },
+        // 耗时较长的一次调用，用来演示实时计时
+        duration: 2600,
+      },
+      {
+        name: "汇总告警",
+        input: { window: "7d", severity: "P1,P2" },
+        output: { fired: 9, resolved: 9, longest: "34 分钟（周二 orders）" },
+        duration: 900,
+      },
+    ],
+    source: {
+      title: "SRE 工作手册：监控分布式系统",
+      url: "https://sre.google/sre-book/monitoring-distributed-systems/",
+    },
+    changes: {
+      period: "本周 vs 上周",
+      changes: [
+        { label: "错误率", change: "下降 0.3 个百分点，至 1.2%", tone: "good", direction: "down" },
+        { label: "P95 延迟", change: "上升 56 ms，至 412 ms", tone: "bad", direction: "up" },
+        { label: "可用率", change: "99.93%，与上周基本持平", tone: "neutral", direction: "flat" },
+        { label: "P1 / P2 告警", change: "减少 3 条，共 9 条，全部已恢复", tone: "good", direction: "down" },
+        { label: "发布次数", change: "共 3 次，比上周多 1 次", tone: "neutral", direction: "up" },
+      ],
+    },
+    answer:
+      "整体偏稳：错误率下降，告警减少；需要留意的是 P95 延迟比上周高了约 56 ms。\n\n- 延迟上升的时间点接近周四网关超时由 5s 调到 8s，慢请求不再被提前截断，会抬高 P95。\n- 错误率下降与周二 `orders v2.8.1` 修复连接池一致。\n- 本周共 14 条变更，其中 3 次发布。\n\n以下是本周的变化摘要，均为模拟数据。",
+  },
+  {
+    match: /慢查询|slow ?query/i,
+    reasoning:
+      "先读取 orders 的慢查询日志，再对照连接池与索引使用情况，判断慢在查询本身还是资源争用。",
+    tools: [
+      {
+        name: "读取慢查询日志",
+        input: { service: "orders", window: "1h", minDuration: "500ms" },
+        error: "请求超时（8 秒）：日志服务暂时不可用（模拟失败）",
+        duration: 1200,
+        retryOutput: {
+          total: 41,
+          slowest: [
+            "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC · 2.4 s · 12 次",
+            "UPDATE inventory SET stock = stock - ? WHERE sku = ? · 1.9 s · 8 次",
+            "SELECT COUNT(*) FROM orders WHERE status = 'pending' · 1.7 s · 15 次",
+            "SELECT * FROM coupons WHERE expires_at < ? · 1.2 s · 6 次",
+            "SELECT o.*, i.* FROM orders o JOIN items i ON i.order_id = o.id · 1.1 s · 9 次",
+            "DELETE FROM sessions WHERE updated_at < ? · 0.9 s · 3 次",
+            "SELECT * FROM addresses WHERE user_id = ? · 0.8 s · 11 次",
+            "SELECT * FROM audit_logs WHERE actor = ? ORDER BY id DESC · 0.7 s · 4 次",
+            "SELECT * FROM shipments WHERE order_id IN (?) · 0.6 s · 7 次",
+            "UPDATE orders SET status = ? WHERE id = ? · 0.5 s · 10 次",
+          ],
+          status: "演示数据",
+        },
+      },
+      {
+        name: "查看连接池状态",
+        input: { service: "orders" },
+        output: { active: 48, idle: 2, waiting: 17, max: 50, status: "演示数据" },
+      },
+      {
+        name: "检查索引使用情况",
+        input: { table: "orders", index: "idx_orders_user_created" },
+        output: { used: false, reason: "查询按 user_id 过滤后排序，缺少复合索引", status: "演示数据" },
+      },
+    ],
+    source: {
+      title: "EXPLAIN 输出格式",
+      url: "https://dev.mysql.com/doc/refman/8.4/en/explain-output.html",
+    },
+    answer:
+      "日志服务这次超时了，我先根据连接池和索引的检查结果判断：\n\n- 连接池 50 个连接几乎占满，还有 17 个请求在排队，慢查询很可能是排队造成的。\n- `orders` 按 `user_id` 过滤再按时间排序，缺少复合索引，会触发额外排序。\n- 点上面失败工具里的「重试」可以重新读取慢查询日志，确认具体是哪几条语句。\n\n这些是模拟结果，没有改动任何数据库。",
+  },
   {
     match: /API|可用率|监控/i,
     reasoning: "先对比可用率与错误分布，再核对最近一次发布，缩小排查范围。",

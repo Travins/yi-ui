@@ -1,4 +1,5 @@
 import type { ChartMetricProps } from "@/registry/ui/chart-card/chart-card"
+import type { ChangeSummaryChange } from "@/registry/ui/change-summary/change-summary"
 import type {
   MiniChartProps,
   MiniRingProps,
@@ -47,4 +48,38 @@ type ChatChart =
       }[]
     })
 
-export type { AgentChatMode, ChatChart }
+/**
+ * 助手回答里的改动摘要块，以 `data-changes` 数据块的形式出现在消息里，渲染成 `ChangeSummary`。
+ * 只含字符串，可以直接 JSON 序列化。
+ */
+type ChatChanges = {
+  /** 卡片标题；不传时用 ChangeSummary 的默认标题「改动摘要」 */
+  title?: string
+  /** 右上角的周期文字，如「本周」 */
+  period?: string
+  changes: ChangeSummaryChange[]
+}
+
+/** 用户点「重试」时交给 `onRetryTool` 的信息。 */
+type ToolRetryEvent = {
+  messageId: string
+  toolCallId: string
+  toolName: string
+  input: unknown
+}
+
+/**
+ * `onRetryTool` 的返回值：
+ * - 返回 `{ output }`：区块把这次调用改成「已完成」并显示 output；
+ * - 抛出 Error：区块把这次调用改成「失败」并显示 `Error.message`；
+ * - 返回 `undefined`：区块不改消息，由你自己通过 transport / `setMessages` 更新。
+ */
+type ToolRetryResult = { output: unknown } | undefined
+
+export type {
+  AgentChatMode,
+  ChatChanges,
+  ChatChart,
+  ToolRetryEvent,
+  ToolRetryResult,
+}

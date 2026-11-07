@@ -1136,7 +1136,8 @@
         "https://yiui.dev/r/segmented-control.json",
         "trace",
         "https://yiui.dev/r/chart-card.json",
-        "https://yiui.dev/r/mini-chart.json"
+        "https://yiui.dev/r/mini-chart.json",
+        "https://yiui.dev/r/change-summary.json"
       ],
       "files": [
         {
@@ -1168,6 +1169,26 @@
           "path": "src/registry/blocks/agent-chat-01/chat-message.tsx",
           "type": "registry:component",
           "target": "@components/agent-chat/chat-message.tsx"
+        },
+        {
+          "path": "src/registry/blocks/agent-chat-01/chat-tools.tsx",
+          "type": "registry:component",
+          "target": "@components/agent-chat/chat-tools.tsx"
+        },
+        {
+          "path": "src/registry/blocks/agent-chat-01/chat-code.tsx",
+          "type": "registry:component",
+          "target": "@components/agent-chat/chat-code.tsx"
+        },
+        {
+          "path": "src/registry/blocks/agent-chat-01/tool-clock.ts",
+          "type": "registry:component",
+          "target": "@components/agent-chat/tool-clock.ts"
+        },
+        {
+          "path": "src/registry/blocks/agent-chat-01/tool-announcement.ts",
+          "type": "registry:component",
+          "target": "@components/agent-chat/tool-announcement.ts"
         },
         {
           "path": "src/registry/blocks/agent-chat-01/chat-charts.tsx",

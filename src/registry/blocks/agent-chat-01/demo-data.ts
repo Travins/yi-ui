@@ -1,5 +1,5 @@
 import type { UIMessage } from "ai"
-import { Activity, Layers, Server } from "lucide-react"
+import { Activity, CalendarDays, Database, Layers, Server } from "lucide-react"
 
 const initialMessages: UIMessage[] = [
   {
@@ -29,7 +29,7 @@ const initialMessages: UIMessage[] = [
       },
       {
         type: "text",
-        text: "我已经准备好了。你可以从以下问题开始：\n\n- 为什么 API 可用率下降了？\n- 帮我检查 vLLM 推理服务的显存占用。\n- pnpm install 在 CI 里失败。\n\n点击左侧的场景，或直接输入问题。我会逐步展示检查过程、工具结果与参考来源。",
+        text: "我已经准备好了。你可以从以下问题开始：\n\n- 为什么 API 可用率下降了？\n- 帮我检查 vLLM 推理服务的显存占用。\n- pnpm install 在 CI 里失败。\n- 这周数据有什么变化？\n- 排查 orders 服务的慢查询。\n\n点击左侧的场景，或直接输入问题。我会逐步展示检查过程、工具结果与参考来源。",
       },
     ],
   },
@@ -52,6 +52,18 @@ const scenarios = [
     label: "前端工程",
     question: "pnpm install 在 CI 里失败",
     description: "从构建日志定位依赖安装问题",
+  },
+  {
+    icon: CalendarDays,
+    label: "周报摘要",
+    question: "这周数据有什么变化？",
+    description: "连续调用多个工具，结尾附改动摘要",
+  },
+  {
+    icon: Database,
+    label: "慢查询排查",
+    question: "排查 orders 服务的慢查询",
+    description: "有一次工具调用失败，可以点「重试」",
   },
 ]
 

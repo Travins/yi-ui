@@ -9,8 +9,9 @@ import {
   ChartMetric,
   ChartMetrics,
 } from "@/registry/ui/chart-card/chart-card"
+import { ChangeSummary } from "@/registry/ui/change-summary/change-summary"
 import { MiniChart, MiniRing } from "@/registry/ui/mini-chart/mini-chart"
-import type { ChatChart } from "./types"
+import type { ChatChanges, ChatChart } from "./types"
 
 /**
  * 回答里的图表卡片。刻意做得紧凑：内边距 12px、图表只有 96px 高，
@@ -85,4 +86,16 @@ function AgentChatChart({ chart }: { chart: ChatChart }) {
   )
 }
 
-export { AgentChatChart }
+/** 回答里的改动摘要：直接渲染成 `ChangeSummary`，数据来自 `data-changes` 数据块。 */
+function AgentChatChanges({ data }: { data: ChatChanges }) {
+  return (
+    <ChangeSummary
+      data-slot="agent-chat-changes"
+      title={data.title}
+      period={data.period}
+      changes={data.changes}
+    />
+  )
+}
+
+export { AgentChatChart, AgentChatChanges }
