@@ -1636,6 +1636,55 @@
       }
     },
     {
+      "name": "change-summary",
+      "type": "registry:ui",
+      "title": "改动摘要",
+      "description": "一张卡片逐行列出指标的变化：指标名、一句话变化和趋势标记。好坏（绿 / 红 / 灰）与方向（上 / 下 / 平）分开设置，读屏会念出两者；数据是纯 JSON，入场依次淡入并尊重「减少动态效果」。",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/change-summary/change-summary.tsx",
+          "type": "registry:ui",
+          "target": "@ui/change-summary/change-summary.tsx"
+        },
+        {
+          "path": "src/registry/ui/change-summary/config.ts",
+          "type": "registry:ui",
+          "target": "@ui/change-summary/config.ts"
+        },
+        {
+          "path": "src/registry/lib/data-display.ts",
+          "type": "registry:lib",
+          "target": "lib/data-display.ts"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "flow-blue": "oklch(0.56 0.2 258)",
+          "flow-green": "oklch(0.62 0.16 150)",
+          "flow-amber": "oklch(0.7 0.16 70)",
+          "flow-rose": "oklch(0.62 0.21 5)",
+          "flow-violet": "oklch(0.56 0.22 292)",
+          "flow-cyan": "oklch(0.66 0.12 215)",
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "flow-blue": "oklch(0.72 0.15 255)",
+          "flow-green": "oklch(0.77 0.17 152)",
+          "flow-amber": "oklch(0.82 0.15 82)",
+          "flow-rose": "oklch(0.74 0.16 8)",
+          "flow-violet": "oklch(0.74 0.15 295)",
+          "flow-cyan": "oklch(0.82 0.11 208)",
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      }
+    },
+    {
       "name": "chart-card",
       "type": "registry:ui",
       "title": "图表卡片",

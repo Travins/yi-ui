@@ -35,6 +35,7 @@ const fitClasses: Record<string, string> = {
   "local-time": "max-lg:scale-[0.78]",
   "stat-card": "max-lg:scale-[0.62]",
   "mini-chart": "max-lg:scale-90",
+  "change-summary": "max-lg:scale-[0.8]",
   "chart-card": "max-lg:scale-[0.55]",
   timeline: "max-lg:scale-[0.85]",
   "card-stack": "max-lg:scale-90",

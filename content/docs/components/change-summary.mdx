@@ -1,0 +1,138 @@
+---
+title: 改动摘要
+titleEn: Change Summary
+group: data
+status: new
+description: 一张卡片逐行列出指标的变化：指标名、一句话变化和趋势标记。好坏（绿 / 红 / 灰）与方向（上 / 下 / 平）分开设置，读屏会念出两者；数据是纯 JSON，入场依次淡入并尊重「减少动态效果」。
+---
+
+<ComponentPreview name="change-summary-demo" />
+
+## 安装
+
+<InstallCommand name="change-summary" />
+
+颜色与数据工具来自 `lib/data-display.ts`，与 [统计卡片](/components/stat-card)、[迷你图](/components/mini-chart) 共用同一份，安装时一并添加。
+
+## 用法
+
+最常见的写法是传一个 `changes` 数组：每行一个指标名、一句话变化，再加好坏和方向。
+
+```tsx title="app/weekly.tsx"
+import { Activity } from "lucide-react"
+
+import { ChangeSummary } from "@/components/ui/change-summary/change-summary"
+
+export function Weekly() {
+  return (
+    <ChangeSummary
+      icon={<Activity />}
+      title="本周变化"
+      period="本周"
+      changes={[
+        { label: "访问量", change: "上涨 6.1%，至 1.82 万", tone: "good" },
+        {
+          label: "错误率",
+          change: "下降 0.3 个百分点，至 1.2%",
+          tone: "good",
+          direction: "down",
+        },
+      ]}
+    />
+  )
+}
+```
+
+### 好坏与方向
+
+每行有两个互相独立的信息：
+
+- `tone` 是好坏：`good` 绿色、`bad` 玫红、`neutral` 灰色；
+- `direction` 是方向：`up`、`down`、`flat`，可以不写。
+
+不写 `direction` 时按 `tone` 推断：`good` 向上、`bad` 向下、`neutral` 画横线。推断只是省事的默认值，指标「越低越好」时要自己写：错误率下降是 `tone: "good"` 加 `direction: "down"`，响应时间上升是 `tone: "bad"` 加 `direction: "up"`。
+
+标记的颜色表示好坏，不跟 [统计卡片](/components/stat-card) 的涨跌配色约定（`convention`）走：错误率下降永远是绿色，不会因为切到红涨绿跌而变红。
+
+### 可以 JSON 序列化
+
+`changes` 的每一项只有四个字符串字段，没有函数和 React 节点，可以直接放进接口返回值，或者作为 AI 助手消息里的一个数据块传输；组件只负责把它画出来。`ChangeSummaryChange` 类型随组件导出，两端共用。
+
+## 示例
+
+### 本周运营
+
+两张卡片拼成后台首页的一行：转化率下降、5xx 增加是坏事，退款率和延迟下降是好事（`good` 加 `down`），持平的指标用 `neutral`。
+
+<ComponentPreview name="change-summary-ops-demo" />
+
+### 组合写法
+
+需要在头部放徽标，或者换一种布局时，不传 `changes`，用 `ChangeSummaryHeader`、`ChangeSummaryList`、`ChangeSummaryItem` 自己拼。读屏文字通过 `labels` 换成英文；组合写法里 `labels` 要传给每个 `ChangeSummaryItem`。
+
+<ComponentPreview name="change-summary-compose-demo" />
+
+| 部件 | 用途 |
+| --- | --- |
+| `ChangeSummary` | 卡片外壳；传 `changes` / `title` / `icon` / `period` 时自动渲染头部与列表 |
+| `ChangeSummaryHeader` | 头部行，下方一条细线 |
+| `ChangeSummaryIcon` / `ChangeSummaryTitle` / `ChangeSummaryPeriod` | 图标、标题（`h3`）、右侧周期文字 |
+| `ChangeSummaryList` | `dl` 列表，行间用细线分隔 |
+| `ChangeSummaryItem` | 一行：`dt` 指标名，`dd` 趋势标记加变化文字 |
+
+## API
+
+### ChangeSummary
+
+<PropsTable name="change-summary" component="ChangeSummary" />
+
+根元素 `data-slot="change-summary"`。
+
+### ChangeSummaryItem
+
+<PropsTable name="change-summary" component="ChangeSummaryItem" />
+
+根元素带 `data-tone` 与 `data-direction`（已经解析过的方向），`data-slot="change-summary-item"`。
+
+### 类型
+
+```ts
+type ChangeTone = "good" | "bad" | "neutral"
+type ChangeDirection = "up" | "down" | "flat"
+
+type ChangeSummaryChange = {
+  label: string
+  change: string
+  tone: ChangeTone
+  direction?: ChangeDirection
+}
+```
+
+### labels
+
+| 键 | 默认值 | 说明 |
+| --- | --- | --- |
+| `title` | 改动摘要 | 没有传 `title` 时的标题 |
+| `up` / `down` / `flat` | 上升 / 下降 / 持平 | 方向的读屏文字 |
+| `good` / `bad` / `neutral` | 好转 / 恶化 / 中性 | 好坏的读屏文字 |
+| `mark` | `{direction}，{tone}：` | 读屏文字模板，放在每行变化文字前 |
+
+### data-slot
+
+`change-summary`、`change-summary-header`、`change-summary-icon`、`change-summary-title`、`change-summary-period`、`change-summary-list`、`change-summary-item`、`change-summary-label`、`change-summary-change`、`change-summary-mark`。
+
+## 可访问性
+
+- 列表是 `dl`，每行是一组 `dt`（指标名）与 `dd`（变化），读屏能按「名称：内容」逐条读出。
+- 趋势标记（箭头图标）是装饰性的；每行 `dd` 开头有一段 `sr-only` 文字，念出方向和好坏，例如「下降，好转：下降 0.3 个百分点，至 1.2%」。方向与好坏都有文字，颜色不是唯一信息。
+- 入场动画在系统开启「减少动态效果」时不播放。
+
+## 注意事项
+
+- 入场动画是纯 CSS：前 12 行每行晚 50 毫秒依次淡入，第 13 行起与第 12 行同时出现，不会因为行数多而拖长。服务端直接输出最终状态，没有脚本也完整显示。
+- 卡片宽度窄于 24rem 时指标名在上、变化在下，长文字自动换行；更宽时左右分布，变化文字靠右。
+- 变化文字由调用方写好，组件不做数字格式化；需要格式化时先用 `formatStat`（见 [统计卡片](/components/stat-card)）生成再传入。
+
+## 源码
+
+<ComponentSource name="change-summary" />

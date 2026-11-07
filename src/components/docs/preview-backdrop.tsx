@@ -16,6 +16,7 @@ const BACKDROPS: Record<string, "dots" | "grid"> = {
   "local-time": "dots",
   "stat-card": "dots",
   "mini-chart": "grid",
+  "change-summary": "dots",
   "chart-card": "dots",
   timeline: "grid",
   "card-stack": "dots",

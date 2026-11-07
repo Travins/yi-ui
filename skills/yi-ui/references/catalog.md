@@ -48,6 +48,7 @@
 | --- | --- | --- | --- |
 | [stat-card](https://yiui.dev/md/components/stat-card.md) | 统计卡片 | `@/components/ui/stat-card/stat-card` | 一组可组合的统计卡片原语：KPI 数字与涨跌幅（绿涨红跌 / 红涨绿跌可切换）、目标状态行、配额进度条、分格计量条、延迟分区表、占比分布条与图例，数字默认按万 / 亿压缩。 |
 | [mini-chart](https://yiui.dev/md/components/mini-chart.md) | 迷你图 | `@/components/ui/mini-chart/mini-chart` | 放进卡片的极简图表：柱、折线、面积、阶梯线、进度环与环形图。无网格无纵轴，可选 11px 横轴，涨跌色随配色约定变化，尊重「减少动态效果」。 |
+| [change-summary](https://yiui.dev/md/components/change-summary.md) | 改动摘要 | `@/components/ui/change-summary/change-summary` | 一张卡片逐行列出指标的变化：指标名、一句话变化和趋势标记。好坏（绿 / 红 / 灰）与方向（上 / 下 / 平）分开设置，读屏会念出两者；数据是纯 JSON，入场依次淡入并尊重「减少动态效果」。 |
 | [chart-card](https://yiui.dev/md/components/chart-card.md) | 图表卡片 | `@/components/ui/chart-card/chart-card` | 图表卡片布局（标题、指标行、图例、明细表）加三个图表：刻度式环形仪表、多序列折线 / 柱 / 面积图（支持堆叠与正负对比）、横向排名条。基于 shadcn chart，颜色全部取自主题变量。 |
 | [grid-pagination](https://yiui.dev/md/components/grid-pagination.md) | 网格分页 | `@/components/ui/grid-pagination/grid-pagination` | 整条是一行格子的分页：信息、每页条数、首尾页、页码与跳页各占一格，可单独使用，也可贴在表格底部。 |
 | [grid-toolbar](https://yiui.dev/md/components/grid-toolbar.md) | 网格工具栏 | `@/components/ui/grid-toolbar/grid-toolbar` | 一行格子组成的工具栏，格子之间虚线分隔、窄容器自动换行；方条输入、分段选择、方条下拉放进来会自动去掉外框铺满整格。 |
