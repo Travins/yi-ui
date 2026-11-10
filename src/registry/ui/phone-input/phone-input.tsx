@@ -126,16 +126,17 @@ function PhoneInput({
       )}
     >
       {/* 窄于 20rem 时条内放不下「标签 + 号码」：标签挪到条上方显示，条内那份只留给读屏。
-          这一份 aria-hidden，只负责看和点（点它聚焦输入框），可访问名称仍来自条内的 label */}
+          这一份只负责看和点（点它聚焦输入框）：不能用关联到输入框的 label，否则可访问名称会把标签念两遍；
+          名称只来自条内的 label */}
       {label && (
-        <label
+        <span
           aria-hidden="true"
-          htmlFor={id}
+          onClick={() => document.getElementById(id)?.focus()}
           data-slot="phone-input-label-above"
           className="hidden text-xs text-muted-foreground @max-[20rem]/phone-input:block in-data-[slot=grid-toolbar]:hidden!"
         >
           {label}
-        </label>
+        </span>
       )}
       <div
         data-slot="phone-input-control"

@@ -178,15 +178,16 @@ function NumberStepper({
       onValueCommitted={handleCommit}
     >
       {label && (
-        // 容器窄于 20rem 时标签挪到条上方（与方条文本框同一规则），条内的标签只留给读屏
-        <label
-          htmlFor={id}
+        // 容器窄于 20rem 时标签挪到条上方（与方条文本框同一规则），条内的标签只留给读屏；
+        // 这一份不关联输入框，否则可访问名称会把标签念两遍，点它时手动聚焦
+        <span
+          onClick={() => document.getElementById(id)?.focus()}
           aria-hidden="true"
           data-slot="number-stepper-label-above"
           className="hidden text-xs text-muted-foreground @max-[20rem]/number-stepper:block"
         >
           {label}
-        </label>
+        </span>
       )}
       <NumberField.Group
         data-slot="number-stepper-control"

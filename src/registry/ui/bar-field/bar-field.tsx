@@ -113,15 +113,17 @@ function BarField({
         className,
       )}
     >
+      {/* 窄于 20rem 时标签挪到条上方显示。这一份只负责看和点（点它聚焦输入框）：
+          不能用关联到输入框的 label，否则可访问名称会把标签念两遍；名称只来自条内的 label */}
       {label && (
-        <label
-          htmlFor={id}
+        <span
+          onClick={() => document.getElementById(id)?.focus()}
           aria-hidden="true"
           data-slot="bar-field-label-above"
           className="hidden text-xs text-muted-foreground in-data-[slot=grid-toolbar]:hidden! @max-[20rem]/bar-field:block"
         >
           {label}
-        </label>
+        </span>
       )}
       <div
         data-slot="bar-field-control"

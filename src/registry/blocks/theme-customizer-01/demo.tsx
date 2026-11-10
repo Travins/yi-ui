@@ -16,8 +16,9 @@ function PreviewContent() {
       data-theme="neutral"
       data-radius="md"
       data-content-width="wide"
-      // 预览框比真实页面窄，把紧凑宽度按比例缩小，切换时才看得出差别
-      className="min-h-svh w-full min-w-0 bg-background text-foreground [&[data-content-width=compact]]:[--theme-content-width:32rem]"
+      // 预览框比真实页面窄，把紧凑宽度按比例缩小，切换时才看得出差别。
+      // 区块样式里的同名规则不在 @layer 里，会压过工具类，所以这里要加 !
+      className="min-h-svh w-full min-w-0 bg-background text-foreground [&[data-content-width=compact]]:[--theme-content-width:32rem]!"
     >
       <header className="flex items-center justify-between border-b border-edge px-5 py-3">
         <span className="text-sm font-medium">工作空间</span>
