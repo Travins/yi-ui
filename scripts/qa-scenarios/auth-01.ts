@@ -406,5 +406,39 @@ export default {
         )
       },
     },
+    {
+      name: "默认两种登录方式都开，有切换控件",
+      viewport: "desktop",
+      async run({ role, assert }) {
+        assert(
+          (await role("radiogroup", { name: "登录方式" }).count()) === 1,
+          "默认应渲染登录方式切换",
+        )
+      },
+    },
+    {
+      name: "只开密码登录时没有切换控件，仍能提交",
+      async run({ page, role, settle, assert, visible }) {
+        await page.goto(
+          new URL("/demo/auth-01-password-only-mobile/", page.url()).href,
+          { waitUntil: "networkidle" },
+        )
+        await settle()
+        await visible(root(page), "区块应渲染")
+        assert(
+          (await role("radiogroup", { name: "登录方式" }).count()) === 0,
+          "只开一种方式时不应渲染切换控件",
+        )
+        assert(
+          (await root(page).getByText("验证码登录").count()) === 0,
+          "不应出现验证码登录入口",
+        )
+        await submitButton(page).click()
+        await visible(
+          fieldError(page, "sign-in-account"),
+          "密码表单应照常校验",
+        )
+      },
+    },
   ],
 } satisfies Scenario

@@ -12,6 +12,7 @@ export const registryExamples: Record<string, LazyExoticComponent<ComponentType>
   "angle-dial-compass-demo": lazy(() => import("./examples/angle-dial-compass-demo")),
   "angle-dial-demo": lazy(() => import("./examples/angle-dial-demo")),
   "angle-dial-gradient-demo": lazy(() => import("./examples/angle-dial-gradient-demo")),
+  "auth-01-password-only-demo": lazy(() => import("./examples/auth-01-password-only-demo")),
   "auth-02-demo": lazy(() => import("./examples/auth-02-demo")),
   "bar-field-demo": lazy(() => import("./examples/bar-field-demo")),
   "bar-field-search-demo": lazy(() => import("./examples/bar-field-search-demo")),
