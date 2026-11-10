@@ -3107,6 +3107,11 @@
           "target": "@components/data-table-01/data-table-detail.tsx"
         },
         {
+          "path": "src/registry/blocks/data-table-01/column-title.ts",
+          "type": "registry:component",
+          "target": "@components/data-table-01/column-title.ts"
+        },
+        {
           "path": "src/registry/blocks/data-table-01/data-table-bulk-bar.tsx",
           "type": "registry:component",
           "target": "@components/data-table-01/data-table-bulk-bar.tsx"

@@ -9,6 +9,8 @@ import type {
 } from "@tanstack/react-table"
 
 type DataTableMeta<T> = {
+  /** 列的文字名称；`header` 是函数（自定义列头）时，菜单、详情和读屏名称用它，不传则退回列 id */
+  title?: string
   detailCell?: (value: unknown, row: T) => React.ReactNode
   bar?: boolean
   max?: number

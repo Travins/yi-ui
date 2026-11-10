@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import { columnTitle } from "./column-title"
 import type { DataTableLabels, DataTableProps } from "./types"
 
 /**
@@ -204,7 +205,7 @@ function DataTableToolbar<T>({
                 onCheckedChange={(value) => column.toggleVisibility(value)}
                 closeOnClick={false}
               >
-                {String(column.columnDef.header ?? column.id)}
+                {columnTitle(column)}
               </DropdownMenuCheckboxItem>
             ))}
             <DropdownMenuSeparator />
@@ -271,7 +272,7 @@ function DataTableToolbar<T>({
                       key={String(desc)}
                       onClick={() => column.toggleSorting(desc)}
                     >
-                      {String(column.columnDef.header)} ·{" "}
+                      {columnTitle(column)} ·{" "}
                       {desc ? labels.descending : labels.ascending}
                     </DropdownMenuItem>
                   ))}

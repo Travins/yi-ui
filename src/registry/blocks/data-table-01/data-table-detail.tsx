@@ -7,6 +7,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet"
+import { columnTitle } from "./column-title"
 import { DataTableCell } from "./data-table-cell"
 import type { DataTableController } from "./use-data-table"
 import type { DataTableMeta } from "./types"
@@ -38,13 +39,13 @@ function DataTableDetail<T>({ state }: DataTableDetailProps<T>) {
           {detail?.getAllCells().map((cell) => (
             <div key={cell.id} className="py-3">
               <p className="mb-1 text-xs text-muted-foreground">
-                {String(cell.column.columnDef.header)}
+                {columnTitle(cell.column)}
               </p>
               <DataTableCell
                 value={cell.getValue()}
                 row={detail.original}
                 meta={cell.column.columnDef.meta as DataTableMeta<T>}
-                title={String(cell.column.columnDef.header)}
+                title={columnTitle(cell.column)}
                 labels={labels}
                 cellKey={cell.column.id}
                 rowHeight={52}

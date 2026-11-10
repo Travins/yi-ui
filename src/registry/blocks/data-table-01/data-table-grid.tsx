@@ -21,6 +21,7 @@ import {
   EmptyHeader,
   EmptyDescription,
 } from "@/components/ui/empty"
+import { columnTitle } from "./column-title"
 import { DataTableCell } from "./data-table-cell"
 import type { DataTableController } from "./use-data-table"
 import type { DataTableProps, DataTableMeta } from "./types"
@@ -184,7 +185,7 @@ function DataTableGrid<T>({
                 </Button>
                 <div
                   role="separator"
-                  aria-label={String(header.column.columnDef.header)}
+                  aria-label={columnTitle(header.column)}
                   aria-orientation="vertical"
                   aria-valuenow={header.getSize()}
                   aria-valuemin={80}
@@ -385,7 +386,7 @@ function DataTableGrid<T>({
                         value={cell.getValue()}
                         row={row.original}
                         meta={cell.column.columnDef.meta as DataTableMeta<T>}
-                        title={String(cell.column.columnDef.header)}
+                        title={columnTitle(cell.column)}
                         labels={labels}
                         cellKey={cell.column.id}
                         rowHeight={Number(density)}
