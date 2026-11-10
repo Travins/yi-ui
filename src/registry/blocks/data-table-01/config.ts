@@ -53,4 +53,6 @@ const DATA_TABLE_LABELS: DataTableLabels = {
   selectRow: "选择行",
 }
 const numberFormat = new Intl.NumberFormat("zh-CN")
-export { DATA_TABLE_LABELS, numberFormat }
+/** 虚拟滚动模式下窄屏卡片列表每批显示的条数 */
+const MOBILE_LIST_BATCH = 30
+export { DATA_TABLE_LABELS, MOBILE_LIST_BATCH, numberFormat }

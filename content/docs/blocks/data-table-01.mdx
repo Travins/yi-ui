@@ -174,7 +174,7 @@ const [owner, setOwner] = React.useState<string | null>(null)
 
 列 meta 支持 `align`、`editable`、`validate`、`hideOnMobile`、`pinned`、`bar`（数字比例条）、`max`（服务端模式的列最大值），列宽使用原生 `size`。`detailCell(value, row)` 定制详情字段的展示，例如完整时间。首个标记 pinned 的可见数据列固定。
 
-文件职责：`data-table.tsx` 组装，`data-table-toolbar.tsx` 工具栏，`data-table-pagination.tsx` 分页，`data-table-cell.tsx` 编辑，`types.ts` 类型，`config.ts` 文案。根节点为 `data-slot="data-table"`，滚动容器为 `data-table-scroll`，编辑格为 `data-table-cell`。
+文件职责：`data-table.tsx` 组装，`use-data-table.ts` 状态与 TanStack Table 装配，`data-table-grid.tsx` 桌面表格，`data-table-list.tsx` 窄屏卡片列表，`data-table-detail.tsx` 行详情抽屉，`data-table-bulk-bar.tsx` 批量操作条，`data-table-toolbar.tsx` 工具栏，`data-table-pagination.tsx` 分页，`data-table-cell.tsx` 编辑，`types.ts` 类型，`config.ts` 文案与常量。根节点为 `data-slot="data-table"`，滚动容器为 `data-table-scroll`，编辑格为 `data-table-cell`。
 
 ## 可访问性
 

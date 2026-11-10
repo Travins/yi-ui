@@ -3085,6 +3085,31 @@
           "path": "src/registry/blocks/data-table-01/data-table-row-actions.tsx",
           "type": "registry:component",
           "target": "@components/data-table-01/data-table-row-actions.tsx"
+        },
+        {
+          "path": "src/registry/blocks/data-table-01/use-data-table.ts",
+          "type": "registry:component",
+          "target": "@components/data-table-01/use-data-table.ts"
+        },
+        {
+          "path": "src/registry/blocks/data-table-01/data-table-grid.tsx",
+          "type": "registry:component",
+          "target": "@components/data-table-01/data-table-grid.tsx"
+        },
+        {
+          "path": "src/registry/blocks/data-table-01/data-table-list.tsx",
+          "type": "registry:component",
+          "target": "@components/data-table-01/data-table-list.tsx"
+        },
+        {
+          "path": "src/registry/blocks/data-table-01/data-table-detail.tsx",
+          "type": "registry:component",
+          "target": "@components/data-table-01/data-table-detail.tsx"
+        },
+        {
+          "path": "src/registry/blocks/data-table-01/data-table-bulk-bar.tsx",
+          "type": "registry:component",
+          "target": "@components/data-table-01/data-table-bulk-bar.tsx"
         }
       ],
       "meta": {
