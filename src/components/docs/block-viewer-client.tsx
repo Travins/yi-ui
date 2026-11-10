@@ -21,6 +21,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { CodeView } from "./code-view"
 import { PreviewSkeleton } from "./preview-skeleton"
+import { SourceNote } from "./source-note"
+import { loadSources, type LoadedSource } from "./source-loader"
 import { CopyButton } from "./copy-button"
 import {
   DocFrameBar,
@@ -33,8 +35,6 @@ import { IconTip } from "./icon-tip"
 import { v0Url } from "./registry-items"
 import { V0Icon } from "./v0-icon"
 
-/** /code/<name>.json 里的一个文件：安装路径、原文（供复制）与高亮后的 HTML */
-type ViewerSource = { path: string; source: string; lines: number; html: string }
 type TreeNode = { name: string; path?: string; children: TreeNode[] }
 
 const MIN_WIDTH = 320
@@ -134,22 +134,14 @@ export function BlockViewerClient({
   const [installOpen, setInstallOpen] = useState(false)
   const [active, setActive] = useState(files[0] ?? "")
   // 高亮源码按需加载：悬停或聚焦「代码」时预取，点开时一般已经到了
-  const [sources, setSources] = useState<ViewerSource[] | null>(null)
+  const [sources, setSources] = useState<LoadedSource[] | null>(null)
   const [failed, setFailed] = useState(false)
-  const request = useRef<Promise<void> | null>(null)
-  const loadSources = () => {
-    if (request.current) return
+  const prefetchSources = () => void loadSources(name).catch(() => {})
+  const showSources = () => {
     setFailed(false)
-    request.current = fetch(`/code/${name}.json`)
-      .then((response) => {
-        if (!response.ok) throw new Error(String(response.status))
-        return response.json() as Promise<ViewerSource[]>
-      })
+    loadSources(name)
       .then(setSources)
-      .catch(() => {
-        request.current = null
-        setFailed(true)
-      })
+      .catch(() => setFailed(true))
   }
   const tree = useMemo(() => buildTree(files), [files])
   const [near, setNear] = useState(false)
@@ -225,7 +217,7 @@ export function BlockViewerClient({
     <Tabs
       value={view}
       onValueChange={(value) => {
-        if (value === "code") loadSources()
+        if (value === "code" && !sources) showSources()
         setView(String(value))
       }}
       className={docFrameClass}
@@ -235,8 +227,8 @@ export function BlockViewerClient({
           <DocTabsTrigger value="preview">预览</DocTabsTrigger>
           <DocTabsTrigger
             value="code"
-            onPointerEnter={loadSources}
-            onFocus={loadSources}
+            onPointerEnter={prefetchSources}
+            onFocus={prefetchSources}
           >
             代码
           </DocTabsTrigger>
@@ -381,20 +373,23 @@ export function BlockViewerClient({
           </nav>
           <div className="min-w-0 md:max-h-[44rem] md:overflow-auto">
             {view !== "code" ? null : activeFile ? (
-              <CodeView
-                key={activeFile.path}
-                lines={activeFile.lines}
-                collapse={false}
-              >
-                <div dangerouslySetInnerHTML={{ __html: activeFile.html }} />
-              </CodeView>
+              <>
+                <CodeView
+                  key={activeFile.path}
+                  lines={activeFile.lines}
+                  collapse={false}
+                >
+                  <div dangerouslySetInnerHTML={{ __html: activeFile.html }} />
+                </CodeView>
+                <SourceNote file={activeFile} />
+              </>
             ) : failed ? (
               <div
                 role="alert"
                 className="flex flex-col items-start gap-3 p-4 text-sm text-muted-foreground"
               >
                 <p>源码没有加载出来，可能是网络中断。</p>
-                <Button variant="outline" size="sm" onClick={loadSources}>
+                <Button variant="outline" size="sm" onClick={showSources}>
                   重新加载
                 </Button>
               </div>

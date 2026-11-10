@@ -1,12 +1,13 @@
-import { hasRegistryItem, viewItems } from "@/components/docs/registry-items"
+import { hasRegistryItem } from "@/components/docs/registry-items"
+import registry from "../../../../registry.json"
 import { getSourceHtml } from "@/components/docs/source-files"
 
 export const dynamic = "force-static"
 export const dynamicParams = false
 
-/** /code/auth-05.json：区块 / 页面的高亮源码，构建时静态生成，查看器打开「代码」时请求。 */
+/** /code/auth-05.json：条目的高亮源码，构建时静态生成，文档页在用户点开代码时请求。 */
 export function generateStaticParams() {
-  return viewItems().map((item) => ({ file: `${item.name}.json` }))
+  return registry.items.map((item) => ({ file: `${item.name}.json` }))
 }
 
 export async function GET(

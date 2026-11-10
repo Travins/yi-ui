@@ -2,7 +2,7 @@ import "server-only"
 
 import { readFile } from "node:fs/promises"
 import { cache } from "react"
-import { CodeBlock, highlight } from "./code-block"
+import { highlight } from "./code-block"
 import { getInternalParts } from "./install-plan"
 import { getRegistryItem } from "./registry-items"
 import { installedPath, toInstalledImports } from "./installed-imports"
@@ -43,26 +43,28 @@ export const getSourceList = cache(async (name: string) => {
   )
 })
 
-/** 高亮后的 HTML 字符串，供 /code/<name>.json 输出，由区块查看器在打开「代码」时请求。 */
+// 超过这个行数的文件（如全国行政区划数据）只高亮开头一段，原文仍完整提供给复制按钮
+const MAX_HIGHLIGHT_LINES = 1500
+const SHOWN_LINES = 200
+
+/**
+ * 高亮后的 HTML 字符串，供 /code/<name>.json 输出。
+ * 查看器、手动安装和源码列表都在用户点开时才请求它，页面本身不内联源码。
+ */
 export const getSourceHtml = cache(async (name: string) =>
   Promise.all(
-    (await getSourceList(name)).map(async ({ path, source, lines, lang }) => ({
-      path,
-      source,
-      lines,
-      html: await highlight(source, lang),
-    })),
-  ),
-)
-
-// 同次服务端渲染共享已解析节点，源码列表里同一个文件只高亮一次。
-export const getSourceFiles = cache(async (name: string) =>
-  Promise.all(
-    (await getSourceList(name)).map(async ({ path, source, lines, lang }) => ({
-      path,
-      source,
-      lines,
-      code: await CodeBlock({ code: source, lang, bare: true, collapse: false }),
-    })),
+    (await getSourceList(name)).map(async ({ path, source, lines, lang }) => {
+      const long = lines > MAX_HIGHLIGHT_LINES
+      return {
+        path,
+        source,
+        lines,
+        html: await highlight(
+          long ? source.split("\n").slice(0, SHOWN_LINES).join("\n") : source,
+          lang,
+        ),
+        ...(long ? { shown: SHOWN_LINES } : null),
+      }
+    }),
   ),
 )
