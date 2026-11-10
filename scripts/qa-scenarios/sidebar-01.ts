@@ -99,5 +99,29 @@ export default {
         assert(!(await role("dialog").isVisible()), "导航后应关闭抽屉")
       },
     },
+    {
+      name: "footer 插槽排在底部入口之后，收起后仍可见",
+      viewport: "desktop",
+      async run({ page, role, press, settle, box, assert, visible }) {
+        await page.goto(
+          new URL("/demo/sidebar-01-footer-mobile/", page.url()).href,
+          { waitUntil: "networkidle" },
+        )
+        await settle()
+        const user = page.locator('[data-slot="sidebar-user"]')
+        await visible(user, "footer 插槽里的用户块应渲染")
+        const links = await box(role("navigation", { name: "辅助入口" }))
+        assert(
+          (await box(user)).y >= links.y + links.height - 1,
+          "footer 应排在 footerItems 之后",
+        )
+        await press("Mod+b")
+        await settle()
+        await visible(
+          role("button", { name: "退出登录", exact: true }),
+          "收起成图标栏后退出按钮仍应可见",
+        )
+      },
+    },
   ],
 } satisfies Scenario

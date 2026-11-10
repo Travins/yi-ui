@@ -10,7 +10,7 @@ group: navigation
 
 `Sidebar01` 建在 shadcn 官方 `Sidebar`（`collapsible="icon"`）之上，没有改动官方文件，只在区块里组合。官方的侧栏收起成图标栏后，带子项的条目就点不开了；这个区块用一个浮层补上这个空白。
 
-- **展开态**（16rem）：顶部是品牌、收起按钮和搜索框；中间按分组排列条目；底部是「帮助中心」「设置」这类次要入口。
+- **展开态**（16rem）：顶部是品牌、收起按钮和搜索框（`searchable={false}` 可去掉）；中间按分组排列条目；底部是「帮助中心」「设置」这类次要入口，后面还有一个 `footer` 插槽，放当前用户之类的内容。
 - **搜索**：只过滤导航项。命中父项名称时保留它的全部子项，只命中子项时只保留那几项，并自动展开；没有结果时显示空状态。
 - **手风琴**：默认同一时间只展开一个父项（`accordion`），当前页面所在的父项初始就是展开的，地址切换到别的父项时跟着展开。
 - **引导线**：子项左侧有一条 1px 竖线，每个子项有一小段横线接到竖线上，颜色用 `border-sidebar-border`。
@@ -91,6 +91,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 Cmd / Ctrl / Shift 点击等原生行为会被保留，不会触发 `onNavigate`。
 
+### 底部插槽与搜索框
+
+`footerItems` 只放链接。当前用户、退出登录这类不是链接的内容放进 `footer` 插槽，它排在 `footerItems` 之后；侧栏收起成图标栏时，插槽里的内容要自己处理（用 `group-data-[collapsible=icon]:hidden` 隐藏文字，或直接用官方的 `SidebarMenuButton`）。`footerItems` 传空数组且没有 `footer` 时，底部整块不渲染。
+
+导航只有几项时搜索框用不上，传 `searchable={false}` 去掉：
+
+```tsx
+<Sidebar01
+  searchable={false}
+  footerItems={[]}
+  footer={<SidebarUser name="林知夏" description="管理员" onSignOut={signOut} />}
+/>
+```
+
+`SidebarUser` 不在区块里，完整写法见下面的[示例](#底部放当前用户)。
+
 ### 触屏上的尺寸
 
 菜单行默认 32px，触屏设备（`pointer: coarse`）自动加高到 40px，二级行从 28px 加高到 36px。收起后的图标按钮也跟着变成 40px，但官方图标栏只有 3rem 宽，放不下，所以需要在 `SidebarProvider` 上把图标栏加宽：
@@ -117,6 +133,16 @@ Cmd / Ctrl / Shift 点击等原生行为会被保留，不会触发 `onNavigate`
 />
 ```
 
+## 示例
+
+### 底部放当前用户
+
+`footer` 插槽里放了一个用户块：头像首字、名字、角色，下面是「退出登录」（等待期间显示为进行中并禁用）。收起侧栏后只剩头像和退出图标。
+
+<ComponentPreview name="sidebar-01-footer-demo" />
+
+示例外层的 `contain-layout` 和 `h-full` 只是为了把整页布局关在文档的预览框里，真实页面不需要。
+
 ## API
 
 ### Sidebar01
@@ -127,6 +153,8 @@ Cmd / Ctrl / Shift 点击等原生行为会被保留，不会触发 `onNavigate`
   type={{
     groups: { type: "Sidebar01Group[]", description: "导航分组，每组有标题和条目；不传则使用 nav-data.ts 的示例数据" },
     footerItems: { type: "Sidebar01Item[]", description: "固定在底部的次要入口，只放链接，不参与搜索", default: "帮助中心、设置" },
+    footer: { type: "ReactNode", description: "底部插槽，排在 footerItems 之后：放当前用户、退出登录这类不是链接的内容" },
+    searchable: { type: "boolean", description: "是否显示导航搜索框；条目很少时可以关掉", default: "true" },
     brand: { type: "{ name: string; logo?: ReactNode; href?: string }", description: "品牌：方形 logo 加名称；传 href 后变成链接" },
     currentHref: { type: "string", description: "当前地址，用来高亮当前项、默认展开所在父项和生成面包屑；与 href 取最长匹配，忽略查询串、哈希和末尾斜杠" },
     accordion: { type: "boolean", description: "同一时间只展开一个父项", default: "true" },

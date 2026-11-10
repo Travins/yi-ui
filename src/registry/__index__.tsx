@@ -171,6 +171,7 @@ export const registryExamples: Record<string, LazyExoticComponent<ComponentType>
   "shuffle-grid-demo": lazy(() => import("./examples/shuffle-grid-demo")),
   "shuffle-grid-pixel-demo": lazy(() => import("./examples/shuffle-grid-pixel-demo")),
   "shuffle-grid-team-demo": lazy(() => import("./examples/shuffle-grid-team-demo")),
+  "sidebar-01-footer-demo": lazy(() => import("./examples/sidebar-01-footer-demo")),
   "stat-card-convention-demo": lazy(() => import("./examples/stat-card-convention-demo")),
   "stat-card-demo": lazy(() => import("./examples/stat-card-demo")),
   "stat-card-distribution-demo": lazy(() => import("./examples/stat-card-distribution-demo")),
