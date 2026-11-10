@@ -3251,6 +3251,32 @@
       }
     },
     {
+      "name": "context-panel",
+      "type": "registry:ui",
+      "title": "上下文面板",
+      "description": "主内容右侧的详情面板：开合状态独立于左侧导航，页面用插槽声明内容，没有内容时开合按钮不出现，窄屏变成抽屉。",
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "sheet",
+        "use-mobile"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/context-panel/context-panel.tsx",
+          "type": "registry:ui",
+          "target": "@ui/context-panel/context-panel.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        }
+      ]
+    },
+    {
       "name": "bar-select",
       "type": "registry:ui",
       "title": "方条下拉选择",

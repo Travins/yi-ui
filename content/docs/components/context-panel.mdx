@@ -1,0 +1,234 @@
+---
+title: 上下文面板
+titleEn: Context Panel
+description: 主内容右侧的详情面板：开合状态独立于左侧导航，页面用插槽声明内容，没有内容时开合按钮不出现，窄屏变成抽屉。
+group: layout
+status: new
+---
+
+<ComponentPreview name="context-panel-demo" />
+
+`ContextPanel` 提炼自我的一个管理后台项目：列表页点一行，右侧滑出这一行的详情，左侧导航照常使用。它是一组小零件，不含业务：
+
+- **开合状态是自己的**：不依赖官方的 `SidebarProvider`。那个 Provider 只有一份 `open`，左右两栏都放进去时会被 ⌘B 一起收起；这里右侧面板有独立的 `ContextPanelProvider`。
+- **页面声明内容**：面板和开合按钮写在公共布局里，各个页面用 `ContextPanelContent` 说明「我有面板内容」。没有页面声明时，开合按钮不渲染，面板不占位置。
+- **内容仍属于页面**：内容经 portal 渲染进面板，但留在页面自己的 React 树里，直接用页面的 state 和 context，不需要把数据提升到布局。
+- **窄屏变抽屉**：视口窄于 768px 时面板改成从右侧滑出的抽屉（`Sheet`）。
+
+[`sidebar-04`](/blocks/sidebar-04) 也是右侧面板，但它是一整块项目数据面板（项目切换、进度图、任务），建在官方 `Sidebar` 上，适合单独使用。要和左侧导航同时出现、各开各的，用这个组件。
+
+## 安装
+
+<InstallCommand name="context-panel" />
+
+会安装 shadcn 的 `button`、`sheet`、`use-mobile`，本站的 `use-controllable-state` 钩子，以及 npm 包 `lucide-react`。
+
+## 用法
+
+`ContextPanelProvider` 包住主内容和面板，两者放在同一个横向 flex 容器里；开合按钮放在顶栏，内容写在页面里：
+
+```tsx title="app/layout.tsx"
+import {
+  ContextPanel,
+  ContextPanelProvider,
+  ContextPanelTrigger,
+} from "@/components/ui/context-panel/context-panel"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-svh">
+      <ContextPanelProvider>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-14 items-center border-b px-4">
+            <div className="ml-auto">
+              <ContextPanelTrigger />
+            </div>
+          </header>
+          <main>{children}</main>
+        </div>
+        <ContextPanel />
+      </ContextPanelProvider>
+    </div>
+  )
+}
+```
+
+```tsx title="app/orders/page.tsx"
+"use client"
+
+import {
+  ContextPanelContent,
+  ContextPanelSection,
+} from "@/components/ui/context-panel/context-panel"
+
+export default function OrdersPage() {
+  return (
+    <>
+      <h1>订单</h1>
+      <ContextPanelContent title="筛选条件">
+        <ContextPanelSection title="时间范围">近 30 天</ContextPanelSection>
+      </ContextPanelContent>
+    </>
+  )
+}
+```
+
+`ContextPanelContent` 可以写在页面的任意位置，它本身不在原地渲染任何东西。
+
+### 从页面里打开
+
+`useContextPanel()` 返回 `open`、`setOpen`、`toggle` 和 `hasContent`。常见用法是点列表的一行时打开面板：
+
+```tsx
+const { setOpen } = useContextPanel()
+
+<Button
+  onClick={() => {
+    setSelectedId(row.id)
+    setOpen(true)
+  }}
+>
+  详情
+</Button>
+```
+
+### 宽度与高度
+
+面板默认 20rem 宽、贴着视口顶部占满一屏高（`sticky top-0 h-svh`）。都通过 `className` 调整：
+
+```tsx
+<ContextPanel className="[--context-panel-width:24rem]" /> // 改宽度
+<ContextPanel className="h-full" /> // 放进固定高度的容器
+```
+
+### 换成英文
+
+```tsx
+<ContextPanelProvider
+  labels={{ title: "Details", toggle: "Toggle side panel", close: "Close panel" }}
+>
+```
+
+## 示例
+
+### 和左侧导航一起用
+
+左侧是 [`sidebar-01`](/blocks/sidebar-01)，右侧是上下文面板，各有各的 Provider。按 ⌘B / Ctrl+B 或点左上角的按钮只收起左侧导航，点右上角的按钮只开合右侧面板，主内容里列出了两栏当前的状态。
+
+<ComponentPreview name="context-panel-sidebar-demo" />
+
+结构是 `SidebarProvider` 里放 `Sidebar01`，再用 `ContextPanelProvider` 包住 `SidebarInset` 和 `ContextPanel`：
+
+```tsx
+<SidebarProvider defaultOpen>
+  <Sidebar01 />
+  <ContextPanelProvider>
+    <SidebarInset className="min-w-0">{/* 顶栏里放 ContextPanelTrigger */}</SidebarInset>
+    <ContextPanel />
+  </ContextPanelProvider>
+</SidebarProvider>
+```
+
+示例外层的 `contain-layout` 和两处 `h-full` 只是为了把整页布局关在文档的预览框里，真实页面不需要。
+
+### 没有内容的页面
+
+开合按钮只在公共顶栏里写了一次。订单页声明了面板内容，按钮出现；切到设置页，按钮和面板一起消失，切回来恢复原来的开合状态。
+
+<ComponentPreview name="context-panel-slot-demo" />
+
+### 受控
+
+用 `open` 和 `onOpenChange` 把开合绑到页面自己的状态上。这里「选中的工单」就是开合状态：选中即打开，点面板的关闭按钮即取消选中。
+
+<ComponentPreview name="context-panel-controlled-demo" />
+
+## API
+
+### ContextPanelProvider
+
+不渲染 DOM，只提供状态。
+
+<PropsTable name="context-panel" component="ContextPanelProvider" />
+
+### ContextPanel
+
+面板本体，不接收 `children`。桌面端根元素是 `aside`，`className` 在桌面端和窄屏抽屉上都生效，其余 HTML 属性只作用于桌面端的 `aside`。
+
+<PropsTable name="context-panel" component="ContextPanel" />
+
+### ContextPanelTrigger
+
+继承 `Button` 的全部属性，默认 `variant="ghost"`、`size="icon-sm"`；传 `children` 可替换默认图标。没有面板内容时返回 `null`。在 `onClick` 里调用 `event.preventDefault()` 可以拦下这次开合。
+
+<PropsTable name="context-panel" component="ContextPanelTrigger" />
+
+### ContextPanelContent
+
+<PropsTable name="context-panel" component="ContextPanelContent" />
+
+### ContextPanelSection
+
+根元素是 `section`，其余 HTML 属性透传。
+
+<PropsTable name="context-panel" component="ContextPanelSection" />
+
+### useContextPanel
+
+```ts
+const { open, setOpen, toggle, hasContent } = useContextPanel()
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `open` | `boolean` | 当前是否打开。没有内容时面板即使 `open` 也不显示 |
+| `setOpen` | `(open: boolean) => void` | 打开或关闭 |
+| `toggle` | `() => void` | 切换 |
+| `hasContent` | `boolean` | 当前是否有页面声明了面板内容 |
+
+必须在 `ContextPanelProvider` 内调用。
+
+### labels
+
+```ts
+type ContextPanelLabels = {
+  title: string // "上下文面板"：页面没有给标题时的面板名称
+  toggle: string // "切换右侧面板"：开合按钮的名称
+  close: string // "关闭面板"：面板内关闭按钮的名称
+}
+```
+
+### data-slot
+
+| 部位 | `data-slot` |
+|---|---|
+| 面板（桌面端 `aside` / 窄屏抽屉） | `context-panel` |
+| 面板顶部的标题栏（56px） | `context-panel-header` |
+| 面板的滚动区，内容渲染在这里 | `context-panel-body` |
+| 开合按钮 | `context-panel-trigger` |
+| 分区 | `context-panel-section` |
+
+桌面端的面板带 `data-state="open" | "closed"`，窄屏抽屉带 `data-mobile="true"`。
+
+## 可访问性
+
+- 桌面端面板是 `aside`（`complementary` 区域），名称来自面板标题；收起后设为 `inert`，里面的控件不接收焦点，读屏也读不到。
+- 开合按钮带 `aria-expanded` 和 `aria-controls`，名称固定为「切换右侧面板」，状态由 `aria-expanded` 表达，不靠换名称。
+- 桌面端打开面板时焦点留在原处（面板不是模态的）。焦点在面板里时按 Esc 关闭面板；面板里的控件自己处理了 Esc（调用了 `preventDefault`）时不关闭。
+- 关闭时如果焦点在面板里，会还给打开面板之前聚焦的元素（比如那一行的「详情」按钮），找不到时还给开合按钮。
+- 窄屏抽屉是模态对话框：圈定焦点、Esc 或点遮罩关闭、关闭后焦点回到打开它的元素，这些由 Base UI 的 Dialog 处理；关闭按钮的名称是中文的「关闭面板」。
+- 每个分区是带名称的 `section`，名称来自分区标题。
+- 开合动画 200ms，系统开启「减少动态效果」时直接切换。
+
+## 注意事项
+
+- **面板内容在浏览器里才出现**：内容走 portal，预渲染的 HTML 里没有面板内容，开合按钮也要等页面挂载后才出现。`defaultOpen` 的面板在水合后展开，不会造成 hydration 不匹配。
+- **`defaultOpen` 只管桌面端**：窄屏的抽屉会盖住页面，所以只凭 `defaultOpen` 不会弹出，要等用户点开合按钮或代码调用 `setOpen(true)`。受控的 `open` 不受这条限制，传 `true` 就会打开。
+- **窄屏关闭后内容会卸载**：抽屉关闭时不在 DOM 里，面板内容里的本地 state（输入到一半的表单）会丢。需要保留时把 state 放在页面里，不要放在面板内容的子组件里。桌面端收起只是宽度变 0，内容不卸载。
+- **多块内容**：同一时间挂载多个 `ContextPanelContent` 时，内容按声明顺序依次排在面板里，标题取最后声明的那个。
+- **布局要求**：`ContextPanel` 要和主内容并排放在横向 flex 容器里，主内容加 `min-w-0 flex-1`，否则面板打开时主内容不会让出宽度。
+- **断点**：窄屏判断用的是视口宽度（`use-mobile`，768px），不是容器宽度，和官方 `Sidebar` 保持一致。
+
+## 源码
+
+<ComponentSource name="context-panel" />

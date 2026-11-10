@@ -123,5 +123,28 @@ export default {
         )
       },
     },
+    {
+      name: "searchable 关闭后不渲染搜索框",
+      viewport: "desktop",
+      async run({ page, role, settle, assert, visible }) {
+        assert(
+          (await role("searchbox", { name: "搜索导航" }).count()) === 1,
+          "默认应有搜索框",
+        )
+        await page.goto(
+          new URL("/demo/context-panel-sidebar-mobile/", page.url()).href,
+          { waitUntil: "networkidle" },
+        )
+        await settle()
+        await visible(
+          role("navigation", { name: "主导航", exact: true }),
+          "侧栏应渲染",
+        )
+        assert(
+          (await role("searchbox", { name: "搜索导航" }).count()) === 0,
+          "searchable={false} 时不应有搜索框",
+        )
+      },
+    },
   ],
 } satisfies Scenario

@@ -143,6 +143,10 @@ Cmd / Ctrl / Shift 点击等原生行为会被保留，不会触发 `onNavigate`
 
 示例外层的 `contain-layout` 和 `h-full` 只是为了把整页布局关在文档的预览框里，真实页面不需要。
 
+### 右侧再放一个面板
+
+官方 `SidebarProvider` 只有一份开合状态，把右侧面板也做成 `Sidebar` 会被 ⌘B 一起收起。要「左侧导航 + 右侧详情面板」各开各的，右侧用 [`context-panel`](/components/context-panel)，组合写法见它的[「和左侧导航一起用」](/components/context-panel#和左侧导航一起用)示例。
+
 ## API
 
 ### Sidebar01

@@ -80,6 +80,7 @@
 | 条目 | 中文名 | 导入路径 | 说明 |
 | --- | --- | --- | --- |
 | [grid-layout](https://yiui.dev/md/components/grid-layout.md) | 线条网格布局 | `@/components/ui/grid-layout/grid-layout` | 用全宽横线、竖线容器与点阵分隔带，为内容建立清晰的秩序。 |
+| [context-panel](https://yiui.dev/md/components/context-panel.md) | 上下文面板 | `@/components/ui/context-panel/context-panel` | 主内容右侧的详情面板：开合状态独立于左侧导航，页面用插槽声明内容，没有内容时开合按钮不出现，窄屏变成抽屉。 |
 
 ### 工具函数
 
