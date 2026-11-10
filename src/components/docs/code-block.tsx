@@ -10,7 +10,7 @@ import { DocFrame, DocFrameBar, DocFramePanel } from "./doc-frame"
 const shellLangs = new Set(["bash", "sh", "shell", "zsh", "console"])
 
 // 双主题输出 --shiki-light / --shiki-dark，亮暗切换由 docs.css 决定。
-const highlight = cache((code: string, lang: string) =>
+export const highlight = cache((code: string, lang: string) =>
   codeToHtml(code, { lang, themes: codeThemes, defaultColor: false }),
 )
 

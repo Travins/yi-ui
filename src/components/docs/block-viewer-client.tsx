@@ -19,6 +19,7 @@ import {
 import { buttonVariants, Button } from "@/components/ui/button"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import { CodeView } from "./code-view"
 import { PreviewSkeleton } from "./preview-skeleton"
 import { CopyButton } from "./copy-button"
 import {
@@ -32,7 +33,8 @@ import { IconTip } from "./icon-tip"
 import { v0Url } from "./registry-items"
 import { V0Icon } from "./v0-icon"
 
-type ViewerFile = { path: string; source: string; code: ReactNode }
+/** /code/<name>.json 里的一个文件：安装路径、原文（供复制）与高亮后的 HTML */
+type ViewerSource = { path: string; source: string; lines: number; html: string }
 type TreeNode = { name: string; path?: string; children: TreeNode[] }
 
 const MIN_WIDTH = 320
@@ -47,18 +49,18 @@ const presets = [
 ] as const
 
 // 把 components/a/b.tsx 这样的目标路径折叠成文件树
-function buildTree(files: ViewerFile[]) {
+function buildTree(files: string[]) {
   const root: TreeNode = { name: "", children: [] }
-  for (const file of files) {
+  for (const path of files) {
     let node = root
-    const parts = file.path.split("/")
+    const parts = path.split("/")
     parts.forEach((part, index) => {
       let child = node.children.find((entry) => entry.name === part)
       if (!child) {
         child = { name: part, children: [] }
         node.children.push(child)
       }
-      if (index === parts.length - 1) child.path = file.path
+      if (index === parts.length - 1) child.path = path
       node = child
     })
   }
@@ -118,7 +120,8 @@ export function BlockViewerClient({
   name: string
   title: string
   height: string
-  files: ViewerFile[]
+  /** 安装后的文件路径；源码在第一次打开「代码」时才请求 */
+  files: string[]
   install: ReactNode
 }) {
   const heightPx = /^\d+(\.\d+)?px$/.test(height) ? parseFloat(height) : 720
@@ -129,7 +132,25 @@ export function BlockViewerClient({
   const [available, setAvailable] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [installOpen, setInstallOpen] = useState(false)
-  const [active, setActive] = useState(files[0]?.path ?? "")
+  const [active, setActive] = useState(files[0] ?? "")
+  // 高亮源码按需加载：悬停或聚焦「代码」时预取，点开时一般已经到了
+  const [sources, setSources] = useState<ViewerSource[] | null>(null)
+  const [failed, setFailed] = useState(false)
+  const request = useRef<Promise<void> | null>(null)
+  const loadSources = () => {
+    if (request.current) return
+    setFailed(false)
+    request.current = fetch(`/code/${name}.json`)
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status))
+        return response.json() as Promise<ViewerSource[]>
+      })
+      .then(setSources)
+      .catch(() => {
+        request.current = null
+        setFailed(true)
+      })
+  }
   const tree = useMemo(() => buildTree(files), [files])
   const [near, setNear] = useState(false)
   const [loadedName, setLoadedName] = useState<string | null>(null)
@@ -194,7 +215,7 @@ export function BlockViewerClient({
     event.preventDefault()
   }
 
-  const activeSource = files.find((file) => file.path === active)?.source ?? ""
+  const activeFile = sources?.find((file) => file.path === active)
   const iconAction = cn(
     buttonVariants({ variant: "ghost", size: "icon-sm" }),
     "text-muted-foreground hover:text-foreground",
@@ -203,13 +224,22 @@ export function BlockViewerClient({
   return (
     <Tabs
       value={view}
-      onValueChange={(value) => setView(String(value))}
+      onValueChange={(value) => {
+        if (value === "code") loadSources()
+        setView(String(value))
+      }}
       className={docFrameClass}
     >
       <DocFrameBar>
         <DocTabsList aria-label={`${title} 查看方式`}>
           <DocTabsTrigger value="preview">预览</DocTabsTrigger>
-          <DocTabsTrigger value="code">代码</DocTabsTrigger>
+          <DocTabsTrigger
+            value="code"
+            onPointerEnter={loadSources}
+            onFocus={loadSources}
+          >
+            代码
+          </DocTabsTrigger>
         </DocTabsList>
         <div
           role="group"
@@ -252,8 +282,8 @@ export function BlockViewerClient({
               <V0Icon className="size-4" />
             </a>
           </IconTip>
-          {view === "code" && (
-            <CopyButton value={activeSource} label={`复制 ${active}`} />
+          {view === "code" && activeFile && (
+            <CopyButton value={activeFile.source} label={`复制 ${active}`} />
           )}
           <IconTip label="新标签打开预览">
             <a
@@ -350,9 +380,27 @@ export function BlockViewerClient({
             <FileTree nodes={tree} active={active} onSelect={setActive} />
           </nav>
           <div className="min-w-0 md:max-h-[44rem] md:overflow-auto">
-            {view === "code"
-              ? files.find((file) => file.path === active)?.code
-              : null}
+            {view !== "code" ? null : activeFile ? (
+              <CodeView
+                key={activeFile.path}
+                lines={activeFile.lines}
+                collapse={false}
+              >
+                <div dangerouslySetInnerHTML={{ __html: activeFile.html }} />
+              </CodeView>
+            ) : failed ? (
+              <div
+                role="alert"
+                className="flex flex-col items-start gap-3 p-4 text-sm text-muted-foreground"
+              >
+                <p>源码没有加载出来，可能是网络中断。</p>
+                <Button variant="outline" size="sm" onClick={loadSources}>
+                  重新加载
+                </Button>
+              </div>
+            ) : (
+              <PreviewSkeleton className="h-64" label="正在加载源码…" />
+            )}
           </div>
         </div>
       </TabsContent>
