@@ -245,11 +245,37 @@ async function main() {
     // 水合完成前点击会走浏览器原生跳转（没有骨架、也没有加载指示），所以先等 NavigationProgress
     // 在 effect 里挂好点击监听后设的 data-nav-ready。
     await page.waitForSelector("html[data-nav-ready=true]", { timeout: 15_000 })
+    let delayedScripts = 0
     await page.route(/\.js(?:\?|$)/, async (route) => {
+      delayedScripts += 1
       await new Promise((resolve) => setTimeout(resolve, 2000))
       await route.continue().catch(() => {})
     })
     await page.locator('a[href="/components/mini-chart/"]').first().click()
+    // 点击后立刻开始等加载反馈，和截图并行：整页截图在机器忙时可能花一两秒，
+    // 截完再查会错过只持续到脚本放行（2 秒）为止的骨架和加载指示。
+    const feedbackSeen = page
+      .waitForFunction(
+        () =>
+          [
+            ...document.querySelectorAll(
+              '[data-slot="preview-skeleton"], [data-slot="navigation-progress"][data-pending="true"]',
+            ),
+          ].some((el) => {
+            const box = el.getBoundingClientRect()
+            return (
+              box.width > 0 &&
+              box.height > 0 &&
+              getComputedStyle(el).opacity !== "0"
+            )
+          }),
+        undefined,
+        { timeout: 1800, polling: 50 },
+      )
+      .then(
+        () => true,
+        () => false,
+      )
     for (const [delay, label] of [
       [300, "300ms"],
       [700, "1s"],
@@ -262,21 +288,20 @@ async function main() {
       if (await page.getByText(/正在加载示例|正在加载预览/).count())
         issues.push(`导航 ${label}: 存在文字 fallback`)
     }
-    const feedback = await page
-      .locator(
-        '[data-slot="preview-skeleton"], [data-slot="navigation-progress"][data-pending="true"]',
+    const feedback = await feedbackSeen
+    if (!feedback) {
+      // 失败时带上现场，区分「跳转已经完成」「点击没被客户端路由接管」和「指示确实没出现」
+      const state = await page.evaluate(() => ({
+        path: location.pathname,
+        pending: document
+          .querySelector('[data-slot="navigation-progress"]')
+          ?.getAttribute("data-pending"),
+        navReady: document.documentElement.dataset.navReady,
+      }))
+      issues.push(
+        `导航延迟用例未观察到骨架或加载指示（${JSON.stringify(state)}，被延迟的脚本 ${delayedScripts} 个）`,
       )
-      .evaluateAll((elements) =>
-        elements.some((el) => {
-          const box = el.getBoundingClientRect()
-          return (
-            box.width > 0 &&
-            box.height > 0 &&
-            getComputedStyle(el).opacity !== "0"
-          )
-        }),
-      )
-    if (!feedback) issues.push("导航延迟用例未观察到骨架或加载指示")
+    }
     await page.close()
     const slow = await browser.newPage({
       viewport: { width: 1280, height: 900 },
