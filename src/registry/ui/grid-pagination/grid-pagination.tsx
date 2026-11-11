@@ -310,8 +310,9 @@ function GridPagination({
             </Select>
           </PaginationItem>
         )}
-        {/* 窄容器里信息格独占上一行，这一格成了第二行的行首，不再画左线 */}
-        <PaginationItem className="@max-[36rem]/grid-pagination:border-s-0">
+        {/* 窄容器里信息格独占上一行，这一格成了第二行的行首，不再画左线。
+            父级的 [&>li+li]:border-s 优先级更高，所以这里要用 ! */}
+        <PaginationItem className="@max-[36rem]/grid-pagination:border-s-0!">
           {item(
             1,
             <ChevronFirst aria-hidden="true" />,

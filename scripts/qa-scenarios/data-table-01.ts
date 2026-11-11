@@ -201,5 +201,48 @@ export default {
         )
       },
     },
+    {
+      name: "手机宽度下分页条每一行的行首格不画左线",
+      viewport: "mobile",
+      async run({ page, assert, visible }) {
+        const list = page
+          .locator(
+            '[data-slot="grid-pagination"] [data-slot="pagination-content"]',
+          )
+          .first()
+        await visible(list, "应有分页条")
+        // 把分页条放进四边有框的容器里时，行首格的左线会和外框贴成双线
+        const offenders = await list.evaluate((el) => {
+          const items = [...el.children].filter(
+            (item): item is HTMLElement =>
+              item instanceof HTMLElement && item.offsetParent !== null,
+          )
+          const left = Math.min(...items.map((item) => item.offsetLeft))
+          return items
+            .filter(
+              (item) =>
+                item.offsetLeft === left &&
+                parseFloat(getComputedStyle(item).borderInlineStartWidth) > 0,
+            )
+            .map((item) => item.textContent?.trim() || item.className)
+        })
+        assert(
+          offenders.length === 0,
+          `行首格不应有左线：${offenders.join("、")}`,
+        )
+        const rows = await list.evaluate(
+          (el) =>
+            new Set(
+              [...el.children]
+                .filter(
+                  (item) =>
+                    item instanceof HTMLElement && item.offsetParent !== null,
+                )
+                .map((item) => (item as HTMLElement).offsetTop),
+            ).size,
+        )
+        assert(rows >= 2, "手机宽度下分页条应折成两行，否则这一步没有测到行首")
+      },
+    },
   ],
 } satisfies Scenario
