@@ -20,12 +20,24 @@ const alternatives = (page: Page) =>
 const isFocused = (target: ReturnType<Page["locator"]>) =>
   target.evaluate((el) => el === document.activeElement)
 
-/** 演示外壳的通行密钥结果选择（只属于演示，不在 Auth05 里） */
-async function pickMode(page: Page, name: string) {
-  await page
-    .getByRole("radiogroup", { name: "通行密钥模拟结果" })
-    .getByRole("radio", { name })
+/** 演示控制条（src/components/demo/demo-bar.tsx，只属于演示外壳 demo.tsx，不在 Auth05 里） */
+const demoBar = (page: Page) => page.getByRole("region", { name: "演示控制" })
+
+/** 控制条里的某个选项组：布局、恢复码、通行密钥 */
+const demoChoice = (page: Page, name: string) =>
+  demoBar(page).getByRole("radiogroup", { name, exact: true })
+
+const demoHint = (page: Page) => demoBar(page).locator("p").first()
+
+async function pick(page: Page, group: string, option: string) {
+  await demoChoice(page, group)
+    .getByRole("radio", { name: option, exact: true })
     .click()
+}
+
+/** 通行密钥的模拟结果 */
+async function pickMode(page: Page, name: string) {
+  await pick(page, "通行密钥", name)
 }
 
 /** 点列表里的某一项切换验证方式；名称里带说明文字，所以按前缀匹配 */
@@ -33,25 +45,24 @@ async function switchTo(page: Page, name: string) {
   await alternatives(page).filter({ hasText: name }).click()
 }
 
-/** 切到演示外壳的「嵌入」布局：分屏页右侧放 Auth05Panel（只开 totp 与 recovery、用户名账号、无记住设备、备用码不格式化） */
+/**
+ * 嵌入布局 + 原样恢复码：分屏页右侧放 Auth05Panel（只开 totp 与 recovery、用户名账号、无记住设备），
+ * 恢复码 `{ format: false, maxLength: 32 }`，演示后端接受 abc_12345。
+ */
 async function pickEmbedded(page: Page) {
-  await page
-    .getByRole("radiogroup", { name: "演示布局" })
-    .getByRole("radio", { name: "嵌入", exact: true })
-    .click()
+  await pick(page, "布局", "嵌入")
   await page.locator('[data-slot="auth-05-content"]').waitFor()
+  await pick(page, "恢复码", "原样")
 }
 
 /**
- * 切到「嵌入·定长码」：和嵌入同一个分屏外壳，备用码配置为
+ * 嵌入布局 + 定长恢复码：
  * `{ format: false, uppercase: true, maxLength: 9, placeholder: "XXXX-XXXX" }`，
  * 演示后端接受 ABCD-1234 与 ABCD1234（自己去掉连字符再比）。
  */
 async function pickFixed(page: Page) {
-  await page
-    .getByRole("radiogroup", { name: "演示布局" })
-    .getByRole("radio", { name: "嵌入·定长码", exact: true })
-    .click()
+  await pick(page, "布局", "嵌入")
+  await pick(page, "恢复码", "定长")
   await page.locator('[data-slot="auth-05-content"]').waitFor()
   await alternatives(page).filter({ hasText: "恢复码" }).click()
 }
@@ -375,7 +386,8 @@ export default {
           "超长时提交按钮应禁用",
         )
         await input.press("Enter")
-        await page.waitForTimeout(300)
+        // 演示后端 350ms 后才返回，等够时间再看有没有误提交
+        await page.waitForTimeout(800)
         assert(
           (await page.getByRole("heading", { name: "验证成功" }).count()) === 0,
           "超长时回车也不能提交",
@@ -501,6 +513,172 @@ export default {
       },
     },
     {
+      name: "演示：布局和恢复码格式各自切换，提示行跟着变",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        assert(
+          (await demoHint(page).textContent())?.includes("恢复码 ABCD-1234"),
+          "默认提示应写掩码恢复码 ABCD-1234",
+        )
+        // 整页 + 原样：恢复码格式不再绑在嵌入布局上
+        await pick(page, "恢复码", "原样")
+        assert(
+          (await demoHint(page).textContent())?.includes("恢复码 abc_12345"),
+          "切到原样后提示应改为 abc_12345",
+        )
+        assert(
+          (await page.locator('[data-slot="auth-05"]').count()) === 1,
+          "只换恢复码格式不应改变布局",
+        )
+        await switchTo(page, "恢复码")
+        const input = page.getByRole("textbox", { name: "恢复码", exact: true })
+        await input.pressSequentially("abc_12345")
+        assert(
+          (await input.inputValue()) === "abc_12345",
+          "整页布局下原样格式也应保留原值",
+        )
+        await role("button", { name: "验证", exact: true }).click()
+        await expectSuccess({ page, role, visible, assert })
+        // 嵌入 + 掩码：换布局不改恢复码格式
+        await pick(page, "布局", "嵌入")
+        await pick(page, "恢复码", "掩码")
+        await page.locator('[data-slot="auth-05-content"]').waitFor()
+        assert(
+          (await demoHint(page).textContent())?.includes("嵌入版"),
+          "嵌入布局的提示应说明嵌入版只开验证器和恢复码",
+        )
+        await switchTo(page, "恢复码")
+        const embedded = page.getByRole("textbox", {
+          name: "恢复码",
+          exact: true,
+        })
+        await embedded.pressSequentially("abcd1234")
+        assert(
+          (await embedded.inputValue()) === "ABCD-1234",
+          "嵌入布局下掩码格式应自动整理为 ABCD-1234",
+        )
+        await role("button", { name: "验证", exact: true }).click()
+        await visible(
+          role("heading", { name: "验证成功", exact: true }),
+          "嵌入 + 掩码输入 ABCD-1234 应成功",
+        )
+      },
+    },
+    {
+      name: "演示：通行密钥结果在等待中锁定，嵌入布局下禁用",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        const group = demoChoice(page, "通行密钥")
+        assert(
+          (await group.getAttribute("data-disabled")) === null,
+          "空闲时应可以改选",
+        )
+        await role("button", { name: "使用通行密钥验证", exact: true }).click()
+        await visible(
+          demoBar(page)
+            .getByRole("status")
+            .filter({ hasText: "通行密钥等待中，1.5 秒后返回「成功」" }),
+          "等待中播报行应说明会返回什么",
+        )
+        assert(
+          (await group.getAttribute("data-disabled")) !== null,
+          "等待返回期间应锁定通行密钥结果",
+        )
+        await expectSuccess({ page, role, visible, assert })
+        assert(
+          (await group.getAttribute("data-disabled")) === null,
+          "返回后应解除锁定",
+        )
+        await pick(page, "布局", "嵌入")
+        assert(
+          (await group.getAttribute("data-disabled")) !== null,
+          "嵌入布局没有通行密钥，这一组应禁用",
+        )
+      },
+    },
+    {
+      name: "演示：等待中重置再验证，旧请求返回时不解除新一轮的锁定",
+      viewport: "desktop",
+      async run({ page, role, assert }) {
+        const group = demoChoice(page, "通行密钥")
+        const start = role("button", {
+          name: "使用通行密钥验证",
+          exact: true,
+        })
+        await start.click()
+        await page.waitForTimeout(700)
+        await role("button", { name: "重置", exact: true }).click()
+        await start.click()
+        // 第一轮请求在此刻（开始后约 1.5 秒）返回，第二轮还要再等约 0.7 秒
+        await page.waitForTimeout(1000)
+        assert(
+          (await group.getAttribute("data-disabled")) !== null,
+          "旧请求返回后，新一轮等待中仍应锁定通行密钥结果",
+        )
+        assert(
+          (await demoBar(page)
+            .getByRole("status")
+            .filter({ hasText: "通行密钥等待中" })
+            .count()) === 1,
+          "旧请求返回后，播报行仍应显示等待中",
+        )
+      },
+    },
+    {
+      name: "演示：重置让区块回到初始，保留布局和格式",
+      viewport: "desktop",
+      async run({ page, role, assert, visible }) {
+        await pick(page, "恢复码", "定长")
+        await pickMode(page, "失败")
+        await switchTo(page, "身份验证器 App")
+        await codeField(page).fill("123456")
+        await expectSuccess({ page, role, visible, assert })
+        await role("button", { name: "重置", exact: true }).click()
+        await visible(
+          role("heading", { name: "使用通行密钥验证", exact: true }),
+          "重置后应回到默认的通行密钥面板",
+        )
+        for (const [group, option] of [
+          ["布局", "整页"],
+          ["恢复码", "定长"],
+          ["通行密钥", "失败"],
+        ] as const)
+          assert(
+            (await demoChoice(page, group)
+              .getByRole("radio", { name: option, exact: true })
+              .getAttribute("aria-checked")) === "true",
+            `重置后「${group}」应仍是「${option}」`,
+          )
+      },
+    },
+    {
+      name: "演示控制条在手机宽度下不横向溢出，选项文字完整",
+      viewport: "mobile",
+      async run({ page, assert, visible }) {
+        await visible(demoBar(page), "手机上也应有演示控制条")
+        const clipped = await demoBar(page)
+          .locator('[data-slot="segmented-control-item"] span.truncate')
+          .evaluateAll((items) =>
+            items
+              .filter((el) => el.scrollWidth > el.clientWidth + 1)
+              .map((el) => el.textContent),
+          )
+        assert(
+          clipped.length === 0,
+          `选项文字不应被截断：${clipped.join("、")}`,
+        )
+        const heights = await demoBar(page)
+          .locator('[data-slot="segmented-control"]')
+          .evaluateAll((items) =>
+            items.map((el) => Math.round(el.getBoundingClientRect().height)),
+          )
+        assert(
+          heights.length > 0 && heights.every((height) => height >= 36),
+          `触屏下分段控件应不低于 36px，实际 ${heights.join("、")}`,
+        )
+      },
+    },
+    {
       name: "手机宽度：单列、列表在面板下方、不横向溢出",
       viewport: "mobile",
       async run({ page, box, assert, visible }) {
@@ -519,7 +697,7 @@ export default {
       },
     },
     {
-      name: "嵌入模式：没有「记住此设备」，成功回调里 rememberDevice 为 false",
+      name: "嵌入模式：没有「记住此设备」，不出现整页外壳",
       viewport: "desktop",
       async run({ page, assert, visible }) {
         await pickEmbedded(page)
