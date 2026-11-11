@@ -1,0 +1,92 @@
+---
+title: 注册向导
+titleEn: Sign-up Wizard
+description: 多步注册：账号、资料、实名（可跳过）三步，左侧步骤栏可回退，前后切换保留已填值，最后统一提交。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-06" />
+
+## 安装
+
+<InstallCommand name="auth-06" />
+
+## 用法
+
+```tsx
+const loadRegions = () =>
+  import("@/lib/china-regions").then((m) => m.chinaRegions)
+
+<Auth06
+  brand={{ name: "我的工作台" }}
+  regions={loadRegions}
+  onCheckEmail={async (email) => { await checkEmailAvailable(email) }}
+  onSubmit={async (values) => { await signUp(values) }}
+  onSuccess={() => location.assign("/dashboard")}
+  onSignIn={() => location.assign("/login")}
+/>
+```
+
+向导分三步，每一步先在本地校验，通过后才能前进：
+
+1. **账号**：邮箱、密码（带显示 / 隐藏切换和四段强度条）、同意协议。点「下一步」时先校验，再调用可选的 `onCheckEmail(email)`，抛出的错误显示在邮箱下方，例如「该邮箱已注册」。
+2. **资料**：姓名、手机号（`PhoneInput`）、所在地区（`RegionPicker`，选到市）、团队规模（`SegmentedControl`）。
+3. **实名**：真实姓名默认取第 2 步的姓名，用户改过之后不再覆盖；身份证号用 `IdNumberInput`。身份证号为空时主按钮是「跳过并完成注册」；填了号码后主按钮变成「提交并完成注册」并校验两个字段，旁边保留一个「跳过」。
+
+最后一步统一调用 `onSubmit(values)`，跳过实名时 `values` 里没有 `identity`。提交成功后显示结果页：列出账号、资料和实名的完成情况，「进入工作台」触发 `onSuccess(values)`。
+
+前后切换步骤、点步骤栏回到已完成的步骤，已填的值都会保留。回调返回 `Promise<void>`，失败时 `throw new Error("中文原因")`；组件自己管理提交中的状态并拦截重复提交。
+
+## 示例
+
+演示页的邮箱 `taken@example.com` 视为已注册，停在第一步并在邮箱下方提示；手机号以 `0000` 结尾时提交失败，错误显示在当前步骤表单上方。其他输入都能走完流程。演示提示只在页面外壳中显示。
+
+`lg` 起是两栏：左侧约 240px 的步骤栏，右侧表单，中间用虚线分栏。窄于 `lg` 时步骤栏收成顶部一行「步骤 2 / 3 · 资料」和一根细进度条。
+
+## API
+
+<PropsTable name="auth-06" component="Auth06" />
+
+`onSubmit` 收到的值：
+
+```ts
+type Auth06Values = {
+  email: string
+  password: string
+  name: string
+  phone: string // 11 位纯数字，不带区号
+  region: { code: string; path: string[] } // 最末一级代码与从省到市的名称
+  teamSize: string // 所选选项的 value
+  identity?: { realName: string; idNumber: string } // 跳过实名时没有
+}
+```
+
+受控步骤：`step` 取 `"account" | "profile" | "identity" | "done"`，搭配 `onStepChange`；非受控用 `defaultStep`，默认 `account`。`done` 是结果页，不算一步。
+
+`identityStep` 默认 `"optional"`；`"required"` 时没有跳过，主按钮始终是「提交并完成注册」；`"off"` 时向导只有两步，资料页的主按钮直接完成注册，结果页不列实名一项。
+
+`regions` 与 `RegionPicker` 相同，传数组或惰性加载函数；全国行政区划数据可以安装 `china-regions`。`teamSizes` 覆盖团队规模选项，第一项为默认值，默认「仅自己 / 2–10 人 / 11–50 人 / 50 人以上」。`agreementLinks` 接收 `terms`、`privacy` 链接。`brand` 接收 `name` 和可选 `logo`。`onSignIn` 传入后底部显示「已有账号？去登录」。
+
+`labels` 覆盖 `Auth06Labels` 中的全部文案，其中 `progress` 支持 `{current}`、`{total}`、`{title}` 占位符。导出类型为 `Auth06Props`、`Auth06Step`、`Auth06Values`、`Auth06Region`、`Auth06TeamSize`、`Auth06IdentityMode`、`Auth06Labels`。
+
+文件结构：`auth-06.tsx` 为入口，管理步骤、草稿与提交；`step-forms.tsx` 是三步的表单；`progress.tsx` 是步骤栏与手机顶部进度；`done-panel.tsx` 是结果页；`form-parts.tsx` 放密码框、协议勾选、表单错误和按钮行；`password-strength.tsx` 是强度条；`schemas.ts` 用 zod 校验；`config.ts` 管理文案和默认团队规模；`use-auth-form.ts` 管理异步状态；`types.ts` 定义 API；`page.tsx` 为演示页面。
+
+根节点 `data-slot="auth-06"` 暴露 `data-step`（当前步骤）和 `data-state`（`idle` / `pending` / `success`）。其余部件：`auth-06-sidebar`、`auth-06-progress`、`auth-06-progress-compact`、`auth-06-progress-bar`、`auth-06-step`、`auth-06-account`、`auth-06-profile`、`auth-06-identity`、`auth-06-identity-note`、`auth-06-password-strength`、`auth-06-agreement`、`auth-06-actions`、`auth-06-form-error`、`auth-06-done`。
+
+## 可访问性
+
+- 切换步骤（前进、返回、点步骤栏、进入结果页）后焦点落在该步标题上，Tab 进入表单。
+- 本地校验失败时焦点移到第一个出错的字段，错误文字通过 `aria-describedby` 关联，读屏聚焦时一并读出；协议未勾选的提示用 `role="alert"` 播报。
+- 提交失败的原因用 `role="alert"` 显示在表单上方，并挂到表单的 `aria-describedby`。
+- 步骤栏用 `Steps`：当前步骤带 `aria-current="step"`，只有已完成的步骤是按钮。手机顶部进度文字用 `aria-live="polite"` 播报，进度条只做装饰。
+- 团队规模是单选组，方向键切换；密码显示切换带 `aria-pressed`。
+- 按钮在「下一步 / 检查中…」等状态之间宽度不变；动效遵守减少动态效果设置。
+
+## 注意事项
+
+只提供界面，不负责真实注册、邮箱查重、身份核验或会话。服务端必须重新校验所有字段，身份证号要做实名核验，不能只信任前端的格式校验。手机号组件目前只支持中国大陆固定 +86 区号。
+
+## 源码
+
+<ComponentSource name="auth-06" />

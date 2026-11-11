@@ -700,6 +700,264 @@
     },
     {
       "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "auth-06",
+      "title": "注册向导",
+      "description": "多步注册：账号、资料、实名（可跳过）三步，左侧步骤栏可回退，前后切换保留已填值，最后统一提交。",
+      "dependencies": [
+        "lucide-react",
+        "motion",
+        "zod"
+      ],
+      "registryDependencies": [
+        "button",
+        "checkbox",
+        "https://yiui.dev/r/grid-layout.json",
+        "https://yiui.dev/r/steps.json",
+        "https://yiui.dev/r/bar-field.json",
+        "https://yiui.dev/r/phone-input.json",
+        "https://yiui.dev/r/region-picker.json",
+        "https://yiui.dev/r/segmented-control.json",
+        "https://yiui.dev/r/id-number-input.json",
+        "https://yiui.dev/r/china-regions.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-06/auth-06.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-06/auth-06.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/page.tsx",
+          "type": "registry:page",
+          "target": "app/sign-up/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-06/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/types.ts",
+          "type": "registry:component",
+          "target": "@components/auth-06/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/schemas.ts",
+          "type": "registry:component",
+          "target": "@components/auth-06/schemas.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-06/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-06/form-parts.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/step-forms.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-06/step-forms.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/password-strength.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-06/password-strength.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/progress.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-06/progress.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-06/done-panel.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-06/done-panel.tsx"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "meta": {
+        "iframeHeight": "860px"
+      },
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "auth-07",
+      "title": "锁屏与重新验证",
+      "description": "已登录用户的全屏锁屏：大号时钟、头像问候，用密码或 6 位 PIN 解锁，连续输错会暂时锁定并倒计时恢复。",
+      "dependencies": [
+        "input-otp",
+        "lucide-react",
+        "motion"
+      ],
+      "registryDependencies": [
+        "avatar",
+        "button",
+        "input-otp",
+        "https://yiui.dev/r/bar-field.json",
+        "https://yiui.dev/r/glyph-field.json",
+        "https://yiui.dev/r/greeting.json",
+        "https://yiui.dev/r/local-time.json",
+        "https://yiui.dev/r/grid-layout.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-07/auth-07.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-07/auth-07.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/hooks/use-now.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-now.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-07/page.tsx",
+          "type": "registry:page",
+          "target": "app/lock/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-07/types.ts",
+          "type": "registry:component",
+          "target": "@components/auth-07/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-07/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-07/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-07/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-07/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-07/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-07/form-parts.tsx"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "meta": {
+        "iframeHeight": "800px"
+      },
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+      "name": "auth-08",
+      "title": "邮箱免密登录",
+      "description": "只填邮箱的免密登录：发送登录链接后可一键打开对应网页邮箱，或输入邮件里的验证码，支持后缀补全与重发倒计时。",
+      "dependencies": [
+        "lucide-react",
+        "motion",
+        "zod"
+      ],
+      "registryDependencies": [
+        "button",
+        "input-otp",
+        "https://yiui.dev/r/bar-field.json",
+        "https://yiui.dev/r/ripple.json",
+        "https://yiui.dev/r/grid-layout.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/blocks/auth-08/auth-08.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-08/auth-08.tsx"
+        },
+        {
+          "path": "src/registry/hooks/use-controllable-state.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-controllable-state.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-email/page.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/schemas.ts",
+          "type": "registry:component",
+          "target": "@components/auth-08/schemas.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/types.ts",
+          "type": "registry:component",
+          "target": "@components/auth-08/types.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/config.ts",
+          "type": "registry:component",
+          "target": "@components/auth-08/config.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/use-auth-form.ts",
+          "type": "registry:component",
+          "target": "@components/auth-08/use-auth-form.ts"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/form-parts.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-08/form-parts.tsx"
+        },
+        {
+          "path": "src/registry/blocks/auth-08/steps.tsx",
+          "type": "registry:component",
+          "target": "@components/auth-08/steps.tsx"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "color-edge": "var(--edge)"
+        },
+        "light": {
+          "edge": "color-mix(in oklch, var(--foreground) 12%, transparent)"
+        },
+        "dark": {
+          "edge": "color-mix(in oklch, var(--foreground) 18%, transparent)"
+        }
+      },
+      "meta": {
+        "iframeHeight": "800px"
+      },
+      "type": "registry:block"
+    },
+    {
+      "$schema": "https://ui.shadcn.com/schema/registry-item.json",
       "name": "settings-01",
       "title": "设置页",
       "description": "用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。",

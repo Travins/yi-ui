@@ -100,6 +100,9 @@
 | [auth-03](https://yiui.dev/md/blocks/auth-03.md) | 手机号验证码登录 | 窄单列短信登录：输入手机号、验证短信两步完成，支持协议确认、重发倒计时与异步错误。 |
 | [auth-04](https://yiui.dev/md/blocks/auth-04.md) | 企业 SSO 登录 | 先识别工作邮箱所属组织的两栏登录：企业身份（SAML / OIDC）单点登录或账号密码，带组织面板、组织标识入口与异步错误。 |
 | [auth-05](https://yiui.dev/md/blocks/auth-05.md) | Passkey 与多因素验证 | 登录第二步：通行密钥、验证器 App、短信验证码和恢复码四种验证方式，可互相切换，并支持记住设备。 |
+| [auth-06](https://yiui.dev/md/blocks/auth-06.md) | 注册向导 | 多步注册：账号、资料、实名（可跳过）三步，左侧步骤栏可回退，前后切换保留已填值，最后统一提交。 |
+| [auth-07](https://yiui.dev/md/blocks/auth-07.md) | 锁屏与重新验证 | 已登录用户的全屏锁屏：大号时钟、头像问候，用密码或 6 位 PIN 解锁，连续输错会暂时锁定并倒计时恢复。 |
+| [auth-08](https://yiui.dev/md/blocks/auth-08.md) | 邮箱免密登录 | 只填邮箱的免密登录：发送登录链接后可一键打开对应网页邮箱，或输入邮件里的验证码，支持后缀补全与重发倒计时。 |
 | [settings-01](https://yiui.dev/md/blocks/settings-01.md) | 设置页 | 用方条控件拼成的完整设置页：分区导航、实时预览、已修改计数、恢复默认与异步保存。 |
 | [sidebar-01](https://yiui.dev/md/blocks/sidebar-01.md) | 可收起侧栏 | 基于官方 Sidebar 的可收起侧栏：搜索过滤、手风琴分组、带引导线的子项，收起成图标栏后悬停浮出子菜单，手机端沿用抽屉。 |
 | [sidebar-02](https://yiui.dev/md/blocks/sidebar-02.md) | 团队与账号切换侧栏 | 基于 shadcn 官方 Sidebar：团队切换（⌘1…⌘9）、⌘K 搜索、分组导航、用户卡与多账号切换，可收起成图标，移动端为抽屉。 |

@@ -1,0 +1,93 @@
+---
+title: 邮箱免密登录
+titleEn: Magic Link
+description: 只填邮箱的免密登录：发送登录链接后可一键打开对应网页邮箱，或输入邮件里的验证码，支持后缀补全与重发倒计时。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-08" />
+
+## 安装
+
+<InstallCommand name="auth-08" />
+
+## 用法
+
+```tsx
+<Auth08
+  brand={{ name: "我的工作台" }}
+  onSendLink={async (email) => {
+    await sendMagicLink(email)
+  }}
+  onVerifyCode={async ({ email, code }) => {
+    await verifyEmailCode(email, code)
+  }}
+  onSuccess={() => location.assign("/")}
+  onAlternative={() => location.assign("/password-login")}
+/>
+```
+
+区块只有两个状态：`email` 填邮箱，`sent` 提示去邮箱查收；验证码通过后显示「登录成功」。状态切换时整块内容淡入并轻微上移，顶部品牌行保持不动，焦点落到新状态的标题上。
+
+- **后缀补全**：输入到 `名字@` 还没写完域名时，条下出现 `@qq.com`、`@163.com`、`@gmail.com`、`@outlook.com` 小按钮，已输入的部分会筛选它们（如 `name@g` 只剩 `@gmail.com`）。点一下补全，焦点留在输入框，可以直接回车发送。`domainSuggestions` 换成自己的后缀表，传 `[]` 关闭。
+- **邮箱规范化**：提交前去掉首尾空格，并把 `@` 之后的域名转小写，`onSendLink` 收到的就是规范化后的邮箱，输入框里也同步显示它。
+- **打开邮箱**：`sent` 状态按邮箱域名查网页邮箱，命中时显示「打开 QQ 邮箱」这样的按钮，在新标签页打开（`rel="noreferrer"`）；域名不在表里时不显示。内置表覆盖 qq.com / foxmail.com、163.com、126.com、sina.com、gmail.com、outlook.com / hotmail.com / live.com、icloud.com。`mailProviders` 里的条目排在内置表之前，同一个域名以它为准，可用来追加企业邮箱或改写地址。
+- **验证码**：传了 `onVerifyCode` 才显示「或输入邮件里的验证码」和验证码格子，输满自动提交；不传时整段不渲染，只靠邮件里的链接登录。
+- **重发**：「重新发送」带 `resendSeconds` 秒倒计时，倒计时内禁用。点「换一个邮箱」回到 `email` 状态并保留邮箱；倒计时内原样提交同一个邮箱不会重发，按钮显示「回到已发送的邮件」，直接回到 `sent` 状态。
+
+`onSendLink`、`onVerifyCode` 返回 `Promise<void>`，失败时抛出 `new Error("中文原因")`，组件把 `message` 显示在对应位置：发送失败显示在邮箱条下（`email` 状态）或重发按钮下（`sent` 状态），验证失败显示在验证码格子下。请求进行中按钮禁用，重复点击和回车不会重复提交。
+
+## 示例
+
+演示验证码为 `123456`，其他验证码模拟「验证码错误」。以 `blocked@` 开头的邮箱模拟「发送太频繁」。用 `qq.com`、`gmail.com` 等域名可以看到对应的「打开邮箱」按钮，`example.com` 这类未知域名则没有。演示提示只在页面外壳中显示。
+
+## API
+
+<PropsTable name="auth-08" component="Auth08" />
+
+受控状态：`step="email" | "sent"` 搭配 `onStepChange`；非受控使用 `defaultStep`，默认 `email`。还没有发送记录时，`sent` 会退回 `email` 显示。验证码默认 6 位，可用 `codeLength` 设置 1–12 位；`resendSeconds` 默认 60 秒。
+
+`mailProviders` 的每一项是 `Auth08MailProvider`：
+
+```ts
+type Auth08MailProvider = {
+  name: string // 按钮里显示的名称，如「QQ 邮箱」
+  domains: string[] // 小写域名，如 ["qq.com", "foxmail.com"]
+  url: string // 网页邮箱地址
+}
+```
+
+`brand` 接收 `name` 和可选 `logo`；`labels` 覆盖 `Auth08Labels`，其中 `sentTo` 的 `{email}`、`openMail` 的 `{name}`、`code` 的 `{length}`、`countdown` 的 `{seconds}` 是占位符。`onAlternative("password")` 只通知接入方，不传时不显示底部链接。导出类型为 `Auth08Props`、`Auth08Step`、`Auth08MailProvider`、`Auth08Labels`。
+
+文件结构：`auth-08.tsx` 为入口并管理状态，`steps.tsx` 是邮箱和已发送两个状态的界面，`form-parts.tsx` 封装验证码格子、后缀小按钮和带文字的分隔线，`config.ts` 管理文案、后缀表和网页邮箱表，`schemas.ts` 校验并规范化邮箱，`use-auth-form.ts` 管理异步状态，`types.ts` 定义 API，`page.tsx` 为演示页面。
+
+| data-slot                        | 说明                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------- |
+| `auth-08`                        | 根节点，暴露 `data-step`（`email` / `sent`）与 `data-state`（`idle` / `success`） |
+| `auth-08-brand`                  | 品牌行                                                                            |
+| `auth-08-step`                   | 当前状态的内容容器，切换时淡入                                                    |
+| `auth-08-email` / `auth-08-sent` | 两个状态的内容                                                                    |
+| `auth-08-domain-suggestions`     | 邮箱后缀小按钮                                                                    |
+| `auth-08-open-mail`              | 「打开邮箱」链接                                                                  |
+| `auth-08-divider`                | 带文字的分隔线                                                                    |
+| `auth-08-code-input`             | 验证码格子                                                                        |
+
+## 可访问性
+
+- 切换状态或登录成功时聚焦新状态的标题，Tab 继续进入表单。
+- 邮箱错误、验证码错误和重发错误都用 `role="alert"` 播报，并通过 `aria-describedby` 关联到对应输入；改动输入立即清除错误。
+- 后缀小按钮是一组带名称（「常用邮箱后缀」）的按钮，读屏名称是补全后的完整邮箱；鼠标按下不抢输入框焦点，键盘按下后焦点交回输入框。
+- 「打开邮箱」是真实链接，读屏会说明在新标签页打开。
+- 验证码输入支持整串粘贴、退格和方向键，提供数字键盘与「验证码，共 6 位」读屏名称。
+- 倒计时不逐秒播报；波纹是装饰，对读屏隐藏。切换动效和波纹都遵守减少动态效果设置。
+
+## 注意事项
+
+- 只提供界面，不负责真实发信、认证、限流或会话。服务端必须校验链接和验证码的有效期、使用次数和发送频率。
+- 用户点邮件里的链接，是在另一个标签页（甚至另一台设备）完成登录的，本区块不会感知到。需要原页面自动跟进时，由接入方在 `sent` 状态轮询会话（或监听 `BroadcastChannel`、`storage` 事件），确认登录后自行跳转。
+- 「打开邮箱」只是按域名猜网页邮箱，企业邮箱、自建邮箱用 `mailProviders` 补充；手机上它打开的是网页版，不会唤起邮箱 App。
+
+## 源码
+
+<ComponentSource name="auth-08" />

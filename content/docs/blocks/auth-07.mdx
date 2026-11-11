@@ -1,0 +1,99 @@
+---
+title: 锁屏与重新验证
+titleEn: Lock Screen
+description: 已登录用户的全屏锁屏：大号时钟、头像问候，用密码或 6 位 PIN 解锁，连续输错会暂时锁定并倒计时恢复。
+group: forms
+status: new
+---
+
+<BlockViewer name="auth-07" />
+
+## 安装
+
+<InstallCommand name="auth-07" />
+
+## 用法
+
+```tsx
+<Auth07
+  user={{ name: "林薇", email: "linwei@example.com", avatar: "/me.png" }}
+  reason="expired"
+  onUnlock={async ({ method, secret }) => {
+    await reauthenticate(method, secret)
+  }}
+  onSuccess={() => router.refresh()}
+  onSwitchAccount={() => router.push("/login")}
+  onSignOut={() => signOut()}
+/>
+```
+
+用户已经登录过，锁屏只需要再确认一次身份，所以不问账号，只要密码或 PIN。页面打开时自动聚焦当前验证方式的输入框；PIN 输满自动提交，密码按回车或点「解锁」提交。
+
+`onUnlock` 返回 `Promise<void>`，抛错即验证失败：输入区轻轻左右晃一下，输入被清空，下方显示「抛出的原因 + 还可以尝试 N 次」，例如「密码错误，还可以尝试 2 次」。抛出的 `Error` 没有 `message` 时，原因用「密码错误」或「PIN 错误」。
+
+### 失败次数与锁定
+
+组件自己记失败次数。连续失败达到 `maxAttempts`（默认 5）次后锁定 `lockSeconds`（默认 30）秒，期间输入框和按钮都不可用，显示「尝试次数过多，请 N 秒后再试」的倒计时，到时自动恢复并聚焦输入框，失败次数清零。
+
+服务端已经在限流时，在抛出的错误上带数字属性 `retryAfter`（秒），组件立即按它锁定：
+
+```ts
+const error = Object.assign(new Error("尝试过于频繁"), { retryAfter: 60 })
+throw error
+```
+
+这只是界面上的节流，真正的次数限制必须在服务端做。
+
+### 时钟与时区
+
+大号时钟只显示时和分，下面一行是日期和星期。传 `timeZone`（IANA 名称，如 `Asia/Shanghai`）时按它显示；不传时在浏览器挂载后读取本机时区。服务端渲染和水合期间时钟显示 `--:--`、日期行留空，不读取当前时间，不会出现水合不一致。问候语（「下午好，林薇」）按访客本地时间选取，挂载前显示「你好，林薇」。
+
+## 示例
+
+演示页的密码是 `yiui2026`，PIN 是 `123456`，其他输入都算错误。为了方便体验，演示页把 `maxAttempts` 设为 3、`lockSeconds` 设为 5：连续输错 3 次后锁定 5 秒。解锁后右上角出现「重新锁定」，可以反复体验。「切换账号」「退出登录」在演示页只显示一句说明。
+
+## API
+
+<PropsTable name="auth-07" component="Auth07" />
+
+- 验证方式：`methods` 默认 `["password", "pin"]`，第一项是默认方式；只给一种时不显示「改用 PIN / 改用密码」链接。受控用 `method` 搭配 `onMethodChange`，非受控用 `defaultMethod`（默认取 `methods` 的第一项）。受控值不在 `methods` 里时退回第一项。
+- `reason`：`"locked"` 显示「屏幕已锁定」，`"expired"` 显示「登录已过期，请重新验证身份」。
+- `user`：`name` 必填，用于问候语和头像占位（取第一个字）；`avatar` 是头像地址；`email` 只写进隐藏的用户名字段，方便密码管理器识别账号。
+- `pinLength` 默认 6，范围 4–8；`locale` 默认 `zh-CN`，决定时间和日期格式。
+- `onSuccess({ method })` 在验证通过、界面切到「已解锁」后调用；`onSwitchAccount`、`onSignOut` 没传时不显示对应链接。
+- `labels` 覆盖 `Auth07Labels`，模板里的 `{message}`、`{count}`、`{seconds}`、`{length}`、`{name}` 会被替换。
+
+导出类型：`Auth07Props`、`Auth07Method`、`Auth07Reason`、`Auth07User`、`Auth07Labels`。
+
+文件结构：`auth-07.tsx` 为入口；`form-parts.tsx` 是时钟、密码框和 PIN 格子；`use-auth-form.ts` 管理提交、失败次数和锁定倒计时；`config.ts` 管理文案；`types.ts` 定义 API；`page.tsx` 为演示页面。
+
+| data-slot                                                 | 说明                                                                                                                                 |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `auth-07`                                                 | 根节点，带 `data-method`（`password` / `pin`）、`data-state`（`idle` / `pending` / `error` / `locked` / `unlocked`）和 `data-reason` |
+| `auth-07-panel`                                           | 居中的内容带                                                                                                                         |
+| `auth-07-clock`                                           | 时钟与日期，挂载并取得时间后带 `data-ready`                                                                                          |
+| `auth-07-reason`                                          | 锁屏原因                                                                                                                             |
+| `auth-07-form` / `auth-07-field`                          | 验证表单与晃动的输入区                                                                                                               |
+| `auth-07-pin` / `auth-07-pin-slot`                        | PIN 输入与每一格（`data-active`、`data-filled`）                                                                                     |
+| `auth-07-message`                                         | 错误、倒计时和大写锁定提示所在的一行                                                                                                 |
+| `auth-07-error` / `auth-07-lockout` / `auth-07-caps-lock` | 验证错误、锁定倒计时、大写锁定提示                                                                                                   |
+| `auth-07-switch-method`                                   | 「改用 PIN / 改用密码」链接                                                                                                          |
+| `auth-07-success`                                         | 已解锁状态                                                                                                                           |
+| `auth-07-footer`                                          | 切换账号、退出登录                                                                                                                   |
+
+## 可访问性
+
+- 打开、切换验证方式、验证失败和锁定结束后，焦点都回到当前方式的输入框；解锁后焦点落在「已解锁」标题上，说明文字用 `role="status"` 播报。
+- 验证错误用 `role="alert"`，并通过 `aria-describedby` 关联到输入框，输入框带 `aria-invalid`；重新输入立即清除错误。
+- 锁定倒计时不逐秒播报：读屏只在锁定开始时念一次「尝试次数过多，请 N 秒后再试」。
+- 密码框可切换显示，切换按钮带 `aria-pressed`；按键时检测到大写锁定，在条下用 `role="status"` 提示。
+- PIN 格子只显示圆点，读屏名称为「PIN 码，共 6 位」，手机上弹出数字键盘。
+- 背景字符场是装饰，`aria-hidden`，并在系统开启减少动态效果时静止；输错时的晃动在该设置下也会关闭。
+
+## 注意事项
+
+只提供界面，不负责会话、加密或真实的次数限制。组件内的失败计数在刷新页面后会清零，服务端必须自己限制尝试次数，并在需要时通过 `retryAfter` 告诉界面锁多久。根节点是 `min-h-svh` 的整屏布局，适合单独作为一个路由或覆盖在应用之上。
+
+## 源码
+
+<ComponentSource name="auth-07" />
