@@ -47,6 +47,9 @@ const fitClasses: Record<string, string> = {
   "xy-pad": "max-lg:scale-[0.7]",
   // 三行读数的转换器卡片，窄屏画框只有 20rem 高
   "chinese-number": "max-lg:scale-[0.85]",
+  // 列表加 20rem 的面板要 42rem 才排得开；窄屏面板变抽屉，画框里只剩列表
+  "context-panel":
+    "max-md:scale-[0.8] md:w-[42rem] md:scale-[0.45] lg:scale-[0.6]",
 }
 
 /**

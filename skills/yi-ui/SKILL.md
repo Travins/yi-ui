@@ -60,6 +60,7 @@ https://yiui.dev/md/pages/<条目>.md
 ## 布局和主题
 
 - **线条网格：** 用 `grid-layout` 的原语搭页面骨架，不要每页手写边框。
+- **左侧导航 + 右侧详情面板：** 右侧用 `context-panel`，不要再放一个官方 `Sidebar`（包括 `sidebar-04`）。官方 `SidebarProvider` 只有一份开合状态，两栏会被 ⌘B 一起收起。`ContextPanelProvider` 包住 `SidebarInset` 和 `ContextPanel`，页面用 `ContextPanelContent` 声明内容；没有内容的页面不会出现开合按钮。
 - **颜色主题：** `pnpm dlx shadcn@latest add https://yiui.dev/r/theme-<id>.json`，详见 https://yiui.dev/docs/theming/ 。
 - **区块和页面：** 其中的页面文件按 Next.js App Router 写，会写入 `app/` 下的固定路径，安装前务必 `--dry-run`。
 

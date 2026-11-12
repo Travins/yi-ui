@@ -83,7 +83,7 @@ pnpm dlx shadcn@latest add https://yiui.dev/r/value-slider.json
 | 文字与滚动 | [文字动效](https://yiui.dev/components/text-animate/) · [跑马灯](https://yiui.dev/components/marquee/) |
 | 内容展示 | [时间线](https://yiui.dev/components/timeline/) · [卡片堆叠](https://yiui.dev/components/card-stack/) · [手写清单](https://yiui.dev/components/checklist/) |
 | 时间 | [实时当地时间](https://yiui.dev/components/local-time/) · [时段问候](https://yiui.dev/components/greeting/) |
-| 布局 | [线条网格布局](https://yiui.dev/components/grid-layout/) |
+| 布局 | [线条网格布局](https://yiui.dev/components/grid-layout/) · [上下文面板](https://yiui.dev/components/context-panel/) |
 | 工具函数 | [中文数字](https://yiui.dev/components/chinese-number/) · [全国行政区划](https://yiui.dev/components/china-regions/) · [色调变量](https://yiui.dev/components/flow-tone/) |
 
 ## 区块与页面

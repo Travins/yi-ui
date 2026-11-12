@@ -9,11 +9,18 @@ import { defaultBrand, type BrandConfig, type BrandFeature } from "./brand"
 import { BrandPanel, MobileBrand } from "./brand-panel"
 import type { Auth01Labels } from "./config"
 import { ForgotPasswordForm } from "./forgot-password-form"
-import { SignInForm, type SignInValues } from "./sign-in-form"
+import {
+  SignInForm,
+  type SignInMethod,
+  type SignInValues,
+} from "./sign-in-form"
 import { SignUpForm, type SignUpValues } from "./sign-up-form"
 import type { SocialProvider } from "./social-buttons"
 
 type AuthView = "sign-in" | "sign-up" | "forgot-password"
+
+// 稳定引用：默认两种登录方式都开，顺序即分段控件里的顺序
+const DEFAULT_SIGN_IN_METHODS: readonly SignInMethod[] = ["password", "code"]
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 // 未传回调时的示例实现：只在控制台打印，并模拟 0.8 秒的网络请求
@@ -31,6 +38,7 @@ const demo =
 function Auth01({
   brand,
   defaultView = "sign-in",
+  signInMethods = DEFAULT_SIGN_IN_METHODS,
   socialProviders = ["github", "google"],
   allowSignUp = true,
   termsHref = "#",
@@ -46,6 +54,12 @@ function Auth01({
   /** 品牌信息，逐项覆盖默认的示例品牌 */
   brand?: Partial<BrandConfig>
   defaultView?: AuthView
+  /**
+   * 开放的登录方式，顺序即切换控件里的顺序，第一项是默认方式；
+   * 只留一种时不显示切换控件，例如 `["password"]` 只要账号 + 密码
+   * @default ["password", "code"]
+   */
+  signInMethods?: readonly SignInMethod[]
   /** 启用的第三方登录，传空数组隐藏该区域 */
   socialProviders?: readonly SocialProvider[]
   /** 设为 false 隐藏「注册」入口（仅邀请制的产品） */
@@ -55,6 +69,7 @@ function Auth01({
   onSignIn?: (values: SignInValues) => Promise<void>
   onSignUp?: (values: SignUpValues) => Promise<void>
   onForgotPassword?: (email: string) => Promise<void>
+  /** 验证码登录时发送短信；`signInMethods` 不含 `"code"` 时不会被调用，可以不传 */
   onSendCode?: (phone: string) => Promise<void>
   onSocialSignIn?: (provider: SocialProvider) => Promise<void>
   /** 覆盖默认文案，见 config.ts 的 DEFAULT_LABELS */
@@ -80,6 +95,7 @@ function Auth01({
             >
               {view === "sign-in" && (
                 <SignInForm
+                  methods={signInMethods}
                   socialProviders={socialProviders}
                   allowSignUp={allowSignUp}
                   onSignIn={onSignIn}
@@ -123,6 +139,7 @@ export type {
   AuthView,
   BrandConfig,
   BrandFeature,
+  SignInMethod,
   SignInValues,
   SignUpValues,
   SocialProvider,

@@ -61,8 +61,15 @@ type Sidebar01Props = Omit<
    * @default 帮助中心、设置
    */
   footerItems?: Sidebar01Item[]
+  /** 底部插槽，排在 footerItems 之后：放当前用户、退出登录这类不是链接的内容 */
+  footer?: React.ReactNode
   /** 品牌：方形 logo + 名称 */
   brand?: Sidebar01Brand
+  /**
+   * 是否显示导航搜索框；条目很少时可以关掉
+   * @default true
+   */
+  searchable?: boolean
   /** 当前地址（pathname），用来高亮当前项并默认展开它所在的父项 */
   currentHref?: string
   /**
@@ -95,10 +102,12 @@ function BrandLogo({ logo }: { logo?: React.ReactNode }) {
 
 function Sidebar01Header({
   brand,
+  searchable,
   query,
   onQueryChange,
 }: {
   brand: Sidebar01Brand
+  searchable: boolean
   query: string
   onQueryChange: (query: string) => void
 }) {
@@ -151,20 +160,22 @@ function Sidebar01Header({
           </Button>
         </div>
       </SidebarHeader>
-      <div className="relative shrink-0 border-b border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
-        <SearchIcon
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 left-4.5 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <SidebarInput
-          type="search"
-          aria-label={labels.search}
-          placeholder={labels.searchPlaceholder}
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          className="pl-8 [&::-webkit-search-cancel-button]:appearance-none"
-        />
-      </div>
+      {searchable ? (
+        <div className="relative shrink-0 border-b border-sidebar-border p-2 group-data-[collapsible=icon]:hidden">
+          <SearchIcon
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-4.5 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <SidebarInput
+            type="search"
+            aria-label={labels.search}
+            placeholder={labels.searchPlaceholder}
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            className="pl-8 [&::-webkit-search-cancel-button]:appearance-none"
+          />
+        </div>
+      ) : null}
     </>
   )
 }
@@ -176,7 +187,9 @@ function Sidebar01Header({
 function Sidebar01({
   groups = DEFAULT_GROUPS,
   footerItems = DEFAULT_FOOTER_ITEMS,
+  footer,
   brand = DEFAULT_BRAND,
+  searchable = true,
   currentHref,
   accordion = true,
   navigation,
@@ -265,6 +278,7 @@ function Sidebar01({
         >
           <Sidebar01Header
             brand={brand}
+            searchable={searchable}
             query={query}
             onQueryChange={setQuery}
           />
@@ -291,15 +305,20 @@ function Sidebar01({
               ) : null}
             </div>
           </SidebarContent>
-          <SidebarFooter className="border-t border-sidebar-border">
-            <nav aria-label={labels.footerLabel}>
-              <SidebarMenu>
-                {footerItems.map((item) => (
-                  <NavItem key={item.id} item={item} />
-                ))}
-              </SidebarMenu>
-            </nav>
-          </SidebarFooter>
+          {footerItems.length > 0 || footer ? (
+            <SidebarFooter className="border-t border-sidebar-border">
+              {footerItems.length > 0 ? (
+                <nav aria-label={labels.footerLabel}>
+                  <SidebarMenu>
+                    {footerItems.map((item) => (
+                      <NavItem key={item.id} item={item} />
+                    ))}
+                  </SidebarMenu>
+                </nav>
+              ) : null}
+              {footer}
+            </SidebarFooter>
+          ) : null}
           <SidebarRail />
         </Sidebar>
       </TooltipProvider>
