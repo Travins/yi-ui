@@ -381,7 +381,8 @@ function BarSelect(props: BarSelectProps) {
                 .join(" ") || undefined
             }
             className={cn(
-              "h-auto min-w-0 flex-1 justify-between self-stretch rounded-none font-normal focus-visible:ring-inset",
+              // 底色由外框统一绘制，触发键保留独立的键盘焦点环。
+              "h-auto min-w-0 flex-1 justify-between self-stretch rounded-none bg-transparent! font-normal focus-visible:ring-inset",
               error &&
                 "focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ring/50 focus-visible:outline-solid",
               multiple && display === "chips" && selected.length && "flex-none",
