@@ -87,4 +87,6 @@ const project = SAMPLE_PROJECTS[0]
 
 ## 注意事项
 
+这个区块建在官方 `Sidebar` 上，适合单独做项目数据面板。官方 `SidebarProvider` 只有一份开合状态，如果页面左侧还有一个可收起的导航（如 [`sidebar-01`](/blocks/sidebar-01)），两栏会被 ⌘B 和 `toggleSidebar` 一起开合。要左右两栏各开各的，右侧改用 [`context-panel`](/components/context-panel)，写法见它的[「和左侧导航一起用」](/components/context-panel#和左侧导航一起用)示例；`ContextSection` 这些分区仍可以放进去。
+
 `mini-chart` 只支持单系列，此处用不依赖尺寸测量的 SVG 实现堆叠面积／柱图，首屏可预渲染。完成量选项仅显示已完成系列；数据须按时间排序且非负，颜色序号对应 `chart-1` 至 `chart-5`。空数据不会产生无效坐标，状态总数为零时显示 0%。

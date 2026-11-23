@@ -9,7 +9,7 @@ group: forms
 
 `Auth01` 提炼自我的一个企业监控平台项目的登录页，在原有「左侧品牌面板 + 右侧表单」结构上，补上了完整的账号流程：
 
-- **登录**：密码登录 / 验证码登录用方条分段控件切换；账号（用户名或邮箱）、密码显示切换、记住登录状态开关、忘记密码、第三方登录（GitHub、Google）、跳转注册。
+- **登录**：密码登录 / 验证码登录用方条分段控件切换（`signInMethods` 可以只开其中一种）；账号（用户名或邮箱）、密码显示切换、记住登录状态开关、忘记密码、第三方登录（GitHub、Google）、跳转注册。
 - **注册**：姓名、邮箱、密码（实时强度条）、确认密码、同意服务条款。
 - **找回密码**：邮箱提交后切换为「邮件已发送」的成功状态，邮件图标向外扩散波纹。
 - 三个视图在同一个组件内切换，带 180ms 的淡入位移过渡，系统开启「减少动态效果」时只保留淡入。
@@ -106,6 +106,25 @@ export default function LoginPage() {
 }
 ```
 
+### 只开密码登录
+
+默认「密码登录 / 验证码登录」两种方式都开。只要账号 + 密码时传 `signInMethods={["password"]}`：只剩一种方式时不渲染切换控件，`onSendCode` 也不会被调用，可以不传。反过来传 `["code"]` 就是只用手机验证码；传 `["code", "password"]` 则两种都开、默认停在验证码登录。
+
+```tsx title="app/login/page.tsx"
+<Auth01
+  signInMethods={["password"]}
+  socialProviders={[]}
+  allowSignUp={false}
+  onSignIn={async (values) => {
+    // 只开了密码登录，这里 values.method 一定是 "password"
+    if (values.method !== "password") return
+    await signIn(values.account, values.password)
+  }}
+/>
+```
+
+效果见下方[示例](#仅密码登录)。
+
 使用 NextAuth 时，把 `onSignIn` 换成 `signIn("credentials", { redirect: false, ... })` 并在返回 `error` 时抛出即可；第三方登录对应 `signIn(provider)`。
 
 ### 换成英文
@@ -153,6 +172,14 @@ export default function LoginPage() {
 
 完整键与默认值见下方 [labels](#labels)。
 
+## 示例
+
+### 仅密码登录
+
+`signInMethods={["password"]}`，同时关掉第三方登录和注册入口：表单里只有账号、密码、记住登录状态和忘记密码，没有登录方式切换。
+
+<ComponentPreview name="auth-01-password-only-demo" />
+
 ## API
 
 ### Auth01
@@ -161,6 +188,7 @@ export default function LoginPage() {
   type={{
     brand: { type: "Partial<BrandConfig>", description: "品牌信息，逐项覆盖默认示例品牌，见下方 BrandConfig" },
     defaultView: { type: '"sign-in" | "sign-up" | "forgot-password"', description: "初始视图", default: '"sign-in"' },
+    signInMethods: { type: '("password" | "code")[]', description: "开放的登录方式，顺序即切换控件里的顺序，第一项是默认方式；只留一种时不显示切换控件。传空数组按默认处理", default: '["password", "code"]' },
     socialProviders: { type: '("github" | "google")[]', description: "启用的第三方登录，传 `[]` 隐藏该区域；默认两个都开", default: '["github", "google"]' },
     allowSignUp: { type: "boolean", description: "设为 `false` 隐藏「注册」入口", default: "true" },
     termsHref: { type: "string", description: "注册页中「服务条款」的链接" },
@@ -169,7 +197,7 @@ export default function LoginPage() {
     onSignIn: { type: "(values: SignInValues) => Promise<void>", description: '`values` 是联合类型：`{ method: "password", account, password, remember }` 或 `{ method: "code", phone, code }`' },
     onSignUp: { type: "(values: { name; email; password }) => Promise<void>", description: "校验通过后才会调用；确认密码与条款勾选已在组件内校验" },
     onForgotPassword: { type: "(email: string) => Promise<void>", description: "成功返回后显示「邮件已发送」" },
-    onSendCode: { type: "(phone: string) => Promise<void>", description: "`phone` 是 11 位纯数字；成功返回后「获取验证码」按钮进入 60 秒倒计时，抛错则不进入倒计时" },
+    onSendCode: { type: "(phone: string) => Promise<void>", description: "`phone` 是 11 位纯数字；成功返回后「获取验证码」按钮进入 60 秒倒计时，抛错则不进入倒计时；`signInMethods` 里没有验证码方式时不会被调用" },
     onSocialSignIn: { type: "(provider) => Promise<void>", description: "点击第三方登录按钮时调用" },
     className: { type: "string", description: "追加到最外层容器" },
   }}
@@ -305,7 +333,7 @@ components/auth-01/
 
 - **校验规则**：规则常量都在 `schemas.ts`。手机号默认是中国大陆 11 位规则，面向其他地区时替换 `PHONE_PATTERN` 并同步 `PHONE_LENGTH`，同时把 `sign-in-form.tsx` 里的 `PhoneInput` 换成适合该地区的输入框（它只处理大陆 11 位号码）；密码策略是 `PASSWORD_MIN_LENGTH` 与两条正则（必须含字母、必须含数字）；姓名最短长度是 `NAME_MIN_LENGTH`，验证码位数是 `CODE_LENGTH`。提示文案不用改，数字会跟着常量走；`newPasswordPlaceholder`（「至少 8 位，包含字母和数字」）是静态示例文案，改了最小长度记得一并改。
 - **强度条算法**：`password-strength.tsx` 的 `getPasswordStrength`，按长度（8、12）与大小写、数字、符号计分，颜色从 `destructive` 过渡到 `primary`。
-- **只要登录**：传 `allowSignUp={false}`，再传 `socialProviders={[]}` 隐藏第三方登录（省略时默认会显示 GitHub 和 Google）。
+- **只要登录**：传 `allowSignUp={false}`，再传 `socialProviders={[]}` 隐藏第三方登录（省略时默认会显示 GitHub 和 Google）；只要账号 + 密码时再加 `signInMethods={["password"]}`，见上方[只开密码登录](#只开密码登录)。
 - **增减第三方平台**：在 `social-buttons.tsx` 的 `providers` 里补一项，并扩展 `SocialProvider` 类型。
 - **改文案**：优先用 `labels`，校验提示也一样，见上方[换成英文](#换成英文)；整站换语言时也可以直接改 `config.ts` 的 `DEFAULT_LABELS`。
 - **表单状态**：刻意只用受控状态 + zod，没有引入 react-hook-form。字段首次失焦时校验该字段，提交失败后改为输入时实时校验。

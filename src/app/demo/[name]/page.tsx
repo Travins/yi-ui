@@ -31,6 +31,13 @@ function ownerOf(name: string) {
   return undefined
 }
 
+/** 条目文档所在的分区：区块、页面的示例要回到各自的文档，不是都在 /components/ 下 */
+function sectionOf(type: string) {
+  if (type === "registry:block") return "blocks"
+  if (type === "registry:page") return "pages"
+  return "components"
+}
+
 /** 地址里的 slug → 示例名 */
 function exampleOf(slug: string) {
   const name = exampleNames().find((entry) => toDemoSlug(entry) === slug)
@@ -75,7 +82,9 @@ export default async function Page({ params }: Props) {
     <div className="flex min-h-dvh touch-manipulation flex-col bg-background">
       <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-edge bg-background/90 px-2 backdrop-blur-sm">
         <Link
-          href={owner ? `/components/${owner.name}/` : "/components/"}
+          href={
+            owner ? `/${sectionOf(owner.type)}/${owner.name}/` : "/components/"
+          }
           className="flex h-9 items-center gap-0.5 rounded-md pr-2 pl-1 text-sm font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <ChevronLeft aria-hidden="true" className="size-5" />

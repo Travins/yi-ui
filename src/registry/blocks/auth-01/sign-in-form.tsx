@@ -34,6 +34,9 @@ type SignInMethod = SignInValues["method"]
 
 const CODE_COOLDOWN = 60
 
+// 稳定引用：signInMethods 不传或传空数组时两种方式都开
+const ALL_METHODS: readonly SignInMethod[] = ["password", "code"]
+
 function PasswordSignIn({
   onSignIn,
   onForgotPassword,
@@ -181,6 +184,7 @@ function CodeSignIn({
 }
 
 function SignInForm({
+  methods,
   socialProviders,
   allowSignUp,
   onSignIn,
@@ -190,6 +194,7 @@ function SignInForm({
   onSwitchToSignUp,
   labels,
 }: {
+  methods: readonly SignInMethod[]
   socialProviders: readonly SocialProvider[]
   allowSignUp: boolean
   onSignIn: (values: SignInValues) => Promise<void>
@@ -200,11 +205,19 @@ function SignInForm({
   labels?: Partial<Auth01Labels>
 }) {
   const text = resolveLabels(labels)
-  const [method, setMethod] = useState<SignInMethod>("password")
-  const methodOptions = [
-    { value: "password", label: text.signInPasswordTab },
-    { value: "code", label: text.signInCodeTab },
-  ] as const
+  const available = methods.length > 0 ? methods : ALL_METHODS
+  const first = available[0] ?? "password"
+  const [selected, setSelected] = useState<SignInMethod>(first)
+  // 选中的方式被调用方关掉时退回第一种
+  const method = available.includes(selected) ? selected : first
+  const methodLabels: Record<SignInMethod, string> = {
+    password: text.signInPasswordTab,
+    code: text.signInCodeTab,
+  }
+  // 选项顺序跟随 methods，第一项是默认方式
+  const methodOptions = available
+    .filter((value, index) => available.indexOf(value) === index)
+    .map((value) => ({ value, label: methodLabels[value] }))
   const social = useAsyncAction(text.requestFailed)
   return (
     <div data-slot="auth-01-sign-in" className="flex flex-col gap-5">
@@ -213,13 +226,16 @@ function SignInForm({
         description={text.signInDescription}
       />
       <div className="flex flex-col gap-3">
-        <SegmentedControl
-          aria-label={text.signInMethodLabel}
-          size="lg"
-          options={methodOptions}
-          value={method}
-          onValueChange={(value) => setMethod(value as SignInMethod)}
-        />
+        {/* 只开一种登录方式时没有可切换的东西，不渲染分段控件 */}
+        {methodOptions.length > 1 && (
+          <SegmentedControl
+            aria-label={text.signInMethodLabel}
+            size="lg"
+            options={methodOptions}
+            value={method}
+            onValueChange={(value) => setSelected(value as SignInMethod)}
+          />
+        )}
         {method === "password" ? (
           <PasswordSignIn
             onSignIn={onSignIn}
@@ -261,4 +277,4 @@ function SignInForm({
 }
 
 export { SignInForm }
-export type { SignInValues }
+export type { SignInMethod, SignInValues }

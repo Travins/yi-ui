@@ -12,6 +12,7 @@ const BACKDROPS: Record<string, "dots" | "grid"> = {
   "bar-field": "dots",
   "bar-select": "dots",
   "grid-toolbar": "dots",
+  "context-panel": "dots",
   "grid-pagination": "dots",
   "local-time": "dots",
   "stat-card": "dots",

@@ -83,7 +83,7 @@ See the [installation guide](https://yiui.dev/docs/installation/) for where file
 | Text & Marquee | [Text Animate](https://yiui.dev/components/text-animate/) · [Marquee](https://yiui.dev/components/marquee/) |
 | Content Display | [Timeline](https://yiui.dev/components/timeline/) · [Card Stack](https://yiui.dev/components/card-stack/) · [Checklist](https://yiui.dev/components/checklist/) |
 | Time | [Local Time](https://yiui.dev/components/local-time/) · [Greeting](https://yiui.dev/components/greeting/) |
-| Layout | [Grid Layout](https://yiui.dev/components/grid-layout/) |
+| Layout | [Grid Layout](https://yiui.dev/components/grid-layout/) · [Context Panel](https://yiui.dev/components/context-panel/) |
 | Utilities | [Chinese Number](https://yiui.dev/components/chinese-number/) · [China Regions](https://yiui.dev/components/china-regions/) · [Flow Tone](https://yiui.dev/components/flow-tone/) |
 
 ## Blocks & Pages
